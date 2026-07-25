@@ -1,88 +1,110 @@
+// routes/suspensiones.js
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
+const { enviarNotificacionEmail } = require('./emailService');
 
+// GET - Obtener suspensiones
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { email, rol } = req.user;
-    let query = 'SELECT * FROM apelaciones';
-    const params = [];
-    
-    if (rol === 'estudiante') {
-      query += ' WHERE email = ?';
-      params.push(email);
-    }
-    query += ' ORDER BY id DESC';
-    
-    const apelaciones = await db.queryAll(query, params);
-    res.json(apelaciones);
+    const suspensiones = await db.queryAll('SELECT * FROM suspensiones ORDER BY id DESC');
+    res.json(suspensiones);
   } catch (error) {
-    console.error('Error obteniendo apelaciones:', error);
+    console.error('Error obteniendo suspensiones:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-router.post('/', authMiddleware, async (req, res) => {
+// POST - Crear suspensión
+router.post('/', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
   try {
-    const { expediente, email, nombreEstudiante, motivo, archivo, tipoBeca } = req.body;
+    const { email, expediente, tipo, dias, motivo, observaciones, evidencia, nombreEstudiante } = req.body;
 
-    if (!expediente || !motivo || motivo.length < 50) {
-      return res.status(400).json({ error: 'El motivo debe tener al menos 50 caracteres' });
+    if (!email || !motivo || !observaciones || observaciones.length < 20) {
+      return res.status(400).json({ error: 'Campos requeridos faltantes o descripción insuficiente' });
     }
 
     const fecha = new Date().toLocaleString();
     const result = await db.queryRun(
-      `INSERT INTO apelaciones (expediente, email, nombre_estudiante, motivo, estado, fecha, archivo, tipo_beca) 
-       VALUES (?, ?, ?, ?, 'Pendiente', ?, ?, ?)`,
-      [expediente, email, nombreEstudiante, motivo, fecha, archivo || null, tipoBeca || null]
+      `INSERT INTO suspensiones (email, expediente, tipo, dias, motivo, observaciones, fecha, estado, evidencia, nombre_estudiante) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'Activa', ?, ?)`,
+      [email, expediente, tipo, tipo === 'suspension' ? (dias || '30') : 'Cancelada',
+       motivo, observaciones, fecha, evidencia || null, nombreEstudiante || email]
     );
 
-    await db.queryRun('UPDATE solicitudes SET estado = ? WHERE expediente = ?', ['En Apelación', expediente]);
+    // Actualizar estado de la solicitud
+    if (expediente) {
+      const estado = tipo === 'suspension' ? 'Suspendida' : 'Cancelada';
+      await db.queryRun(
+        'UPDATE solicitudes SET estado=?, suspension_motivo=?, suspension_observaciones=?, suspension_fecha=? WHERE expediente=?',
+        [estado, motivo, observaciones, fecha, expediente]
+      );
+    }
 
     await db.queryRun(
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
-      [fecha, req.user.email, req.user.rol, 'Apelación enviada', expediente]
+      [fecha, req.user.email, req.user.rol, `Beca ${tipo === 'suspension' ? 'suspendida' : 'cancelada'}: ${motivo}`, expediente || '—']
     );
 
-    res.json({ id: result.lastInsertRowid, message: 'Apelación enviada correctamente' });
+    // ✅ ENVIAR NOTIFICACIÓN DE BECA SUSPENDIDA
+    try {
+      await enviarNotificacionEmail('beca_suspendida', {
+        email: email,
+        nombre: nombreEstudiante || email,
+        expediente: expediente || '—',
+        motivo: motivo,
+        dias: tipo === 'suspension' ? (dias || '30') : 'Indefinida',
+        observaciones: observaciones
+      });
+    } catch (error) {
+      console.warn('⚠️ No se pudo enviar notificación de suspensión:', error);
+    }
+
+    res.json({ id: result.lastInsertRowid, message: `Beca ${tipo === 'suspension' ? 'suspendida' : 'cancelada'} correctamente` });
   } catch (error) {
-    console.error('Error creando apelación:', error);
+    console.error('Error creando suspensión:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-router.put('/:expediente/resolver', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
+// PUT - Restaurar beca
+router.put('/:id/restaurar', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
   try {
-    const { expediente } = req.params;
-    const { decision } = req.body;
+    const { id } = req.params;
 
-    await db.queryRun(
-      'UPDATE apelaciones SET estado = ?, decision = ? WHERE expediente = ? AND estado = ?',
-      ['Revisada', decision, expediente, 'Pendiente']
-    );
+    const susp = await db.queryOne('SELECT * FROM suspensiones WHERE id = ?', [id]);
+    if (!susp) return res.status(404).json({ error: 'Suspensión no encontrada' });
 
-    if (decision === 'Revocar Rechazo') {
+    await db.queryRun('UPDATE suspensiones SET estado = ? WHERE id = ?', ['Restaurada', id]);
+
+    if (susp.expediente) {
       await db.queryRun(
-        'UPDATE solicitudes SET estado = ?, progreso = 60 WHERE expediente = ?',
-        ['En Revisión por Apelación', expediente]
-      );
-    } else {
-      await db.queryRun(
-        'UPDATE solicitudes SET estado = ?, progreso = 100 WHERE expediente = ?',
-        ['Rechazado Definitivo', expediente]
+        'UPDATE solicitudes SET estado = ?, restaurado_fecha = ? WHERE expediente = ?',
+        ['Beneficio Activo', new Date().toLocaleString(), susp.expediente]
       );
     }
 
     const fecha = new Date().toLocaleString();
     await db.queryRun(
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
-      [fecha, req.user.email, req.user.rol, `Apelación resuelta: ${decision}`, expediente]
+      [fecha, req.user.email, req.user.rol, 'Beca restaurada', susp.expediente || '—']
     );
 
-    res.json({ message: 'Apelación resuelta' });
+    // ✅ ENVIAR NOTIFICACIÓN DE BECA RESTAURADA
+    try {
+      await enviarNotificacionEmail('beca_restaurada', {
+        email: susp.email,
+        nombre: susp.nombre_estudiante || susp.email,
+        expediente: susp.expediente || '—'
+      });
+    } catch (error) {
+      console.warn('⚠️ No se pudo enviar notificación de restauración:', error);
+    }
+
+    res.json({ message: 'Beca restaurada correctamente' });
   } catch (error) {
-    console.error('Error resolviendo apelación:', error);
+    console.error('Error restaurando beca:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
