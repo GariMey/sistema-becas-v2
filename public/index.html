@@ -898,10 +898,10 @@ function actualizarStatusDB(online) {
   if (!el) return;
   if (online) {
     el.className = 'online';
-    el.textContent = '🟢 Conectado a SQLite';
+    el.textContent = '🟢 Conectado';
   } else {
     el.className = 'offline';
-    el.textContent = '🔴 Offline — usando localStorage';
+    el.textContent = '🔴 Sin conexión';
   }
 }
 
@@ -915,7 +915,7 @@ async function probarConexionDB() {
       throw new Error('Respuesta no exitosa');
     }
   } catch (e) {
-    console.warn('⚠️ No se pudo conectar a la API (SQLite). Usando localStorage.', e);
+    console.warn('⚠️ No se pudo conectar a la API. Usando localStorage.', e);
     actualizarStatusDB(false);
     return false;
   }
