@@ -25,7 +25,7 @@ app.use('/api/convocatorias', require('./routes/convocatorias'));
 app.use('/api/noticias', require('./routes/noticias'));
 app.use('/api/justificaciones', require('./routes/justificaciones'));
 app.use('/api/apelaciones', require('./routes/apelaciones'));
-app.use('/api/visitas', require('./routes/visitas'));
+app.use('/api/visitas', require('./routes/visitas')); // Ruta de visitas
 app.use('/api/suspensiones', require('./routes/suspensiones'));
 app.use('/api/empleados', require('./routes/empleados'));
 app.use('/api/config', require('./routes/config'));

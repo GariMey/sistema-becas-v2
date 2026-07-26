@@ -5,11 +5,11 @@ const db = require('../database/db');
 const { authMiddleware } = require('../middleware/auth');
 const { enviarNotificacionEmail } = require('./emailService');
 
-// GET - Obtener solicitudes
+// GET - Obtener todas las solicitudes (con filtros)
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { email, rol } = req.user;
-    const { estado, search } = req.query;
+    const { estado, search, tipoBeca } = req.query;
 
     let query = 'SELECT * FROM solicitudes';
     const params = [];
@@ -23,6 +23,11 @@ router.get('/', authMiddleware, async (req, res) => {
     if (estado) {
       conditions.push('estado = ?');
       params.push(estado);
+    }
+
+    if (tipoBeca) {
+      conditions.push('tipo_beca = ?');
+      params.push(tipoBeca);
     }
 
     if (search) {
@@ -39,10 +44,13 @@ router.get('/', authMiddleware, async (req, res) => {
     
     const solicitudes = await db.queryAll(query, params);
 
-    // Adjuntar documentos
     const result = [];
     for (const s of solicitudes) {
-      const documentos = await db.queryAll('SELECT * FROM documentos WHERE solicitud_id = ?', [s.id]);
+      const documentos = await db.queryAll(
+        'SELECT * FROM documentos WHERE solicitud_id = ?',
+        [s.id]
+      );
+      
       const docsMap = {};
       documentos.forEach(d => {
         docsMap[d.doc_key] = {
@@ -56,6 +64,7 @@ router.get('/', authMiddleware, async (req, res) => {
           observacion: d.observacion || ''
         };
       });
+      
       result.push({ 
         ...s, 
         documentos: docsMap, 
@@ -65,7 +74,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error('Error obteniendo solicitudes:', error);
+    console.error('❌ Error obteniendo solicitudes:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -73,10 +82,20 @@ router.get('/', authMiddleware, async (req, res) => {
 // GET - Obtener una solicitud por expediente
 router.get('/:expediente', authMiddleware, async (req, res) => {
   try {
-    const solicitud = await db.queryOne('SELECT * FROM solicitudes WHERE expediente = ?', [req.params.expediente]);
-    if (!solicitud) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const solicitud = await db.queryOne(
+      'SELECT * FROM solicitudes WHERE expediente = ?',
+      [req.params.expediente]
+    );
+    
+    if (!solicitud) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
 
-    const documentos = await db.queryAll('SELECT * FROM documentos WHERE solicitud_id = ?', [solicitud.id]);
+    const documentos = await db.queryAll(
+      'SELECT * FROM documentos WHERE solicitud_id = ?',
+      [solicitud.id]
+    );
+    
     const docsMap = {};
     documentos.forEach(d => {
       docsMap[d.doc_key] = {
@@ -91,14 +110,18 @@ router.get('/:expediente', authMiddleware, async (req, res) => {
       };
     });
 
-    res.json({ ...solicitud, documentos: docsMap, datos_completos: JSON.parse(solicitud.datos_completos || '{}') });
+    res.json({ 
+      ...solicitud, 
+      documentos: docsMap, 
+      datos_completos: JSON.parse(solicitud.datos_completos || '{}') 
+    });
   } catch (error) {
-    console.error('Error obteniendo solicitud:', error);
+    console.error('❌ Error obteniendo solicitud:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-// POST - Crear solicitud
+// POST - Crear una nueva solicitud
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const {
@@ -107,25 +130,103 @@ router.post('/', authMiddleware, async (req, res) => {
       datosCompletos, documentos, aceptado, porcentajeCobertura, observacionTS
     } = req.body;
 
-    const result = await db.queryRun(`
-      INSERT INTO solicitudes (expediente, fecha, estudiante_email, nombres, apellidos, cedula, correo, telefono, tipo_beca, estado, progreso, puntaje, promedio, ingreso_familiar, datos_completos, aceptado, porcentaje_cobertura, observacion_ts)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      expediente, fecha, estudianteEmail, nombres, apellidos, cedula, correo, telefono || '',
-      tipoBeca, estado || 'Enviada', progreso || 10, puntaje || 0, promedio || 0, ingresoFamiliar || 0,
-      JSON.stringify(datosCompletos || {}), aceptado ? 1 : 0, porcentajeCobertura || null, observacionTS || 'Pendiente de revisión por trabajador social.'
-    ]);
-
-    // Insertar documentos
-    if (documentos && typeof documentos === 'object') {
-      for (const [key, doc] of Object.entries(documentos)) {
-        await db.queryRun(`
-          INSERT INTO documentos (solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [result.lastInsertRowid, key, doc.label || key, doc.nombre, doc.tipo, doc.tamano, doc.fecha || new Date().toISOString(), doc.datos, doc.estado || 'Pendiente']);
-      }
+    // Validaciones básicas
+    if (!expediente) {
+      return res.status(400).json({ error: 'El expediente es requerido' });
+    }
+    
+    if (!estudianteEmail) {
+      return res.status(400).json({ error: 'El correo del estudiante es requerido' });
     }
 
+    if (!nombres || !apellidos) {
+      return res.status(400).json({ error: 'Nombre y apellidos son requeridos' });
+    }
+
+    if (!tipoBeca) {
+      return res.status(400).json({ error: 'El tipo de beca es requerido' });
+    }
+
+    // Verificar que el estudiante existe en la base de datos
+    try {
+      const estudiante = await db.queryOne(
+        'SELECT email, nombre FROM usuarios WHERE LOWER(email) = LOWER(?) AND rol = ?',
+        [estudianteEmail.trim(), 'estudiante']
+      );
+
+      if (!estudiante) {
+        console.warn(`⚠️ Estudiante con email ${estudianteEmail} no encontrado en la DB, pero continuando...`);
+      }
+    } catch (err) {
+      console.warn('⚠️ No se pudo verificar el estudiante en la DB:', err.message);
+    }
+
+    // Insertar solicitud
+    const result = await db.queryRun(`
+      INSERT INTO solicitudes (
+        expediente, fecha, estudiante_email, nombres, apellidos, cedula, 
+        correo, telefono, tipo_beca, estado, progreso, puntaje, promedio, 
+        ingreso_familiar, datos_completos, aceptado, porcentaje_cobertura, observacion_ts
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      expediente, 
+      fecha || new Date().toISOString().slice(0, 10), 
+      estudianteEmail, 
+      nombres, 
+      apellidos, 
+      cedula || '', 
+      correo || estudianteEmail, 
+      telefono || '',
+      tipoBeca, 
+      estado || 'Enviada', 
+      progreso || 10, 
+      puntaje || 0, 
+      promedio || 0, 
+      ingresoFamiliar || 0,
+      JSON.stringify(datosCompletos || {}), 
+      aceptado ? 1 : 0, 
+      porcentajeCobertura || null, 
+      observacionTS || 'Pendiente de revisión por trabajador social.'
+    ]);
+
+    const solicitudId = result.lastInsertRowid;
+    let docsInsertados = 0; // ✅ Definir la variable aquí
+
+    // Insertar documentos si existen
+    if (documentos && typeof documentos === 'object' && Object.keys(documentos).length > 0) {
+      for (const [key, doc] of Object.entries(documentos)) {
+        try {
+          // Verificar que el documento tenga datos
+          if (!doc.datos && !doc.nombre) {
+            console.warn(`⚠️ Documento "${key}" sin datos, omitiendo...`);
+            continue;
+          }
+
+          await db.queryRun(`
+            INSERT INTO documentos (
+              solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            solicitudId, 
+            key, 
+            doc.label || key, 
+            doc.nombre || 'documento',
+            doc.tipo || 'application/octet-stream',
+            doc.tamano || 0,
+            doc.fecha || new Date().toISOString(),
+            doc.datos || null,
+            doc.estado || 'Pendiente'
+          ]);
+          docsInsertados++;
+        } catch (docError) {
+          console.error(`❌ Error insertando documento "${key}":`, docError.message);
+          // Continuamos con los demás documentos
+        }
+      }
+      console.log(`📎 ${docsInsertados} documentos insertados correctamente`);
+    }
+
+    // Registrar en bitácora
     const fechaNow = new Date().toLocaleString();
     await db.queryRun(
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
@@ -136,35 +237,48 @@ router.post('/', authMiddleware, async (req, res) => {
     try {
       await enviarNotificacionEmail('solicitud_recibida', {
         email: estudianteEmail,
-        nombre: nombres,
+        nombre: nombres || 'Estudiante',
         expediente: expediente,
-        tipoBeca: tipoBeca,
+        tipoBeca: tipoBeca || 'No especificado',
         fecha: fecha || new Date().toLocaleDateString()
       });
+      console.log(`📧 Notificación de solicitud enviada a ${estudianteEmail}`);
     } catch (error) {
-      console.warn('⚠️ No se pudo enviar notificación email:', error);
+      console.warn('⚠️ No se pudo enviar notificación email:', error.message);
     }
 
-    res.json({ id: result.lastInsertRowid, expediente, message: 'Solicitud enviada correctamente' });
+    res.json({ 
+      id: solicitudId, 
+      expediente, 
+      message: 'Solicitud enviada correctamente',
+      documentosInsertados: docsInsertados || 0
+    });
   } catch (error) {
-    console.error('Error creando solicitud:', error);
+    console.error('❌ Error creando solicitud:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-// PUT - Actualizar solicitud
+// PUT - Actualizar una solicitud existente
 router.put('/:expediente', authMiddleware, async (req, res) => {
   try {
     const { expediente } = req.params;
     const updates = req.body;
 
     // Obtener la solicitud actual antes de actualizar
-    const solicitudActual = await db.queryOne('SELECT * FROM solicitudes WHERE expediente = ?', [expediente]);
-    if (!solicitudActual) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const solicitudActual = await db.queryOne(
+      'SELECT * FROM solicitudes WHERE expediente = ?',
+      [expediente]
+    );
+    
+    if (!solicitudActual) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
 
     const fields = [];
     const values = [];
 
+    // Mapeo de campos permitidos para actualización
     const allowedFields = {
       estado: 'estado',
       progreso: 'progreso',
@@ -195,6 +309,7 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
       values.push(JSON.stringify(updates.datosCompletos));
     }
 
+    // Ejecutar actualización si hay campos
     if (fields.length > 0) {
       fields.push('updated_at = GETDATE()');
       values.push(expediente);
@@ -203,22 +318,63 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
 
     // Actualizar documentos si se proporcionan
     if (updates.documentos && typeof updates.documentos === 'object') {
+      let docsActualizados = 0;
       for (const [key, doc] of Object.entries(updates.documentos)) {
-        const existing = await db.queryOne('SELECT id FROM documentos WHERE solicitud_id = ? AND doc_key = ?', [solicitudActual.id, key]);
-        if (existing) {
-          await db.queryRun(
-            `UPDATE documentos SET label=?, nombre=?, tipo=?, tamano=?, fecha=?, datos=?, estado=?, observacion=? WHERE id=?`,
-            [doc.label || key, doc.nombre, doc.tipo, doc.tamano, doc.fecha, doc.datos, doc.estado || 'Pendiente', doc.observacion || '', existing.id]
+        try {
+          const existing = await db.queryOne(
+            'SELECT id FROM documentos WHERE solicitud_id = ? AND doc_key = ?',
+            [solicitudActual.id, key]
           );
-        } else {
-          await db.queryRun(
-            `INSERT INTO documentos (solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [solicitudActual.id, key, doc.label || key, doc.nombre, doc.tipo, doc.tamano, doc.fecha, doc.datos, doc.estado || 'Pendiente', doc.observacion || '']
-          );
+          
+          if (existing) {
+            await db.queryRun(
+              `UPDATE documentos SET 
+                label = ?, nombre = ?, tipo = ?, tamano = ?, 
+                fecha = ?, datos = ?, estado = ?, observacion = ? 
+              WHERE id = ?`,
+              [
+                doc.label || key, 
+                doc.nombre || 'documento',
+                doc.tipo || 'application/octet-stream',
+                doc.tamano || 0,
+                doc.fecha || new Date().toISOString(),
+                doc.datos || null,
+                doc.estado || 'Pendiente',
+                doc.observacion || '',
+                existing.id
+              ]
+            );
+            docsActualizados++;
+          } else {
+            await db.queryRun(
+              `INSERT INTO documentos (
+                solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                solicitudActual.id, 
+                key, 
+                doc.label || key,
+                doc.nombre || 'documento',
+                doc.tipo || 'application/octet-stream',
+                doc.tamano || 0,
+                doc.fecha || new Date().toISOString(),
+                doc.datos || null,
+                doc.estado || 'Pendiente',
+                doc.observacion || ''
+              ]
+            );
+            docsActualizados++;
+          }
+        } catch (docError) {
+          console.error(`❌ Error actualizando documento "${key}":`, docError.message);
         }
+      }
+      if (docsActualizados > 0) {
+        console.log(`📎 ${docsActualizados} documentos actualizados/insertados`);
       }
     }
 
+    // Registrar en bitácora
     const fechaNow = new Date().toLocaleString();
     await db.queryRun(
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
@@ -228,26 +384,36 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
     // ✅ DETECTAR CAMBIOS DE ESTADO Y ENVIAR NOTIFICACIONES
     if (updates.estado && updates.estado !== solicitudActual.estado) {
       const nuevoEstado = updates.estado;
+      console.log(`📊 Cambio de estado: ${solicitudActual.estado} → ${nuevoEstado} para expediente ${expediente}`);
       
+      // Subsanación requerida
       if (nuevoEstado === 'Pendiente subsanación') {
-        // Obtener documentos pendientes
-        const documentos = await db.queryAll('SELECT * FROM documentos WHERE solicitud_id = ?', [solicitudActual.id]);
-        const docsPendientes = documentos
-          .filter(d => d.estado === 'Corrección solicitada' || d.estado === 'Rechazado')
-          .map(d => ({ label: d.label || d.doc_key, observacion: d.observacion || 'Requiere corrección' }));
-        
         try {
-          await enviarNotificacionEmail('subsanacion_requerida', {
-            email: solicitudActual.estudiante_email,
-            nombre: solicitudActual.nombres,
-            expediente: expediente,
-            documentosPendientes: docsPendientes
-          });
+          const documentos = await db.queryAll(
+            'SELECT * FROM documentos WHERE solicitud_id = ? AND (estado = ? OR estado = ?)',
+            [solicitudActual.id, 'Corrección solicitada', 'Rechazado']
+          );
+          
+          const docsPendientes = documentos.map(d => ({ 
+            label: d.label || d.doc_key, 
+            observacion: d.observacion || 'Requiere corrección' 
+          }));
+          
+          if (docsPendientes.length > 0) {
+            await enviarNotificacionEmail('subsanacion_requerida', {
+              email: solicitudActual.estudiante_email,
+              nombre: solicitudActual.nombres,
+              expediente: expediente,
+              documentosPendientes: docsPendientes
+            });
+            console.log(`📧 Notificación de subsanación enviada a ${solicitudActual.estudiante_email}`);
+          }
         } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de subsanación:', error);
+          console.warn('⚠️ No se pudo enviar notificación de subsanación:', error.message);
         }
       }
       
+      // Solicitud aprobada
       if (nuevoEstado === 'Aprobada' || nuevoEstado === 'Beneficio Activo') {
         try {
           await enviarNotificacionEmail('solicitud_aprobada', {
@@ -256,13 +422,15 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
             expediente: expediente,
             tipoBeca: solicitudActual.tipo_beca,
             porcentajeCobertura: updates.porcentajeCobertura || solicitudActual.porcentaje_cobertura || '—',
-            observaciones: updates.observacionesComite || solicitudActual.observaciones_comite
+            observaciones: updates.observacionesComite || solicitudActual.observaciones_comite || ''
           });
+          console.log(`📧 Notificación de aprobación enviada a ${solicitudActual.estudiante_email}`);
         } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de aprobación:', error);
+          console.warn('⚠️ No se pudo enviar notificación de aprobación:', error.message);
         }
       }
       
+      // Solicitud rechazada
       if (nuevoEstado === 'Rechazada' || nuevoEstado === 'Rechazado Definitivo' || nuevoEstado === 'No elegible') {
         try {
           await enviarNotificacionEmail('solicitud_rechazada', {
@@ -271,15 +439,52 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
             expediente: expediente,
             motivoRechazo: updates.motivoRechazo || solicitudActual.motivo_rechazo || 'No cumple con los requisitos establecidos para este tipo de beca.'
           });
+          console.log(`📧 Notificación de rechazo enviada a ${solicitudActual.estudiante_email}`);
         } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de rechazo:', error);
+          console.warn('⚠️ No se pudo enviar notificación de rechazo:', error.message);
         }
       }
     }
 
-    res.json({ message: 'Solicitud actualizada' });
+    res.json({ 
+      message: 'Solicitud actualizada',
+      expediente: expediente
+    });
   } catch (error) {
-    console.error('Error actualizando solicitud:', error);
+    console.error('❌ Error actualizando solicitud:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// DELETE - Eliminar una solicitud (solo admin)
+router.delete('/:expediente', authMiddleware, async (req, res) => {
+  try {
+    const { expediente } = req.params;
+
+    const solicitud = await db.queryOne(
+      'SELECT * FROM solicitudes WHERE expediente = ?',
+      [expediente]
+    );
+    
+    if (!solicitud) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    await db.queryRun('DELETE FROM documentos WHERE solicitud_id = ?', [solicitud.id]);
+    await db.queryRun('DELETE FROM solicitudes WHERE expediente = ?', [expediente]);
+
+    const fechaNow = new Date().toLocaleString();
+    await db.queryRun(
+      'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
+      [fechaNow, req.user.email, req.user.rol, 'Solicitud eliminada', expediente]
+    );
+
+    res.json({ 
+      message: 'Solicitud eliminada correctamente',
+      expediente: expediente
+    });
+  } catch (error) {
+    console.error('❌ Error eliminando solicitud:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
