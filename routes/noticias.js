@@ -42,12 +42,16 @@ router.post('/', authMiddleware, requireRole('trabajador_social'), async (req, r
     const fecha = new Date().toLocaleDateString();
     const fechaNow = new Date().toLocaleString();
 
+    let noticiaId = null;
+    let esNueva = false;
+
     if (idEdicion) {
       // Editar noticia existente
       await db.queryRun(
         'UPDATE noticias SET titulo=?, contenido=?, fecha_edicion=? WHERE id=?',
         [titulo, contenido, fecha, idEdicion]
       );
+      noticiaId = idEdicion;
       
       await db.queryRun(
         'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
@@ -61,6 +65,8 @@ router.post('/', authMiddleware, requireRole('trabajador_social'), async (req, r
         'INSERT INTO noticias (titulo, contenido, fecha) VALUES (?, ?, ?)',
         [titulo, contenido, fecha]
       );
+      noticiaId = result.lastInsertRowid;
+      esNueva = true;
       
       await db.queryRun(
         'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
@@ -68,56 +74,69 @@ router.post('/', authMiddleware, requireRole('trabajador_social'), async (req, r
       );
 
       // ✅ ENVIAR NOTIFICACIÓN POR CORREO A TODOS LOS ESTUDIANTES
+      let totalEstudiantes = 0;
+      let exitos = 0;
+      let fallos = 0;
+      let errores = [];
+
       try {
-        // Obtener todos los estudiantes
+        // Obtener todos los estudiantes con sus correos
         const estudiantes = await db.queryAll(
           'SELECT email, nombre FROM usuarios WHERE rol = ? AND email IS NOT NULL',
           ['estudiante']
         );
 
-        if (estudiantes.length > 0) {
-          let exitos = 0;
-          let fallos = 0;
+        totalEstudiantes = estudiantes.length;
+        console.log(`📧 Enviando notificación de noticia a ${totalEstudiantes} estudiantes...`);
 
-          for (const est of estudiantes) {
-            try {
-              const resultEmail = await enviarNotificacionEmail('nueva_noticia', {
-                email: est.email,
-                nombre: est.nombre || 'Estudiante',
-                titulo: titulo,
-                contenido: contenido,
-                fecha: fecha
-              });
-              
-              if (resultEmail.success) {
-                exitos++;
-              } else {
-                fallos++;
-              }
-            } catch (error) {
-              console.error(`❌ Error enviando a ${est.email}:`, error);
+        for (const est of estudiantes) {
+          try {
+            const resultEmail = await enviarNotificacionEmail('nueva_noticia', {
+              email: est.email,
+              nombre: est.nombre || 'Estudiante',
+              titulo: titulo,
+              contenido: contenido,
+              fecha: fecha
+            });
+            
+            if (resultEmail.success) {
+              exitos++;
+            } else {
               fallos++;
+              errores.push({ email: est.email, error: resultEmail.error });
             }
+          } catch (error) {
+            console.error(`❌ Error enviando a ${est.email}:`, error);
+            fallos++;
+            errores.push({ email: est.email, error: error.message });
           }
+        }
 
-          console.log(`📧 Notificación de noticia enviada a ${exitos} estudiantes (${fallos} fallos)`);
+        console.log(`📧 Notificación de noticia enviada a ${exitos} estudiantes (${fallos} fallos)`);
 
-          // Registrar en bitácora el envío masivo
-          await db.queryRun(
-            'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
-            [fechaNow, req.user.email, req.user.rol, `Noticia enviada por email a ${exitos} estudiantes`, '—']
-          );
-        } else {
-          console.log('ℹ️ No hay estudiantes registrados para notificar');
+        // Registrar en bitácora el envío masivo
+        await db.queryRun(
+          'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
+          [fechaNow, req.user.email, req.user.rol, `Noticia enviada por email a ${exitos} estudiantes`, '—']
+        );
+
+        // Si hay errores, los incluimos en la respuesta
+        if (fallos > 0) {
+          console.warn('⚠️ Algunos correos no pudieron ser enviados:', errores.slice(0, 5));
         }
       } catch (error) {
         console.error('⚠️ Error enviando notificaciones de noticia:', error);
-        // No fallamos la operación principal, solo registramos el error
+        // No fallamos la operación principal
       }
       
       res.json({ 
-        id: result.lastInsertRowid, 
-        message: 'Noticia publicada y notificada a los estudiantes'
+        id: noticiaId, 
+        message: 'Noticia publicada y notificada a los estudiantes',
+        notificaciones: {
+          total: totalEstudiantes || 0,
+          exitos: exitos || 0,
+          fallos: fallos || 0
+        }
       });
     }
   } catch (error) {
@@ -129,7 +148,6 @@ router.post('/', authMiddleware, requireRole('trabajador_social'), async (req, r
 // DELETE - Eliminar noticia
 router.delete('/:id', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
   try {
-    // Obtener la noticia antes de eliminarla (para bitácora)
     const noticia = await db.queryOne('SELECT titulo FROM noticias WHERE id = ?', [req.params.id]);
     
     await db.queryRun('DELETE FROM noticias WHERE id = ?', [req.params.id]);
@@ -147,7 +165,7 @@ router.delete('/:id', authMiddleware, requireRole('trabajador_social'), async (r
   }
 });
 
-// ✅ NUEVO: Enviar noticia solo por correo (sin publicar en el sistema)
+// ✅ Enviar noticia solo por correo (sin publicar en el sistema)
 router.post('/enviar-email', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
   try {
     const { titulo, contenido, destinatarios } = req.body;
@@ -161,7 +179,10 @@ router.post('/enviar-email', authMiddleware, requireRole('trabajador_social'), a
     if (destinatarios && destinatarios.length > 0) {
       // Enviar a destinatarios específicos
       for (const email of destinatarios) {
-        estudiantes.push({ email, nombre: email });
+        const usuario = await db.queryOne('SELECT email, nombre FROM usuarios WHERE email = ?', [email]);
+        if (usuario) {
+          estudiantes.push(usuario);
+        }
       }
     } else {
       // Enviar a todos los estudiantes
@@ -179,6 +200,8 @@ router.post('/enviar-email', authMiddleware, requireRole('trabajador_social'), a
     let exitos = 0;
     let fallos = 0;
     const errores = [];
+
+    console.log(`📧 Enviando noticia "${titulo}" a ${estudiantes.length} estudiantes...`);
 
     for (const est of estudiantes) {
       try {
@@ -214,7 +237,7 @@ router.post('/enviar-email', authMiddleware, requireRole('trabajador_social'), a
       total: estudiantes.length,
       exitos: exitos,
       fallos: fallos,
-      errores: errores.slice(0, 10) // Solo los primeros 10 errores
+      errores: errores.slice(0, 10)
     });
   } catch (error) {
     console.error('Error enviando emails:', error);
