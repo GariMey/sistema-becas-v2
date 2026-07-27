@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { authMiddleware } = require('../middleware/auth');
-const { enviarNotificacionEmail } = require('./emailService');
 
 // GET - Obtener todas las solicitudes (con filtros)
 router.get('/', authMiddleware, async (req, res) => {
@@ -46,14 +45,16 @@ router.get('/', authMiddleware, async (req, res) => {
 
     const result = [];
     for (const s of solicitudes) {
+      // ✅ CORREGIDO: Usar expediente en lugar de solicitud_id
       const documentos = await db.queryAll(
-        'SELECT * FROM documentos WHERE solicitud_id = ?',
-        [s.id]
+        'SELECT * FROM documentos WHERE expediente = ?',
+        [s.expediente]
       );
       
       const docsMap = {};
       documentos.forEach(d => {
         docsMap[d.doc_key] = {
+          id: d.id,
           label: d.label,
           nombre: d.nombre,
           tipo: d.tipo,
@@ -61,7 +62,8 @@ router.get('/', authMiddleware, async (req, res) => {
           fecha: d.fecha,
           datos: d.datos,
           estado: d.estado,
-          observacion: d.observacion || ''
+          observacion: d.observacion || '',
+          url: `/api/documentos/${d.id}`
         };
       });
       
@@ -91,14 +93,16 @@ router.get('/:expediente', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
 
+    // ✅ CORREGIDO: Usar expediente en lugar de solicitud_id
     const documentos = await db.queryAll(
-      'SELECT * FROM documentos WHERE solicitud_id = ?',
-      [solicitud.id]
+      'SELECT * FROM documentos WHERE expediente = ?',
+      [solicitud.expediente]
     );
     
     const docsMap = {};
     documentos.forEach(d => {
       docsMap[d.doc_key] = {
+        id: d.id,
         label: d.label,
         nombre: d.nombre,
         tipo: d.tipo,
@@ -106,7 +110,8 @@ router.get('/:expediente', authMiddleware, async (req, res) => {
         fecha: d.fecha,
         datos: d.datos,
         estado: d.estado,
-        observacion: d.observacion || ''
+        observacion: d.observacion || '',
+        url: `/api/documentos/${d.id}`
       };
     });
 
@@ -130,35 +135,12 @@ router.post('/', authMiddleware, async (req, res) => {
       datosCompletos, documentos, aceptado, porcentajeCobertura, observacionTS
     } = req.body;
 
-    // Validaciones básicas
     if (!expediente) {
       return res.status(400).json({ error: 'El expediente es requerido' });
     }
     
     if (!estudianteEmail) {
       return res.status(400).json({ error: 'El correo del estudiante es requerido' });
-    }
-
-    if (!nombres || !apellidos) {
-      return res.status(400).json({ error: 'Nombre y apellidos son requeridos' });
-    }
-
-    if (!tipoBeca) {
-      return res.status(400).json({ error: 'El tipo de beca es requerido' });
-    }
-
-    // Verificar que el estudiante existe en la base de datos
-    try {
-      const estudiante = await db.queryOne(
-        'SELECT email, nombre FROM usuarios WHERE LOWER(email) = LOWER(?) AND rol = ?',
-        [estudianteEmail.trim(), 'estudiante']
-      );
-
-      if (!estudiante) {
-        console.warn(`⚠️ Estudiante con email ${estudianteEmail} no encontrado en la DB, pero continuando...`);
-      }
-    } catch (err) {
-      console.warn('⚠️ No se pudo verificar el estudiante en la DB:', err.message);
     }
 
     // Insertar solicitud
@@ -189,14 +171,10 @@ router.post('/', authMiddleware, async (req, res) => {
       observacionTS || 'Pendiente de revisión por trabajador social.'
     ]);
 
-    const solicitudId = result.lastInsertRowid;
-    let docsInsertados = 0; // ✅ Definir la variable aquí
-
-    // Insertar documentos si existen
+    // ✅ CORREGIDO: Insertar documentos usando expediente
     if (documentos && typeof documentos === 'object' && Object.keys(documentos).length > 0) {
       for (const [key, doc] of Object.entries(documentos)) {
         try {
-          // Verificar que el documento tenga datos
           if (!doc.datos && !doc.nombre) {
             console.warn(`⚠️ Documento "${key}" sin datos, omitiendo...`);
             continue;
@@ -204,10 +182,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
           await db.queryRun(`
             INSERT INTO documentos (
-              solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado
+              expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `, [
-            solicitudId, 
+            expediente,  // ✅ Usar expediente en lugar de solicitud_id
             key, 
             doc.label || key, 
             doc.nombre || 'documento',
@@ -217,13 +195,10 @@ router.post('/', authMiddleware, async (req, res) => {
             doc.datos || null,
             doc.estado || 'Pendiente'
           ]);
-          docsInsertados++;
         } catch (docError) {
           console.error(`❌ Error insertando documento "${key}":`, docError.message);
-          // Continuamos con los demás documentos
         }
       }
-      console.log(`📎 ${docsInsertados} documentos insertados correctamente`);
     }
 
     // Registrar en bitácora
@@ -233,25 +208,10 @@ router.post('/', authMiddleware, async (req, res) => {
       [fechaNow, req.user.email, req.user.rol, 'Solicitud creada', expediente]
     );
 
-    // ✅ ENVIAR NOTIFICACIÓN DE SOLICITUD RECIBIDA
-    try {
-      await enviarNotificacionEmail('solicitud_recibida', {
-        email: estudianteEmail,
-        nombre: nombres || 'Estudiante',
-        expediente: expediente,
-        tipoBeca: tipoBeca || 'No especificado',
-        fecha: fecha || new Date().toLocaleDateString()
-      });
-      console.log(`📧 Notificación de solicitud enviada a ${estudianteEmail}`);
-    } catch (error) {
-      console.warn('⚠️ No se pudo enviar notificación email:', error.message);
-    }
-
     res.json({ 
-      id: solicitudId, 
+      id: result.lastInsertRowid, 
       expediente, 
-      message: 'Solicitud enviada correctamente',
-      documentosInsertados: docsInsertados || 0
+      message: 'Solicitud enviada correctamente'
     });
   } catch (error) {
     console.error('❌ Error creando solicitud:', error);
@@ -265,7 +225,6 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
     const { expediente } = req.params;
     const updates = req.body;
 
-    // Obtener la solicitud actual antes de actualizar
     const solicitudActual = await db.queryOne(
       'SELECT * FROM solicitudes WHERE expediente = ?',
       [expediente]
@@ -278,7 +237,6 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
     const fields = [];
     const values = [];
 
-    // Mapeo de campos permitidos para actualización
     const allowedFields = {
       estado: 'estado',
       progreso: 'progreso',
@@ -289,12 +247,7 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
       porcentajeCobertura: 'porcentaje_cobertura',
       observacionTS: 'observacion_ts',
       observacionesComite: 'observaciones_comite',
-      motivoRechazo: 'motivo_rechazo',
-      suspensionMotivo: 'suspension_motivo',
-      suspensionObservaciones: 'suspension_observaciones',
-      suspensionFecha: 'suspension_fecha',
-      restauradoFecha: 'restaurado_fecha',
-      fechaCierre: 'fecha_cierre'
+      motivoRechazo: 'motivo_rechazo'
     };
 
     for (const [jsField, dbField] of Object.entries(allowedFields)) {
@@ -309,21 +262,19 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
       values.push(JSON.stringify(updates.datosCompletos));
     }
 
-    // Ejecutar actualización si hay campos
     if (fields.length > 0) {
       fields.push('updated_at = GETDATE()');
       values.push(expediente);
       await db.queryRun(`UPDATE solicitudes SET ${fields.join(', ')} WHERE expediente = ?`, values);
     }
 
-    // Actualizar documentos si se proporcionan
+    // ✅ CORREGIDO: Actualizar documentos usando expediente
     if (updates.documentos && typeof updates.documentos === 'object') {
-      let docsActualizados = 0;
       for (const [key, doc] of Object.entries(updates.documentos)) {
         try {
           const existing = await db.queryOne(
-            'SELECT id FROM documentos WHERE solicitud_id = ? AND doc_key = ?',
-            [solicitudActual.id, key]
+            'SELECT id FROM documentos WHERE expediente = ? AND doc_key = ?',
+            [expediente, key]
           );
           
           if (existing) {
@@ -344,14 +295,13 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
                 existing.id
               ]
             );
-            docsActualizados++;
           } else {
             await db.queryRun(
               `INSERT INTO documentos (
-                solicitud_id, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
+                expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
-                solicitudActual.id, 
+                expediente,  // ✅ Usar expediente
                 key, 
                 doc.label || key,
                 doc.nombre || 'documento',
@@ -363,88 +313,18 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
                 doc.observacion || ''
               ]
             );
-            docsActualizados++;
           }
         } catch (docError) {
           console.error(`❌ Error actualizando documento "${key}":`, docError.message);
         }
       }
-      if (docsActualizados > 0) {
-        console.log(`📎 ${docsActualizados} documentos actualizados/insertados`);
-      }
     }
 
-    // Registrar en bitácora
     const fechaNow = new Date().toLocaleString();
     await db.queryRun(
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
       [fechaNow, req.user.email, req.user.rol, 'Solicitud actualizada', expediente]
     );
-
-    // ✅ DETECTAR CAMBIOS DE ESTADO Y ENVIAR NOTIFICACIONES
-    if (updates.estado && updates.estado !== solicitudActual.estado) {
-      const nuevoEstado = updates.estado;
-      console.log(`📊 Cambio de estado: ${solicitudActual.estado} → ${nuevoEstado} para expediente ${expediente}`);
-      
-      // Subsanación requerida
-      if (nuevoEstado === 'Pendiente subsanación') {
-        try {
-          const documentos = await db.queryAll(
-            'SELECT * FROM documentos WHERE solicitud_id = ? AND (estado = ? OR estado = ?)',
-            [solicitudActual.id, 'Corrección solicitada', 'Rechazado']
-          );
-          
-          const docsPendientes = documentos.map(d => ({ 
-            label: d.label || d.doc_key, 
-            observacion: d.observacion || 'Requiere corrección' 
-          }));
-          
-          if (docsPendientes.length > 0) {
-            await enviarNotificacionEmail('subsanacion_requerida', {
-              email: solicitudActual.estudiante_email,
-              nombre: solicitudActual.nombres,
-              expediente: expediente,
-              documentosPendientes: docsPendientes
-            });
-            console.log(`📧 Notificación de subsanación enviada a ${solicitudActual.estudiante_email}`);
-          }
-        } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de subsanación:', error.message);
-        }
-      }
-      
-      // Solicitud aprobada
-      if (nuevoEstado === 'Aprobada' || nuevoEstado === 'Beneficio Activo') {
-        try {
-          await enviarNotificacionEmail('solicitud_aprobada', {
-            email: solicitudActual.estudiante_email,
-            nombre: solicitudActual.nombres,
-            expediente: expediente,
-            tipoBeca: solicitudActual.tipo_beca,
-            porcentajeCobertura: updates.porcentajeCobertura || solicitudActual.porcentaje_cobertura || '—',
-            observaciones: updates.observacionesComite || solicitudActual.observaciones_comite || ''
-          });
-          console.log(`📧 Notificación de aprobación enviada a ${solicitudActual.estudiante_email}`);
-        } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de aprobación:', error.message);
-        }
-      }
-      
-      // Solicitud rechazada
-      if (nuevoEstado === 'Rechazada' || nuevoEstado === 'Rechazado Definitivo' || nuevoEstado === 'No elegible') {
-        try {
-          await enviarNotificacionEmail('solicitud_rechazada', {
-            email: solicitudActual.estudiante_email,
-            nombre: solicitudActual.nombres,
-            expediente: expediente,
-            motivoRechazo: updates.motivoRechazo || solicitudActual.motivo_rechazo || 'No cumple con los requisitos establecidos para este tipo de beca.'
-          });
-          console.log(`📧 Notificación de rechazo enviada a ${solicitudActual.estudiante_email}`);
-        } catch (error) {
-          console.warn('⚠️ No se pudo enviar notificación de rechazo:', error.message);
-        }
-      }
-    }
 
     res.json({ 
       message: 'Solicitud actualizada',
@@ -456,7 +336,7 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE - Eliminar una solicitud (solo admin)
+// DELETE - Eliminar una solicitud
 router.delete('/:expediente', authMiddleware, async (req, res) => {
   try {
     const { expediente } = req.params;
@@ -470,7 +350,8 @@ router.delete('/:expediente', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
 
-    await db.queryRun('DELETE FROM documentos WHERE solicitud_id = ?', [solicitud.id]);
+    // ✅ CORREGIDO: Usar expediente en lugar de solicitud_id
+    await db.queryRun('DELETE FROM documentos WHERE expediente = ?', [expediente]);
     await db.queryRun('DELETE FROM solicitudes WHERE expediente = ?', [expediente]);
 
     const fechaNow = new Date().toLocaleString();
