@@ -1067,7 +1067,10 @@ const API = {
 
   // Alertas
   getAlertas() { return this.get(API_BASE + '/alertas'); },
-  revisarAlerta(id) { return this.put(API_BASE + `/alertas/${id}/revisar`); }
+  revisarAlerta(id) { return this.put(API_BASE + `/alertas/${id}/revisar`); },
+
+  // Padrón electoral
+  consultarPadron(cedula) { return this.get(API_BASE + `/padron/${cedula}`); }
 };
 
 // ==================== MAPEADORES API -> MODELO FRONTEND ====================
@@ -1202,6 +1205,49 @@ const CARRERA_FACULTAD = {
   'Administración': 'Ciencias Sociales',
   'Arquitectura': 'Arquitectura y Diseño'
 };
+
+let ultimaCedulaConsultada = '';
+let timeoutConsultaPadron = null;
+
+function debounceConsultarPadron(){
+  clearTimeout(timeoutConsultaPadron);
+  timeoutConsultaPadron = setTimeout(consultarPadronPorCedula, 400);
+}
+
+async function consultarPadronPorCedula(){
+  const cedulaEl = document.getElementById('f-cedula');
+  if(!cedulaEl) return;
+  const digitos = cedulaEl.value.replace(/\D/g, '');
+  if(digitos.length < 9) return; // cédula incompleta, no consultamos aún
+  if(digitos === ultimaCedulaConsultada) return; // ya consultamos esta misma cédula, evita repetir
+
+  const checkCedula = document.getElementById('check-f-cedula');
+  if(checkCedula){ checkCedula.textContent = '⏳'; checkCedula.style.color = 'var(--muted)'; }
+
+  try {
+    const persona = await API.consultarPadron(digitos);
+    ultimaCedulaConsultada = digitos;
+
+    const nombresEl = document.getElementById('f-nombres');
+    const apellidosEl = document.getElementById('f-apellidos');
+    const direccionEl = document.getElementById('f-direccion');
+
+    if(nombresEl) nombresEl.value = persona.nombre;
+    if(apellidosEl) apellidosEl.value = `${persona.apellido1} ${persona.apellido2}`.trim();
+    if(direccionEl && persona.provincia) direccionEl.value = `${persona.provincia}, ${persona.canton}, ${persona.distrito}, `;
+
+    [nombresEl, apellidosEl, direccionEl].forEach(el => {
+      if(el) el.dispatchEvent(new Event('input'));
+    });
+
+    if(checkCedula){ checkCedula.textContent = '✓'; checkCedula.style.color = 'var(--success)'; }
+  } catch (e) {
+    console.warn('⚠️ No se pudo verificar la cédula contra el padrón:', e.message);
+    // No bloqueamos el formulario: puede ser un extranjero sin cédula nacional,
+    // o que el padrón simplemente no esté disponible en este momento.
+    if(checkCedula) actualizarCheckCampo(FORM_FIELDS_BASE[1].find(f => f.id === 'f-cedula'));
+  }
+}
 
 function actualizarFacultadAutomatica(){
   const carreraEl = document.getElementById('f-carrera');
@@ -3757,7 +3803,8 @@ function renderFormFields(){
       } else if(f.type === 'file'){
         input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png">`;
       } else {
-        input = `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder||''}" ${reqAttr}>`;
+        const onblurExtra = f.id === 'f-cedula' ? ' oninput="debounceConsultarPadron()" onblur="consultarPadronPorCedula()"' : '';
+        input = `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder||''}" ${reqAttr}${onblurExtra}>`;
       }
       return `<div class="form-field" ${fullStyle}><label>${f.label}${reqMark} <span class="field-check" id="check-${f.id}"></span></label>${input}</div>`;
     }).join('');

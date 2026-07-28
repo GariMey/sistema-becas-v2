@@ -32,6 +32,7 @@ app.use('/api/config', require('./routes/config'));
 app.use('/api/bitacora', require('./routes/bitacora'));
 app.use('/api/estadisticas', require('./routes/estadisticas'));
 app.use('/api/alertas', require('./routes/alertas'));
+app.use('/api/padron', require('./routes/padron'));
 
 // Fallback to index.html
 app.get('*', (req, res) => {
