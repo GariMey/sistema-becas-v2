@@ -9,7 +9,7 @@ const config = {
   port: parseInt(process.env.DB_PORT) || 1433,
   database: process.env.DB_NAME,
   options: {
-    encrypt: true,
+    encrypt: false,
     trustServerCertificate: true,
     enableArithAbort: true
   },
