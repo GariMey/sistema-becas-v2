@@ -598,88 +598,517 @@ const REQUISITOS_GENERALES = [
 // ===================================================================
 // LOGIN
 // ===================================================================
+// ===================================================================
+// SISTEMA DE NOTIFICACIONES TOAST (reemplaza alert/confirm)
+// ===================================================================
+
+// Contenedor de notificaciones
+function getToastContainer() {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+function showToast(message, type = 'info') {
+  const container = getToastContainer();
+  
+  const colors = {
+    success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✅' },
+    error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '❌' },
+    warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠️' },
+    info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ️' }
+  };
+  
+  const c = colors[type] || colors.info;
+  const toast = document.createElement('div');
+  toast.className = 'toast-box';
+  toast.style.background = c.bg;
+  toast.style.border = `1px solid ${c.border}`;
+  toast.style.color = c.color;
+  toast.innerHTML = `
+    <span class="toast-icon">${c.icon}</span>
+    <span style="flex:1; word-break:break-word;">${message}</span>
+    <button class="toast-close" aria-label="Cerrar">×</button>
+  `;
+  container.appendChild(toast);
+  
+  const remove = () => {
+    toast.style.transition = 'opacity .3s ease, transform .3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(24px)';
+    setTimeout(() => toast.remove(), 300);
+  };
+  
+  toast.querySelector('.toast-close').addEventListener('click', remove);
+  setTimeout(remove, 5000);
+}
+
+// Función notify para compatibilidad con código existente
+function notify(message) {
+  let type = 'info';
+  if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message)) {
+    type = 'success';
+  } else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message)) {
+    type = 'warning';
+  } else if (/^❌|error|falló|incorrecto/i.test(message)) {
+    type = 'error';
+  }
+  showToast(message, type);
+}
+
+// ===================================================================
+// LOGIN COMPLETO CON EMAIL Y 2FA
+// ===================================================================
+
 async function handleLogin() {
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
   const twoFactorCode = document.getElementById('login-2fa-code')?.value || '';
   const errorBox = document.getElementById('login-error');
+  
+  // Resetear estado
   errorBox.classList.add('hidden');
   document.getElementById('login-2fa').classList.add('hidden');
+  
+  // Validaciones básicas
+  if (!email || !password) {
+    errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+  
+  // Mostrar estado de carga
+  const btnLogin = document.querySelector('#modal-login .btn-primary');
+  const textoOriginal = btnLogin?.textContent || 'Ingresar';
+  if (btnLogin) {
+    btnLogin.disabled = true;
+    btnLogin.textContent = '⏳ Iniciando sesión...';
+  }
+  
   try {
-    const result = await fetch(API_BASE + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, twoFactorCode }) });
+    // ===== INTENTAR CON API =====
+    const result = await fetch(API_BASE + '/auth/login', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ email, password, twoFactorCode }) 
+    });
+    
     if (result.status === 200) {
       const data = await result.json();
+      
+      // ===== SOLICITAR 2FA =====
       if (data.require2FA) {
         document.getElementById('login-2fa').classList.remove('hidden');
-        errorBox.textContent = '🔐 Ingresa código 2FA: 123456';
+        errorBox.textContent = '🔐 Ingresa el código enviado a tu correo electrónico';
         errorBox.classList.remove('hidden');
+        
+        // 🔥 Enviar código 2FA por email
+        try {
+          const response = await fetch(API_BASE + '/auth/generar-2fa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          
+          const result2FA = await response.json();
+          
+          // Mostrar mensaje de confirmación
+          let mensaje2FA = document.querySelector('#login-2fa .alert-box');
+          if (!mensaje2FA) {
+            mensaje2FA = document.createElement('div');
+            mensaje2FA.className = 'alert-box info';
+            mensaje2FA.style.marginTop = '10px';
+            document.getElementById('login-2fa').appendChild(mensaje2FA);
+          }
+          
+          if (result2FA.simulated) {
+            mensaje2FA.textContent = '📧 (SIMULADO) Código 2FA enviado a ' + email;
+          } else {
+            mensaje2FA.textContent = '📧 Se ha enviado un código de verificación a tu correo electrónico.';
+          }
+          mensaje2FA.style.display = 'block';
+          
+        } catch (e) {
+          console.warn('⚠️ No se pudo enviar código 2FA:', e);
+          // Fallback: mostrar código fijo
+          errorBox.textContent = '🔐 (Demo) Ingresa código 2FA: 123456';
+          errorBox.classList.remove('hidden');
+        }
+        
+        // Restaurar botón
+        if (btnLogin) {
+          btnLogin.disabled = false;
+          btnLogin.textContent = textoOriginal;
+        }
         return;
       }
-      const nuevaSesion = { email: data.email, nombre: data.nombre, rol: data.rol };
+      
+      // ===== LOGIN EXITOSO =====
+      const nuevaSesion = { 
+        email: data.email, 
+        nombre: data.nombre, 
+        rol: data.rol 
+      };
+      
       localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
+      
+      // 🔥 Notificar nuevo inicio de sesión por email
+      try {
+        await fetch(API_BASE + '/auth/notificar-inicio-sesion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: data.email, 
+            nombre: data.nombre,
+            userAgent: navigator.userAgent
+          })
+        });
+        console.log('📧 Notificación de inicio de sesión enviada');
+      } catch (e) {
+        console.warn('⚠️ No se pudo enviar notificación de inicio de sesión:', e);
+      }
+      
       registrarBitacora('Inicio de sesión', '—', nuevaSesion);
       closeModal('modal-login');
       renderHeaderNav();
-      const dashMap = { estudiante: 'view-dash-estudiante', trabajador_social: 'view-dash-social', comite: 'view-dash-comite', admin: 'view-dash-admin', auditor: 'view-dash-auditor' };
+      
+      const dashMap = { 
+        estudiante: 'view-dash-estudiante', 
+        trabajador_social: 'view-dash-social', 
+        comite: 'view-dash-comite', 
+        admin: 'view-dash-admin', 
+        auditor: 'view-dash-auditor' 
+      };
       showView(dashMap[data.rol]);
-      alert('✅ Bienvenido/a ' + data.nombre);
+      
+      // Restaurar botón
+      if (btnLogin) {
+        btnLogin.disabled = false;
+        btnLogin.textContent = textoOriginal;
+      }
+      
+      showToast('✅ Bienvenido/a ' + data.nombre, 'success');
       return;
+      
     } else {
       const err = await result.json();
       errorBox.textContent = '❌ ' + (err.error || 'Error en el login');
       errorBox.classList.remove('hidden');
     }
+    
   } catch (e) {
     console.warn('API falló, usando localStorage:', e);
+    
+    // ===== FALLBACK: LOCALSTORAGE =====
     const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
     const usuario = usuarios.find(u => u.email === email);
-    if (!usuario) { errorBox.textContent = '❌ Usuario no encontrado'; errorBox.classList.remove('hidden'); return; }
-    if (usuario.bloqueado) { errorBox.textContent = '🔒 Usuario bloqueado'; errorBox.classList.remove('hidden'); return; }
+    
+    if (!usuario) { 
+      errorBox.textContent = '❌ Usuario no encontrado'; 
+      errorBox.classList.remove('hidden'); 
+      if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
+      return; 
+    }
+    
+    if (usuario.bloqueado) { 
+      errorBox.textContent = '🔒 Usuario bloqueado. Contacta al administrador.'; 
+      errorBox.classList.remove('hidden'); 
+      if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
+      return; 
+    }
+    
     const decryptedPass = descifrarPassword(usuario.password);
+    
     if (decryptedPass !== password) {
       usuario.intentos = (usuario.intentos || 0) + 1;
-      if (usuario.intentos >= 3) usuario.bloqueado = true;
+      if (usuario.intentos >= 3) {
+        usuario.bloqueado = true;
+        errorBox.textContent = '🔒 Usuario bloqueado por múltiples intentos fallidos.';
+      } else {
+        errorBox.textContent = '❌ Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
+      }
       localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-      errorBox.textContent = '❌ Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
       errorBox.classList.remove('hidden');
+      if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
       return;
     }
+    
+    // ===== 2FA LOCALSTORAGE =====
     if (usuario.twoFactorEnabled && !twoFactorCode) {
       document.getElementById('login-2fa').classList.remove('hidden');
-      errorBox.textContent = '🔐 Ingresa código 2FA: 123456';
+      errorBox.textContent = '🔐 Ingresa el código enviado a tu correo electrónico';
       errorBox.classList.remove('hidden');
+      
+      // Mostrar mensaje de email simulado
+      let mensaje2FA = document.querySelector('#login-2fa .alert-box');
+      if (!mensaje2FA) {
+        mensaje2FA = document.createElement('div');
+        mensaje2FA.className = 'alert-box info';
+        mensaje2FA.style.marginTop = '10px';
+        document.getElementById('login-2fa').appendChild(mensaje2FA);
+      }
+      mensaje2FA.textContent = '📧 (SIMULADO) Código 2FA enviado a ' + email;
+      mensaje2FA.style.display = 'block';
+      
+      if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
       return;
     }
+    
     if (usuario.twoFactorEnabled && twoFactorCode !== '123456') {
       errorBox.textContent = '❌ Código 2FA incorrecto';
       errorBox.classList.remove('hidden');
+      if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
       return;
     }
+    
+    // ===== LOGIN EXITOSO (LOCAL) =====
     usuario.intentos = 0;
     localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+    
     const nuevaSesion = { email, nombre: usuario.nombre, rol: usuario.rol };
     localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
+    
     registrarBitacora('Inicio de sesión (local)', '—', nuevaSesion);
     closeModal('modal-login');
     renderHeaderNav();
-    const dashMap = { estudiante: 'view-dash-estudiante', trabajador_social: 'view-dash-social', comite: 'view-dash-comite', admin: 'view-dash-admin', auditor: 'view-dash-auditor' };
+    
+    const dashMap = { 
+      estudiante: 'view-dash-estudiante', 
+      trabajador_social: 'view-dash-social', 
+      comite: 'view-dash-comite', 
+      admin: 'view-dash-admin', 
+      auditor: 'view-dash-auditor' 
+    };
     showView(dashMap[usuario.rol]);
-    alert('✅ Bienvenido/a ' + usuario.nombre);
+    
+    if (btnLogin) { btnLogin.disabled = false; btnLogin.textContent = textoOriginal; }
+    showToast('✅ Bienvenido/a ' + usuario.nombre, 'success');
   }
 }
-function mostrarRecuperacionPassword(event) { event.preventDefault(); closeModal('modal-login'); openModal('modal-recuperacion'); document.getElementById('recuperacion-step1').classList.remove('hidden'); document.getElementById('recuperacion-step2').classList.add('hidden'); document.getElementById('recuperacion-email').value = ''; }
-function enviarEnlaceRecuperacion() {
-  const email = document.getElementById('recuperacion-email').value.trim();
-  if (!email) { alert('Por favor ingrese su correo electrónico.'); return; }
-  const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-  const existe = usuarios.some(u => u.email === email);
-  if (!existe) { alert('No existe una cuenta asociada a este correo electrónico.'); return; }
-  registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
-  document.getElementById('recuperacion-step1').classList.add('hidden');
-  document.getElementById('recuperacion-step2').classList.remove('hidden');
-}
-function cerrarRecuperacion() { closeModal('modal-recuperacion'); openModal('modal-login'); }
 
+// ===================================================================
+// RECUPERACIÓN DE CONTRASEÑA - COMPLETA
+// ===================================================================
+
+function mostrarRecuperacionPassword(event) { 
+  event.preventDefault(); 
+  closeModal('modal-login'); 
+  openModal('modal-recuperacion'); 
+  document.getElementById('recuperacion-step1').classList.remove('hidden'); 
+  document.getElementById('recuperacion-step2').classList.add('hidden'); 
+  document.getElementById('recuperacion-email').value = ''; 
+  // Limpiar errores
+  const errorBox = document.getElementById('recuperacion-error');
+  if (errorBox) {
+    errorBox.classList.add('hidden');
+    errorBox.textContent = '';
+  }
+}
+
+async function enviarEnlaceRecuperacion() {
+  const email = document.getElementById('recuperacion-email').value.trim();
+  const errorBox = document.getElementById('recuperacion-error');
+  
+  if (!email) { 
+    showToast('⚠️ Por favor ingresa tu correo electrónico.', 'warning');
+    return; 
+  }
+  
+  // Validación básica de email
+  if (!email.includes('@') || !email.includes('.')) {
+    showToast('⚠️ Por favor ingresa un correo electrónico válido.', 'warning');
+    return;
+  }
+  
+  // Mostrar estado de carga
+  const btnEnviar = document.querySelector('#recuperacion-step1 .btn-primary');
+  const textoOriginal = btnEnviar?.textContent || 'Enviar enlace de recuperación';
+  if (btnEnviar) {
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = '⏳ Enviando...';
+  }
+  
+  try {
+    // ===== INTENTAR CON API =====
+    const result = await fetch(API_BASE + '/auth/recuperacion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await result.json();
+    
+    if (result.status === 200) {
+      if (data.simulated) {
+        showToast('📧 (SIMULADO) Se habría enviado un enlace de recuperación a ' + email, 'info');
+      } else {
+        showToast('✅ Se ha enviado un enlace de recuperación a tu correo electrónico.', 'success');
+      }
+      
+      registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
+      document.getElementById('recuperacion-step1').classList.add('hidden');
+      document.getElementById('recuperacion-step2').classList.remove('hidden');
+      
+    } else {
+      showToast('⚠️ ' + (data.error || 'Error al enviar el enlace de recuperación.'), 'warning');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error en recuperación:', error);
+    
+    // ===== FALLBACK: LOCALSTORAGE =====
+    try {
+      const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+      const existe = usuarios.some(u => u.email === email);
+      
+      if (!existe) {
+        showToast('⚠️ No existe una cuenta asociada a este correo electrónico.', 'warning');
+      } else {
+        registrarBitacora('Solicitud de recuperación de contraseña para ' + email + ' (local)', '—');
+        showToast('📧 (SIMULADO) Enlace de recuperación enviado a ' + email, 'info');
+        document.getElementById('recuperacion-step1').classList.add('hidden');
+        document.getElementById('recuperacion-step2').classList.remove('hidden');
+      }
+    } catch (localError) {
+      showToast('⚠️ Error al procesar la solicitud. Intenta nuevamente.', 'error');
+    }
+  }
+  
+  // Restaurar botón
+  if (btnEnviar) {
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = textoOriginal;
+  }
+}
+
+function cerrarRecuperacion() { 
+  closeModal('modal-recuperacion'); 
+  openModal('modal-login'); 
+}
+
+// ===================================================================
+// RESTABLECER CONTRASEÑA DESDE EL ENLACE
+// ===================================================================
+
+let resetToken = null;
+
+// Función para procesar el token de recuperación desde la URL
+function procesarTokenRecuperacion() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  
+  if (token) {
+    resetToken = token;
+    // Abrir modal de restablecimiento
+    setTimeout(() => {
+      openModal('modal-reset-password');
+      // Limpiar URL sin recargar la página
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }, 500);
+  }
+}
+
+async function enviarNuevaPassword() {
+  const nueva = document.getElementById('reset-nueva-password').value;
+  const confirmar = document.getElementById('reset-confirmar-password').value;
+  const errorBox = document.getElementById('reset-error');
+  const btnEnviar = document.querySelector('#modal-reset-password .btn-primary');
+  const textoOriginal = btnEnviar?.textContent || 'Actualizar contraseña';
+  
+  // Resetear error
+  errorBox.classList.add('hidden');
+  errorBox.textContent = '';
+  
+  // Validaciones
+  if (!nueva || nueva.length < 6) {
+    errorBox.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+  
+  if (nueva !== confirmar) {
+    errorBox.textContent = '⚠️ Las contraseñas no coinciden.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+  
+  if (!resetToken) {
+    errorBox.textContent = '⚠️ Token de recuperación inválido o expirado.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+  
+  // Mostrar estado de carga
+  if (btnEnviar) {
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = '⏳ Procesando...';
+  }
+  
+  try {
+    const result = await fetch(API_BASE + '/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: resetToken, nuevaPassword: nueva })
+    });
+    
+    const data = await result.json();
+    
+    if (result.status === 200) {
+      closeModal('modal-reset-password');
+      showToast('✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.', 'success');
+      
+      // Limpiar campos
+      document.getElementById('reset-nueva-password').value = '';
+      document.getElementById('reset-confirmar-password').value = '';
+      resetToken = null;
+      
+      // Abrir login automáticamente
+      setTimeout(() => openModal('modal-login'), 500);
+      
+    } else {
+      errorBox.textContent = '❌ ' + (data.error || 'Error al restablecer la contraseña.');
+      errorBox.classList.remove('hidden');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error al restablecer:', error);
+    errorBox.textContent = '❌ Error al conectar con el servidor. Intenta nuevamente.';
+    errorBox.classList.remove('hidden');
+  }
+  
+  // Restaurar botón
+  if (btnEnviar) {
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = textoOriginal;
+  }
+}
+
+// ===================================================================
+// CERRAR SESIÓN
+// ===================================================================
+
+function logout() {
+  const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+  if (session) {
+    registrarBitacora('Cierre de sesión', '—', session);
+  }
+  localStorage.removeItem(STORAGE_KEYS.session);
+  renderHeaderNav();
+  showView('view-public');
+  showToast('👋 Sesión cerrada correctamente.', 'info');
+}
+
+// ===================================================================
+// INICIALIZACIÓN - Procesar token de recuperación al cargar la página
+// ===================================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+  procesarTokenRecuperacion();
+});
 // ===================================================================
 // PROBAR CONEXIÓN A LA BASE DE DATOS
 // ===================================================================
