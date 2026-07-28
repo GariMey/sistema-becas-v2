@@ -1283,6 +1283,7 @@ function badgeClassEstado(estado){
   if(estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado === 'Cancelada' || estado === 'Suspendida') return 'badge-danger';
   if(estado === 'Pendiente subsanación' || estado === 'En revisión TS') return 'badge-warning';
   if(estado === 'En comité' || estado === 'Enviada' || estado === 'En Apelación') return 'badge-info';
+  if(estado === 'Bloqueada (beneficio activo)') return 'badge-neutral';
   return 'badge-neutral';
 }
 
@@ -1651,12 +1652,16 @@ async function renderEstudianteDashboard(session){
   renderJustificacionesEstudiante(session.email);
   renderApelacionesEstudiante(session);
 
-  const aprobadaSinAceptar = misSolicitudes.find(s => s.estado === 'Aprobada' && !s.aceptado);
+  const aprobadasSinAceptar = misSolicitudes.filter(s => s.estado === 'Aprobada' && !s.aceptado);
   const contenedorCarta = document.getElementById('carta-compromiso-contenedor');
-  if(aprobadaSinAceptar){
-    const tipoBeca = getTiposBecaLocal().find(t => t.nombre === aprobadaSinAceptar.tipoBeca);
-    const rubros = tipoBeca ? tipoBeca.rubros.join(', ') : 'Matrícula, Aranceles';
-    contenedorCarta.innerHTML = `<h3>📄 Carta Compromiso - Expediente ${aprobadaSinAceptar.expediente}</h3><p>Porcentaje otorgado: <strong>${aprobadaSinAceptar.porcentajeCobertura}</strong></p><p>Rubros cubiertos: ${rubros}.</p><p>Al aceptar, te comprometes a mantener un promedio mínimo de 80 y cumplir con el reglamento de becas.</p><button class="btn btn-success" onclick="aceptarBeneficio('${aprobadaSinAceptar.expediente}')">Aceptar condiciones y activar beneficio</button>`;
+  if(aprobadasSinAceptar.length > 0){
+    const avisoMultiple = aprobadasSinAceptar.length > 1 ? `<div class="alert-box warning">⚠️ Tienes ${aprobadasSinAceptar.length} becas aprobadas pendientes de aceptar. Solo puedes activar <strong>una</strong> — al aceptar una, las demás quedarán bloqueadas automáticamente.</div>` : '';
+    const tarjetas = aprobadasSinAceptar.map(sol => {
+      const tipoBeca = getTiposBecaLocal().find(t => t.nombre === sol.tipoBeca);
+      const rubros = tipoBeca ? tipoBeca.rubros.join(', ') : 'Matrícula, Aranceles';
+      return `<div class="resultado-card" style="margin-bottom:14px;"><h3>📄 Carta Compromiso - Expediente ${sol.expediente} (${sol.tipoBeca})</h3><p>Porcentaje otorgado: <strong>${sol.porcentajeCobertura}</strong></p><p>Rubros cubiertos: ${rubros}.</p><p>Al aceptar, te comprometes a mantener un promedio mínimo de 80 y cumplir con el reglamento de becas.</p><button class="btn btn-success" onclick="aceptarBeneficio('${sol.expediente}')">Aceptar condiciones y activar beneficio</button></div>`;
+    }).join('');
+    contenedorCarta.innerHTML = avisoMultiple + tarjetas;
   } else {
     contenedorCarta.innerHTML = '<p>No hay beneficios pendientes de aceptación.</p>';
   }
@@ -2002,10 +2007,27 @@ async function aceptarBeneficio(expediente){
   }
 
   registrarBitacora('Beneficio aceptado por estudiante', expediente);
+
+  // Un estudiante no puede tener más de un beneficio activo a la vez:
+  // bloqueamos cualquier otra solicitud suya que esté "Aprobada" y pendiente de aceptar.
+  try {
+    const data = await API.getSolicitudes();
+    const otras = data.map(mapSolicitudAPI).filter(s => s.expediente !== expediente && s.estado === 'Aprobada' && !s.aceptado);
+    for(const otra of otras){
+      try {
+        await API.actualizarSolicitud(otra.expediente, { estado: 'Bloqueada (beneficio activo)' });
+        registrarBitacora(`Solicitud bloqueada automáticamente: ya existe un beneficio activo (${expediente})`, otra.expediente);
+      } catch (e2) {
+        console.warn('⚠️ No se pudo bloquear la solicitud', otra.expediente, e2.message);
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ No se pudo revisar otras solicitudes del estudiante:', e.message);
+  }
+
   simularNotificacion('Beneficio Activo', `Has aceptado la beca con cobertura ${solicitud.porcentajeCobertura}. El descuento se aplicará en tu próxima matrícula.`, expediente);
   renderEstudianteDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
 }
-
 async function verExpedienteEstudiante(expediente){
   let solicitud;
   try {
@@ -2319,6 +2341,8 @@ function renderResultadosEstudiante(misSolicitudes){
       detalle = `<p style="color:var(--muted);font-size:0.9rem;">Tu solicitud está en lista de espera. Te notificaremos si se libera un cupo.</p>`;
     } else if(s.estado === 'Pendiente subsanación'){
       detalle = `<p style="color:var(--muted);font-size:0.9rem;">Tu solicitud requiere corrección de documentos. Ve a la pestaña "Subsanar documentos".</p>`;
+    } else if(s.estado === 'Bloqueada (beneficio activo)'){
+      detalle = `<p style="color:var(--muted);font-size:0.9rem;">⛔ Esta solicitud quedó bloqueada porque ya tienes otro beneficio activo. Un estudiante solo puede tener un beneficio activo a la vez. Si consideras que esto es un error, contacta a la Oficina de Becas.</p>`;
     } else {
       detalle = `<p style="color:var(--muted);font-size:0.9rem;">Tu solicitud está en proceso (${s.estado}). Te notificaremos cuando haya una decisión.</p>`;
     }
@@ -2331,7 +2355,6 @@ function renderResultadosEstudiante(misSolicitudes){
       </div>`;
   }).join('');
 }
-
 function descargarResolucionPDF(expediente){
   const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
   const s = solicitudes.find(x => x.expediente === expediente);

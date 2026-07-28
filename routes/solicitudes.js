@@ -11,7 +11,7 @@ const VALID_STATES = [
   'Enviada', 'En revisión TS', 'Pendiente subsanación', 
   'Elegible', 'En comité', 'Aprobada', 'Rechazada', 
   'Rechazado Definitivo', 'Beneficio Activo', 'Suspendida', 
-  'Cancelada', 'Restaurada', 'No elegible'
+  'Cancelada', 'Restaurada', 'No elegible', 'Bloqueada (beneficio activo)'
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -249,9 +249,7 @@ router.post('/', authMiddleware, async (req, res) => {
       });
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
-
+    // ===== CREAR (sin transacción manual, por la misma razón) =====
     try {
       // Insertar solicitud
       const result = await db.queryRun(`
@@ -319,15 +317,12 @@ router.post('/', authMiddleware, async (req, res) => {
         [new Date().toLocaleString(), req.user.email, req.user.rol, 'Solicitud creada', expediente]
       );
 
-      await db.queryRun('COMMIT');
-
       res.status(201).json({ 
         id: result.lastInsertRowid, 
         expediente, 
         message: 'Solicitud creada correctamente'
       });
     } catch (error) {
-      await db.queryRun('ROLLBACK');
       throw error;
     }
   } catch (error) {
@@ -378,9 +373,8 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
       }
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
-
+    // ===== ACTUALIZAR (sin transacción manual: el BEGIN/COMMIT/ROLLBACK
+    // por consultas sueltas dejaba la conexión del pool en mal estado) =====
     try {
       const fields = [];
       const values = [];
@@ -491,14 +485,11 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
         );
       }
 
-      await db.queryRun('COMMIT');
-
       res.json({ 
         message: 'Solicitud actualizada correctamente',
         expediente: expediente
       });
     } catch (error) {
-      await db.queryRun('ROLLBACK');
       throw error;
     }
   } catch (error) {
@@ -538,9 +529,7 @@ router.delete('/:expediente', authMiddleware, async (req, res) => {
       });
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
-
+    // ===== ELIMINAR (sin transacción manual, por la misma razón) =====
     try {
       await db.queryRun('DELETE FROM documentos WHERE expediente = ?', [expediente]);
       await db.queryRun('DELETE FROM solicitudes WHERE expediente = ?', [expediente]);
@@ -550,14 +539,11 @@ router.delete('/:expediente', authMiddleware, async (req, res) => {
         [new Date().toLocaleString(), req.user.email, req.user.rol, 'Solicitud eliminada', expediente]
       );
 
-      await db.queryRun('COMMIT');
-
       res.json({ 
         message: 'Solicitud eliminada correctamente',
         expediente: expediente
       });
     } catch (error) {
-      await db.queryRun('ROLLBACK');
       throw error;
     }
   } catch (error) {

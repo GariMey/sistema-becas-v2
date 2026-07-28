@@ -892,17 +892,15 @@ async function initDatabase() {
       ['estudiante@becas.com', '{"f-nombres":"María","f-apellidos":"Gómez","f-carrera":"Medicina","f-sede":"Central","f-tipo-beca":"Excelencia Académica","f-promedio":"92"}', new Date(ahora.getTime() - 3600000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' })],
       ['estudiante5@becas.com', '{"f-nombres":"Laura","f-apellidos":"Fernández","f-carrera":"Arquitectura","f-sede":"Atlántica","f-tipo-beca":"Cultural","f-promedio":"89"}', new Date(ahora.getTime() - 10800000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' })]
     ];
-
-    for (const br of borradores) {
-      await pool.request()
-        .input('session_email', br[0])
-        .input('datos', br[1])
-        .input('updated_at', br[2])
-        .query(`
-          INSERT INTO borrador_solicitud (session_email, datos, updated_at)
-          VALUES (@session_email, @datos, @updated_at)
-        `);
-    }
+      for (const br of borradores) {
+        await pool.request()
+          .input('session_email', br[0])
+          .input('datos', br[1])
+          .query(`
+            INSERT INTO borrador_solicitud (session_email, datos)
+            VALUES (@session_email, @datos)
+          `);
+      }
     console.log('✅ Borradores insertados (' + borradores.length + ' registros)');
 
     // =====================================================
