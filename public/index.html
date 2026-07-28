@@ -1295,6 +1295,23 @@ function formatBytes(bytes){
 }
 
 function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+
+async function verDocumento(id, nombre){
+  try {
+    const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+    const headers = {};
+    if(session){ headers['x-user-email'] = session.email; headers['x-user-rol'] = session.rol; }
+    const res = await fetch(`/api/documentos/${id}`, { headers });
+    if(!res.ok) throw new Error('No se pudo obtener el documento (¿existe la ruta /api/documentos en tu servidor?)');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) {
+    console.warn('⚠️ No se pudo abrir el documento:', e.message);
+    notify('⚠️ No se pudo abrir el documento: ' + e.message);
+  }
+}
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 
 // ==================== NOTIFICACIONES PROPIAS (reemplazan alert/confirm/prompt) ====================
@@ -2156,7 +2173,7 @@ function renderExpedienteCompleto(solicitud, opciones){
             </div>
             <div class="doc-item-actions">
               <span class="badge ${badgeDoc}">${estadoDoc}</span>
-              ${doc.datos ? `<a class="btn btn-small" href="${doc.datos}" download="${doc.nombre || key}" target="_blank">Ver</a>` : ''}
+              ${doc.datos ? `<a class="btn btn-small" href="${doc.datos}" download="${doc.nombre || key}" target="_blank">Ver</a>` : (doc.id ? `<button class="btn btn-small" onclick="verDocumento(${doc.id}, '${(doc.nombre || key).replace(/'/g,"")}')">Ver</button>` : '')}
               ${opciones.permitirRevision ? `
                 <button class="btn btn-success" style="padding:6px 10px;font-size:0.78rem;" onclick="revisarDocumento('${solicitud.expediente}','${key}','Aprobado')">✓</button>
                 <button class="btn btn-danger" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento('${solicitud.expediente}','${key}','Rechazado')">✗</button>
