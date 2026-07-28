@@ -1,19 +1,22 @@
+// middleware/auth.js
 const bcrypt = require('bcryptjs');
 
 function cifrarPassword(pwd) {
   return bcrypt.hashSync(pwd, 10);
 }
 
-async function verificarPassword(pwd, hash) {
+function verificarPassword(pwd, hash) {
   return bcrypt.compareSync(pwd, hash);
 }
 
 function authMiddleware(req, res, next) {
   const email = req.headers['x-user-email'];
   const rol = req.headers['x-user-rol'];
+  
   if (!email || !rol) {
     return res.status(401).json({ error: 'No autenticado' });
   }
+  
   req.user = { email, rol };
   next();
 }
@@ -27,4 +30,9 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { cifrarPassword, verificarPassword, authMiddleware, requireRole };
+module.exports = { 
+  cifrarPassword, 
+  verificarPassword, 
+  authMiddleware, 
+  requireRole 
+};
