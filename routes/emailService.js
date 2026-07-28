@@ -1,3 +1,4 @@
+
 // routes/emailService.js
 const sgMail = require('@sendgrid/mail');
 
@@ -13,8 +14,16 @@ if (SENDGRID_API_KEY) {
     console.warn('⚠️ SENDGRID_API_KEY no configurada. Los emails se simularán.');
 }
 
+/**
+ * Envía un correo electrónico usando SendGrid
+ * @param {string} to - Correo del destinatario
+ * @param {string} subject - Asunto del correo
+ * @param {string} html - Contenido HTML del correo
+ * @param {string} text - Versión texto plano (opcional)
+ * @returns {Promise<Object>} - Resultado del envío
+ */
 async function sendEmail(to, subject, html, text = null) {
-    // Si no hay API Key, fallar silenciosamente
+    // Si no hay API Key, simular el envío
     if (!SENDGRID_API_KEY) {
         console.warn(`⚠️ [SIMULADO] Email a ${to}: "${subject}" - API Key no configurada`);
         return { success: false, error: 'API Key no configurada', simulated: true };
@@ -49,7 +58,6 @@ async function sendEmail(to, subject, html, text = null) {
             if (error.response.statusCode === 401) {
                 console.error('🔑 ERROR DE AUTENTICACIÓN: Tu SENDGRID_API_KEY no es válida.');
                 console.error('📌 Solución: Ve a https://app.sendgrid.com/settings/api_keys y genera una nueva API Key.');
-                console.error('📌 Luego actualiza el archivo .env con la nueva API Key y reinicia el servidor.');
             } else if (error.response.statusCode === 403) {
                 console.error('🚫 ERROR DE PERMISOS: El email remitente no está verificado en SendGrid.');
                 console.error('📌 Solución: Verifica el email en https://app.sendgrid.com/settings/sender_auth');
@@ -59,9 +67,14 @@ async function sendEmail(to, subject, html, text = null) {
     }
 }
 
-// ============ PLANTILLAS ============
-
+/**
+ * Genera la plantilla HTML para cada tipo de notificación
+ * @param {string} tipo - Tipo de notificación
+ * @param {Object} datos - Datos para la plantilla
+ * @returns {Object} - { titulo, html }
+ */
 function generarPlantillaNotificacion(tipo, datos) {
+    // Estilos base para todas las plantillas
     const baseStyles = `
         <style>
             .container { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -79,10 +92,130 @@ function generarPlantillaNotificacion(tipo, datos) {
             .btn { display: inline-block; background: #c5a028; color: #1a365d; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: bold; }
             ul { margin: 10px 0; padding-left: 20px; }
             ul li { margin-bottom: 8px; }
+            .codigo-2fa { font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 10px 0; color: #1a365d; text-align: center; }
         </style>
     `;
 
+    // Definir todas las plantillas en un objeto
     const templates = {
+        // ===== AUTENTICACIÓN =====
+        'codigo_2fa': {
+            titulo: '🔐 Código de verificación 2FA',
+            html: `
+                <div class="container">
+                    ${baseStyles}
+                    <div class="header" style="background:#2c4a7c;">
+                        <h1>🔐 Verificación en Dos Pasos</h1>
+                        <div class="sub">Sistema de Becas Universitarias</div>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${datos.nombre || 'Usuario'}</strong>,</p>
+                        <p>Has solicitado un código de verificación para iniciar sesión en el Sistema de Becas.</p>
+                        <div class="box box-info" style="text-align: center;">
+                            <p style="font-size: 14px; color: #6b7585; margin-bottom: 5px;">Tu código de verificación es:</p>
+                            <p class="codigo-2fa">${datos.codigo || '123456'}</p>
+                            <p style="color: #6b7585; font-size: 14px;">Este código expira en ${datos.expiracion || '10 minutos'}</p>
+                        </div>
+                        <p>Si no solicitaste este código, por favor ignora este mensaje.</p>
+                        <p style="color: #b07d12; font-weight: bold;">⚠️ No compartas este código con nadie.</p>
+                        <div class="footer">
+                            <p>Este es un mensaje automático. Por favor no responder a este correo.</p>
+                            <p>Sistema de Becas Universitarias</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        
+        'nuevo_inicio_sesion': {
+            titulo: '🔐 Nuevo inicio de sesión detectado',
+            html: `
+                <div class="container">
+                    ${baseStyles}
+                    <div class="header" style="background:#1a365d;">
+                        <h1>🔐 Nuevo Inicio de Sesión</h1>
+                        <div class="sub">Sistema de Becas Universitarias</div>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${datos.nombre || 'Usuario'}</strong>,</p>
+                        <p>Hemos detectado un nuevo inicio de sesión en tu cuenta.</p>
+                        <div class="box box-info">
+                            <p><strong>📅 Fecha y hora:</strong> ${datos.fecha || new Date().toLocaleString()}</p>
+                            <p><strong>🌐 Dirección IP:</strong> ${datos.ip || 'No disponible'}</p>
+                            <p><strong>💻 Dispositivo:</strong> ${datos.dispositivo || 'No disponible'}</p>
+                        </div>
+                        <p>Si eres tú, no necesitas hacer nada.</p>
+                        <p style="color: #c0392b; font-weight: bold;">⚠️ Si no reconoces este inicio de sesión, <strong>cambia tu contraseña inmediatamente</strong>.</p>
+                        <p>Puedes cambiar tu contraseña desde el <a href="${process.env.APP_URL || 'http://localhost:3000'}">Sistema de Becas</a>.</p>
+                        <div class="footer">
+                            <p>Este es un mensaje automático. Por favor no responder a este correo.</p>
+                            <p>Sistema de Becas Universitarias</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        
+        'recuperacion_password': {
+            titulo: '🔐 Recuperación de contraseña',
+            html: `
+                <div class="container">
+                    ${baseStyles}
+                    <div class="header" style="background:#2c4a7c;">
+                        <h1>🔐 Recuperación de Contraseña</h1>
+                        <div class="sub">Sistema de Becas Universitarias</div>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${datos.nombre || 'Usuario'}</strong>,</p>
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+                        <div class="box box-info" style="text-align: center;">
+                            <p>Haz clic en el botón para crear una nueva contraseña:</p>
+                            <p style="margin: 20px 0;">
+                                <a href="${datos.resetLink}" class="btn" style="background: #c5a028; color: #1a365d; padding: 14px 32px; border-radius: 999px; text-decoration: none; font-weight: bold; display: inline-block;">
+                                    🔑 Restablecer contraseña
+                                </a>
+                            </p>
+                            <p style="color: #6b7585; font-size: 14px;">El enlace expirará en 1 hora.</p>
+                            <p style="color: #6b7585; font-size: 12px; word-break: break-all;">URL: ${datos.resetLink}</p>
+                        </div>
+                        <p>Si no solicitaste esta recuperación, por favor ignora este correo.</p>
+                        <p style="color: #b07d12; font-weight: bold;">⚠️ No compartas este enlace con nadie.</p>
+                        <div class="footer">
+                            <p>Este es un mensaje automático. Por favor no responder a este correo.</p>
+                            <p>Sistema de Becas Universitarias</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        
+        'password_cambiada': {
+            titulo: '🔐 Contraseña actualizada',
+            html: `
+                <div class="container">
+                    ${baseStyles}
+                    <div class="header" style="background:#1e7e4f;">
+                        <h1>🔐 Contraseña Actualizada</h1>
+                        <div class="sub">Sistema de Becas Universitarias</div>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${datos.nombre || 'Usuario'}</strong>,</p>
+                        <p>Te confirmamos que tu contraseña ha sido <strong>actualizada correctamente</strong>.</p>
+                        <div class="box box-success">
+                            <p>✅ Tu cuenta está ahora protegida con tu nueva contraseña.</p>
+                            <p>📅 Fecha del cambio: ${new Date().toLocaleString()}</p>
+                        </div>
+                        <p>Si no realizaste este cambio, contacta inmediatamente a la <strong>oficina de becas</strong>.</p>
+                        <p>Puedes iniciar sesión desde el <a href="${process.env.APP_URL || 'http://localhost:3000'}">Sistema de Becas</a>.</p>
+                        <div class="footer">
+                            <p>Este es un mensaje automático. Por favor no responder a este correo.</p>
+                            <p>Sistema de Becas Universitarias</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+
         // ===== SOLICITUDES =====
         'solicitud_recibida': {
             titulo: '✅ Solicitud de beca recibida',
@@ -111,6 +244,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'subsanacion_requerida': {
             titulo: '⚠️ Se requiere subsanación de documentos',
             html: `
@@ -141,6 +275,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'solicitud_aprobada': {
             titulo: '🎉 ¡Tu beca ha sido APROBADA!',
             html: `
@@ -169,6 +304,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'solicitud_rechazada': {
             titulo: '❌ Actualización de tu solicitud de beca',
             html: `
@@ -195,6 +331,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== APELACIONES =====
         'apelacion_recibida': {
             titulo: '📋 Apelación recibida',
             html: `
@@ -221,6 +359,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'apelacion_resuelta': {
             titulo: '📋 Resolución de apelación',
             html: `
@@ -247,6 +386,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== SUSPENSIONES =====
         'beca_suspendida': {
             titulo: `⛔ ${datos.tipo || 'Suspensión'} de beca`,
             html: `
@@ -284,6 +425,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'beca_restaurada': {
             titulo: '🔄 Beca restaurada',
             html: `
@@ -311,6 +453,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== JUSTIFICACIONES =====
         'justificacion_revisada': {
             titulo: '📝 Justificación de pérdida de cursos revisada',
             html: `
@@ -336,6 +480,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== CONVOCATORIAS =====
         'nueva_convocatoria': {
             titulo: '📢 Nueva convocatoria de becas disponible',
             html: `
@@ -365,6 +511,7 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+        
         'convocatoria_cerrada': {
             titulo: '📢 Convocatoria cerrada',
             html: `
@@ -393,6 +540,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== NOTICIAS =====
         'nueva_noticia': {
             titulo: `📢 ${datos.titulo || 'Nueva noticia'}`,
             html: `
@@ -420,6 +569,8 @@ function generarPlantillaNotificacion(tipo, datos) {
                 </div>
             `
         },
+
+        // ===== VISITAS =====
         'visita_programada': {
             titulo: '🏠 Visita domiciliaria programada',
             html: `
@@ -449,11 +600,16 @@ function generarPlantillaNotificacion(tipo, datos) {
         }
     };
 
+    // Devolver la plantilla correspondiente o una por defecto
     return templates[tipo] || templates['solicitud_recibida'];
 }
 
-// ============ FUNCIÓN PRINCIPAL ============
-
+/**
+ * Función principal para enviar notificaciones por email
+ * @param {string} tipo - Tipo de notificación
+ * @param {Object} datos - Datos para la plantilla
+ * @returns {Promise<Object>} - Resultado del envío
+ */
 async function enviarNotificacionEmail(tipo, datos) {
     const template = generarPlantillaNotificacion(tipo, datos);
 
@@ -488,7 +644,9 @@ async function enviarNotificacionEmail(tipo, datos) {
     }
 }
 
+// Exportar funciones
 module.exports = {
     sendEmail,
     enviarNotificacionEmail
 };
+
