@@ -1,8 +1,11 @@
+// routes/justificaciones.js
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
+const { enviarNotificacionEmail } = require('./emailService');
 
+// GET - Obtener justificaciones
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { email, rol } = req.user;
@@ -31,6 +34,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// POST - Crear justificación
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { curso, codigo, periodo, nota, motivo, archivo, email, nombreEstudiante } = req.body;
@@ -58,10 +62,15 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+// PUT - Revisar justificación
 router.put('/:id/revisar', authMiddleware, requireRole('trabajador_social'), async (req, res) => {
   try {
     const { id } = req.params;
     const { estado, observacion } = req.body;
+
+    // Obtener datos de la justificación antes de actualizar
+    const justificacion = await db.queryOne('SELECT * FROM justificaciones WHERE id = ?', [id]);
+    if (!justificacion) return res.status(404).json({ error: 'Justificación no encontrada' });
 
     await db.queryRun('UPDATE justificaciones SET estado=?, observacion=? WHERE id=?', [estado, observacion || '', id]);
 
@@ -70,6 +79,19 @@ router.put('/:id/revisar', authMiddleware, requireRole('trabajador_social'), asy
       'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
       [fecha, req.user.email, req.user.rol, `Justificación ${estado}`, '—']
     );
+
+    // ✅ ENVIAR NOTIFICACIÓN DE JUSTIFICACIÓN REVISADA
+    try {
+      await enviarNotificacionEmail('justificacion_revisada', {
+        email: justificacion.estudiante_email,
+        nombre: justificacion.nombre_estudiante || justificacion.estudiante_email,
+        curso: justificacion.curso,
+        estado: estado,
+        observacion: observacion || ''
+      });
+    } catch (error) {
+      console.warn('⚠️ No se pudo enviar notificación de revisión de justificación:', error);
+    }
 
     res.json({ message: `Justificación ${estado}` });
   } catch (error) {
