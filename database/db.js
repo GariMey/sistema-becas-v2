@@ -25,7 +25,6 @@ let pool = null;
 async function getConnection() {
   try {
     if (pool) {
-      // Verificar si la conexión sigue activa
       try {
         await pool.request().query('SELECT 1');
         return pool;
@@ -44,6 +43,7 @@ async function getConnection() {
   }
 }
 
+// ===== QUERY CON PARÁMETROS =====
 async function query(queryString, params = []) {
   const pool = await getConnection();
   const request = pool.request();
@@ -79,6 +79,25 @@ async function queryAll(queryString, params = []) {
 }
 
 async function queryRun(queryString, params = []) {
+  // ===== MANEJO ESPECIAL PARA TRANSACCIONES =====
+  const trimmedQuery = queryString.trim().toUpperCase();
+  
+  // Si es BEGIN TRANSACTION, COMMIT o ROLLBACK, ejecutar directamente
+  if (trimmedQuery === 'BEGIN TRANSACTION' || 
+      trimmedQuery === 'COMMIT' || 
+      trimmedQuery === 'ROLLBACK') {
+    const pool = await getConnection();
+    const request = pool.request();
+    try {
+      await request.query(queryString);
+      return { changes: 0 };
+    } catch (err) {
+      console.error(`❌ Error en ${queryString}:`, err.message);
+      throw err;
+    }
+  }
+  
+  // Para queries normales con parámetros
   const result = await query(queryString, params);
   return {
     lastInsertRowid: result.recordset && result.recordset.length > 0 ? result.recordset[0].id : null,
@@ -86,6 +105,7 @@ async function queryRun(queryString, params = []) {
   };
 }
 
+// ===== TRANSACCIÓN COMPLETA =====
 async function transaction(callback) {
   const pool = await getConnection();
   const transaction = new sql.Transaction(pool);

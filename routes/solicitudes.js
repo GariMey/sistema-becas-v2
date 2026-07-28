@@ -1,4 +1,3 @@
-// routes/solicitudes.js
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
@@ -249,85 +248,95 @@ router.post('/', authMiddleware, async (req, res) => {
       });
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
-
+    // ===== USAR TRANSACCIÓN CORRECTA =====
     try {
-      // Insertar solicitud
-      const result = await db.queryRun(`
-        INSERT INTO solicitudes (
-          expediente, fecha, estudiante_email, nombres, apellidos, cedula, 
-          correo, telefono, tipo_beca, estado, progreso, puntaje, promedio, 
-          ingreso_familiar, datos_completos, aceptado, porcentaje_cobertura, observacion_ts
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        expediente, 
-        fecha || new Date().toISOString().slice(0, 10), 
-        estudianteEmail, 
-        nombres || estudiante.nombre || 'Estudiante', 
-        apellidos || '', 
-        cedula || '', 
-        correo || estudianteEmail, 
-        telefono || '',
-        tipoBeca || 'Socioeconómica', 
-        estado || 'Enviada', 
-        progreso || 10, 
-        puntaje || 0, 
-        promedio || 0, 
-        ingresoFamiliar || 0,
-        JSON.stringify(datosCompletos || {}), 
-        aceptado ? 1 : 0, 
-        porcentajeCobertura || null, 
-        observacionTS || 'Pendiente de revisión por trabajador social.'
-      ]);
+      const result = await db.transaction(async (transaction) => {
+        // Insertar solicitud
+        const insertResult = await transaction.request()
+          .input('expediente', expediente)
+          .input('fecha', fecha || new Date().toISOString().slice(0, 10))
+          .input('estudianteEmail', estudianteEmail)
+          .input('nombres', nombres || estudiante.nombre || 'Estudiante')
+          .input('apellidos', apellidos || '')
+          .input('cedula', cedula || '')
+          .input('correo', correo || estudianteEmail)
+          .input('telefono', telefono || '')
+          .input('tipoBeca', tipoBeca || 'Socioeconómica')
+          .input('estado', estado || 'Enviada')
+          .input('progreso', progreso || 10)
+          .input('puntaje', puntaje || 0)
+          .input('promedio', promedio || 0)
+          .input('ingresoFamiliar', ingresoFamiliar || 0)
+          .input('datosCompletos', JSON.stringify(datosCompletos || {}))
+          .input('aceptado', aceptado ? 1 : 0)
+          .input('porcentajeCobertura', porcentajeCobertura || null)
+          .input('observacionTS', observacionTS || 'Pendiente de revisión por trabajador social.')
+          .query(`
+            INSERT INTO solicitudes (
+              expediente, fecha, estudiante_email, nombres, apellidos, cedula, 
+              correo, telefono, tipo_beca, estado, progreso, puntaje, promedio, 
+              ingreso_familiar, datos_completos, aceptado, porcentaje_cobertura, observacion_ts
+            ) VALUES (
+              @expediente, @fecha, @estudianteEmail, @nombres, @apellidos, @cedula, 
+              @correo, @telefono, @tipoBeca, @estado, @progreso, @puntaje, @promedio, 
+              @ingresoFamiliar, @datosCompletos, @aceptado, @porcentajeCobertura, @observacionTS
+            );
+            SELECT SCOPE_IDENTITY() as id;
+          `);
 
-      // Insertar documentos
-      if (documentos && typeof documentos === 'object' && Object.keys(documentos).length > 0) {
-        for (const [key, doc] of Object.entries(documentos)) {
-          try {
+        const solicitudId = insertResult.recordset[0].id;
+
+        // Insertar documentos
+        if (documentos && typeof documentos === 'object' && Object.keys(documentos).length > 0) {
+          for (const [key, doc] of Object.entries(documentos)) {
             if (!doc.datos && !doc.nombre) {
               console.warn(`⚠️ Documento "${key}" sin datos, omitiendo...`);
               continue;
             }
 
-            await db.queryRun(`
-              INSERT INTO documentos (
-                expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-              expediente,
-              key, 
-              doc.label || key, 
-              doc.nombre || 'documento',
-              doc.tipo || 'application/octet-stream',
-              doc.tamano || 0,
-              doc.fecha || new Date().toISOString(),
-              doc.datos || null,
-              doc.estado || 'Pendiente',
-              doc.observacion || ''
-            ]);
-          } catch (docError) {
-            console.error(`❌ Error insertando documento "${key}":`, docError.message);
-            throw new Error(`Error al insertar documento "${key}": ${docError.message}`);
+            await transaction.request()
+              .input('expediente', expediente)
+              .input('docKey', key)
+              .input('label', doc.label || key)
+              .input('nombre', doc.nombre || 'documento')
+              .input('tipo', doc.tipo || 'application/octet-stream')
+              .input('tamano', doc.tamano || 0)
+              .input('fecha', doc.fecha || new Date().toISOString())
+              .input('datos', doc.datos || null)
+              .input('estado', doc.estado || 'Pendiente')
+              .input('observacion', doc.observacion || '')
+              .query(`
+                INSERT INTO documentos (
+                  expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
+                ) VALUES (
+                  @expediente, @docKey, @label, @nombre, @tipo, @tamano, @fecha, @datos, @estado, @observacion
+                )
+              `);
           }
         }
-      }
 
-      // Registrar en bitácora
-      await db.queryRun(
-        'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
-        [new Date().toLocaleString(), req.user.email, req.user.rol, 'Solicitud creada', expediente]
-      );
+        // Registrar en bitácora
+        await transaction.request()
+          .input('fecha', new Date().toLocaleString())
+          .input('usuario', req.user.email)
+          .input('rol', req.user.rol)
+          .input('accion', 'Solicitud creada')
+          .input('expediente', expediente)
+          .query(`
+            INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) 
+            VALUES (@fecha, @usuario, @rol, @accion, @expediente)
+          `);
 
-      await db.queryRun('COMMIT');
+        return { id: solicitudId, expediente };
+      });
 
       res.status(201).json({ 
-        id: result.lastInsertRowid, 
-        expediente, 
+        id: result.id, 
+        expediente: result.expediente, 
         message: 'Solicitud creada correctamente'
       });
     } catch (error) {
-      await db.queryRun('ROLLBACK');
+      console.error('❌ Error en transacción:', error);
       throw error;
     }
   } catch (error) {
@@ -336,11 +345,13 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT - Actualizar una solicitud existente
+// PUT - Actualizar una solicitud existente (VERSIÓN CORREGIDA - SIN TRANSACCIONES)
 router.put('/:expediente', authMiddleware, async (req, res) => {
   try {
     const { expediente } = req.params;
     const updates = req.body;
+
+    console.log(`📝 Actualizando solicitud ${expediente}:`, updates);
 
     const solicitudActual = await db.queryOne(
       'SELECT * FROM solicitudes WHERE expediente = ?',
@@ -378,129 +389,124 @@ router.put('/:expediente', authMiddleware, async (req, res) => {
       }
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
+    // ===== CONSTRUIR ACTUALIZACIÓN =====
+    const fields = [];
+    const values = [];
 
-    try {
-      const fields = [];
-      const values = [];
+    const allowedFields = {
+      estado: 'estado',
+      progreso: 'progreso',
+      puntaje: 'puntaje',
+      promedio: 'promedio',
+      ingresoFamiliar: 'ingreso_familiar',
+      aceptado: 'aceptado',
+      porcentajeCobertura: 'porcentaje_cobertura',
+      observacionTS: 'observacion_ts',
+      observacionesComite: 'observaciones_comite',
+      motivoRechazo: 'motivo_rechazo'
+    };
 
-      // Mapeo de campos permitidos
-      const allowedFields = {
-        estado: 'estado',
-        progreso: 'progreso',
-        puntaje: 'puntaje',
-        promedio: 'promedio',
-        ingresoFamiliar: 'ingreso_familiar',
-        aceptado: 'aceptado',
-        porcentajeCobertura: 'porcentaje_cobertura',
-        observacionTS: 'observacion_ts',
-        observacionesComite: 'observaciones_comite',
-        motivoRechazo: 'motivo_rechazo'
-      };
-
-      for (const [jsField, dbField] of Object.entries(allowedFields)) {
-        if (updates[jsField] !== undefined) {
-          fields.push(`${dbField} = ?`);
-          values.push(jsField === 'aceptado' ? (updates[jsField] ? 1 : 0) : updates[jsField]);
-        }
+    for (const [jsField, dbField] of Object.entries(allowedFields)) {
+      if (updates[jsField] !== undefined) {
+        fields.push(`${dbField} = ?`);
+        values.push(jsField === 'aceptado' ? (updates[jsField] ? 1 : 0) : updates[jsField]);
       }
-
-      if (updates.datosCompletos) {
-        fields.push('datos_completos = ?');
-        values.push(JSON.stringify(updates.datosCompletos));
-      }
-
-      // Registrar cambio de estado
-      let estadoAnterior = solicitudActual.estado;
-      let estadoNuevo = updates.estado;
-
-      // Ejecutar actualización si hay campos
-      if (fields.length > 0) {
-        fields.push('updated_at = CURRENT_TIMESTAMP');
-        values.push(expediente);
-        await db.queryRun(`UPDATE solicitudes SET ${fields.join(', ')} WHERE expediente = ?`, values);
-      }
-
-      // Actualizar documentos
-      if (updates.documentos && typeof updates.documentos === 'object') {
-        for (const [key, doc] of Object.entries(updates.documentos)) {
-          try {
-            const existing = await db.queryOne(
-              'SELECT id FROM documentos WHERE expediente = ? AND doc_key = ?',
-              [expediente, key]
-            );
-            
-            if (existing) {
-              await db.queryRun(
-                `UPDATE documentos SET 
-                  label = ?, nombre = ?, tipo = ?, tamano = ?, 
-                  fecha = ?, datos = ?, estado = ?, observacion = ? 
-                WHERE id = ?`,
-                [
-                  doc.label || key, 
-                  doc.nombre || 'documento',
-                  doc.tipo || 'application/octet-stream',
-                  doc.tamano || 0,
-                  doc.fecha || new Date().toISOString(),
-                  doc.datos || null,
-                  doc.estado || 'Pendiente',
-                  doc.observacion || '',
-                  existing.id
-                ]
-              );
-            } else {
-              await db.queryRun(
-                `INSERT INTO documentos (
-                  expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  expediente,
-                  key, 
-                  doc.label || key,
-                  doc.nombre || 'documento',
-                  doc.tipo || 'application/octet-stream',
-                  doc.tamano || 0,
-                  doc.fecha || new Date().toISOString(),
-                  doc.datos || null,
-                  doc.estado || 'Pendiente',
-                  doc.observacion || ''
-                ]
-              );
-            }
-          } catch (docError) {
-            console.error(`❌ Error actualizando documento "${key}":`, docError.message);
-            throw new Error(`Error al actualizar documento "${key}": ${docError.message}`);
-          }
-        }
-      }
-
-      // Registrar cambio de estado en bitácora
-      if (estadoNuevo && estadoNuevo !== estadoAnterior) {
-        await db.queryRun(
-          `INSERT INTO bitacora (fecha, usuario, rol, accion, expediente, detalle) 
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            new Date().toLocaleString(), 
-            req.user.email, 
-            req.user.rol, 
-            `Estado cambiado: ${estadoAnterior} → ${estadoNuevo}`, 
-            expediente,
-            `Cambio de estado por ${req.user.rol}`
-          ]
-        );
-      }
-
-      await db.queryRun('COMMIT');
-
-      res.json({ 
-        message: 'Solicitud actualizada correctamente',
-        expediente: expediente
-      });
-    } catch (error) {
-      await db.queryRun('ROLLBACK');
-      throw error;
     }
+
+    if (updates.datosCompletos) {
+      fields.push('datos_completos = ?');
+      values.push(JSON.stringify(updates.datosCompletos));
+    }
+
+    let estadoAnterior = solicitudActual.estado;
+    let estadoNuevo = updates.estado;
+
+    // ✅ ACTUALIZAR SOLICITUD
+    if (fields.length > 0) {
+      fields.push('updated_at = GETDATE()');
+      values.push(expediente);
+      await db.queryRun(`UPDATE solicitudes SET ${fields.join(', ')} WHERE expediente = ?`, values);
+      console.log(`✅ Solicitud ${expediente} actualizada: ${fields.join(', ')}`);
+    }
+
+    // ✅ ACTUALIZAR DOCUMENTOS
+    if (updates.documentos && typeof updates.documentos === 'object') {
+      for (const [key, doc] of Object.entries(updates.documentos)) {
+        try {
+          const existing = await db.queryOne(
+            'SELECT id FROM documentos WHERE expediente = ? AND doc_key = ?',
+            [expediente, key]
+          );
+          
+          if (existing) {
+            await db.queryRun(
+              `UPDATE documentos SET 
+                label = ?, nombre = ?, tipo = ?, tamano = ?, 
+                fecha = ?, datos = ?, estado = ?, observacion = ? 
+              WHERE id = ?`,
+              [
+                doc.label || key, 
+                doc.nombre || 'documento',
+                doc.tipo || 'application/octet-stream',
+                doc.tamano || 0,
+                doc.fecha || new Date().toISOString(),
+                doc.datos || null,
+                doc.estado || 'Pendiente',
+                doc.observacion || '',
+                existing.id
+              ]
+            );
+          } else {
+            await db.queryRun(
+              `INSERT INTO documentos (
+                expediente, doc_key, label, nombre, tipo, tamano, fecha, datos, estado, observacion
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                expediente,
+                key, 
+                doc.label || key,
+                doc.nombre || 'documento',
+                doc.tipo || 'application/octet-stream',
+                doc.tamano || 0,
+                doc.fecha || new Date().toISOString(),
+                doc.datos || null,
+                doc.estado || 'Pendiente',
+                doc.observacion || ''
+              ]
+            );
+          }
+          console.log(`✅ Documento ${key} actualizado`);
+        } catch (docError) {
+          console.error(`❌ Error actualizando documento "${key}":`, docError.message);
+          return res.status(500).json({ 
+            error: `Error al actualizar documento "${key}": ${docError.message}` 
+          });
+        }
+      }
+    }
+
+    // ✅ REGISTRAR EN BITÁCORA
+    if (estadoNuevo && estadoNuevo !== estadoAnterior) {
+      await db.queryRun(
+        `INSERT INTO bitacora (fecha, usuario, rol, accion, expediente, detalle) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          new Date().toLocaleString(), 
+          req.user.email, 
+          req.user.rol, 
+          `Estado cambiado: ${estadoAnterior} → ${estadoNuevo}`, 
+          expediente,
+          `Cambio de estado por ${req.user.rol}`
+        ]
+      );
+      console.log(`✅ Bitácora actualizada: ${estadoAnterior} → ${estadoNuevo}`);
+    }
+
+    res.json({ 
+      message: 'Solicitud actualizada correctamente',
+      expediente: expediente
+    });
+
   } catch (error) {
     console.error('❌ Error actualizando solicitud:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -538,28 +544,19 @@ router.delete('/:expediente', authMiddleware, async (req, res) => {
       });
     }
 
-    // ===== INICIAR TRANSACCIÓN =====
-    await db.queryRun('BEGIN TRANSACTION');
+    // ===== ELIMINAR =====
+    await db.queryRun('DELETE FROM documentos WHERE expediente = ?', [expediente]);
+    await db.queryRun('DELETE FROM solicitudes WHERE expediente = ?', [expediente]);
 
-    try {
-      await db.queryRun('DELETE FROM documentos WHERE expediente = ?', [expediente]);
-      await db.queryRun('DELETE FROM solicitudes WHERE expediente = ?', [expediente]);
+    await db.queryRun(
+      'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
+      [new Date().toLocaleString(), req.user.email, req.user.rol, 'Solicitud eliminada', expediente]
+    );
 
-      await db.queryRun(
-        'INSERT INTO bitacora (fecha, usuario, rol, accion, expediente) VALUES (?, ?, ?, ?, ?)',
-        [new Date().toLocaleString(), req.user.email, req.user.rol, 'Solicitud eliminada', expediente]
-      );
-
-      await db.queryRun('COMMIT');
-
-      res.json({ 
-        message: 'Solicitud eliminada correctamente',
-        expediente: expediente
-      });
-    } catch (error) {
-      await db.queryRun('ROLLBACK');
-      throw error;
-    }
+    res.json({ 
+      message: 'Solicitud eliminada correctamente',
+      expediente: expediente
+    });
   } catch (error) {
     console.error('❌ Error eliminando solicitud:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
