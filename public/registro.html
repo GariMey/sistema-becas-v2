@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Sistema de Becas Universitarias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <style>
+        /* ============================================================
+           ESTILOS COMPLETOS
+           ============================================================ */
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c4a7c;
+            --primary-dark: #102240;
+            --accent: #c5a028;
+            --accent-light: #e0c468;
+            --bg: #f0f2f6;
+            --paper: #ffffff;
+            --text: #1f2733;
+            --muted: #6b7585;
+            --border: #e6e9f0;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
+            --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
+            --shadow-lg: 0 20px 50px -12px rgba(26,54,93,0.25);
+            --danger: #c0392b;
+            --success: #1e7e4f;
+            --warning: #b07d12;
+            --info: #2471a3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Sora', system-ui, sans-serif;
+            color: var(--primary-dark);
+            letter-spacing: -0.01em;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============================================================
+           BOTONES
+           ============================================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+            white-space: nowrap;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--primary-dark);
+            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-light);
+            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,0.55);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: #fff;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--border);
+            padding: 11px 22px;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--primary);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--primary-dark);
+            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .brand-text strong {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .brand-text span {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        nav.main-nav {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: transparent;
+            padding: 6px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+            transition: .25s;
+        }
+
+        /* ============================================================
+           HERO
+           ============================================================ */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%);
+            color: #fff;
+            overflow: hidden;
+            padding: 60px 24px 80px;
+            flex: 1;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 85% 20%, rgba(197,160,40,0.22) 0%, transparent 45%),
+                radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero h1 {
+            color: #fff;
+            font-size: clamp(2.2rem, 5vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.12;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 em {
+            font-style: normal;
+            color: var(--accent-light);
+        }
+
+        .hero p.lead {
+            color: rgba(255,255,255,0.78);
+            font-size: 1.08rem;
+            max-width: 520px;
+            margin-bottom: 34px;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: var(--accent-light);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+        }
+
+        /* ============================================================
+           REGISTRO PANEL
+           ============================================================ */
+        .registro-panel {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 20px;
+            padding: 32px 28px;
+            backdrop-filter: blur(6px);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .registro-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .registro-panel::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+
+        .registro-panel::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .registro-panel-title {
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-light);
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .registro-panel .modal-sub {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* ============================================================
+           FORMULARIO
+           ============================================================ */
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .form-field label .required {
+            color: #f6c6c0;
+            margin-left: 2px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 0.93rem;
+            font-family: inherit;
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+            transition: border-color .15s ease, box-shadow .15s ease;
+            width: 100%;
+        }
+
+        .form-field input::placeholder,
+        .form-field textarea::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(197,160,40,0.15);
+        }
+
+        .form-field select option {
+            color: var(--text);
+            background: var(--paper);
+        }
+
+        .form-field .hint {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row .form-field {
+            margin-bottom: 0;
+        }
+
+        /* ============================================================
+           INDICADOR DE CARGA DEL PADRÓN
+           ============================================================ */
+        .padron-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            padding: 4px 0;
+            min-height: 24px;
+            flex-wrap: wrap;
+        }
+
+        .padron-status .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-light);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .padron-status .success {
+            color: #7ddfa0;
+        }
+
+        .padron-status .error {
+            color: #f6c6c0;
+        }
+
+        .padron-status .info {
+            color: var(--accent-light);
+        }
+
+        .padron-status .warning {
+            color: #f0dba3;
+        }
+
+        /* ============================================================
+           ERROR
+           ============================================================ */
+        .login-error {
+            background: rgba(192,57,43,0.2);
+            color: #f6c6c0;
+            border: 1px solid rgba(192,57,43,0.4);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .login-error.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           ALERTAS
+           ============================================================ */
+        .alert-box {
+            background: rgba(26,54,93,0.3);
+            border: 1px solid rgba(197,160,40,0.3);
+            color: var(--accent-light);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .alert-box.success {
+            background: rgba(30,126,79,0.2);
+            border-color: rgba(30,126,79,0.4);
+            color: #7ddfa0;
+        }
+
+        .alert-box.warning {
+            background: rgba(176,125,18,0.2);
+            border-color: rgba(176,125,18,0.4);
+            color: #f0dba3;
+        }
+
+        .alert-box.info {
+            background: rgba(26,54,93,0.3);
+            border-color: rgba(197,160,40,0.3);
+            color: var(--accent-light);
+        }
+
+        /* ============================================================
+           NOTIFICACIÓN PARA EMPLEADOS
+           ============================================================ */
+        .empleado-notificacion {
+            background: rgba(176,125,18,0.15);
+            border: 1px solid rgba(176,125,18,0.3);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .empleado-notificacion .icono {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .empleado-notificacion .contenido h4 {
+            color: var(--accent-light);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .empleado-notificacion .contenido p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+
+        /* ============================================================
+           CAMPOS PARA EMPLEADO
+           ============================================================ */
+        .campos-empleado {
+            display: none;
+        }
+
+        .campos-empleado.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           CAMPOS PARA ESTUDIANTE
+           ============================================================ */
+        .campos-estudiante {
+            display: none;
+        }
+
+        .campos-estudiante.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           CAMPOS PARA ASPIRANTE
+           ============================================================ */
+        .campos-aspirante {
+            display: none;
+        }
+
+        .campos-aspirante.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           NOTA INFORMATIVA
+           ============================================================ */
+        .modal-credentials {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 18px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .modal-credentials strong {
+            color: var(--accent-light);
+        }
+
+        /* ============================================================
+           LINK DE LOGIN
+           ============================================================ */
+        .login-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .login-link a {
+            color: var(--accent-light);
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color .2s ease;
+        }
+
+        .login-link a:hover {
+            color: #fff;
+        }
+
+        .login-link span {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+        }
+
+        .toast-box {
+            padding: 14px 18px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: toastIn .25s ease;
+            white-space: pre-line;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast-icon {
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: inherit;
+            opacity: 0.6;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            padding: 0 0 0 6px;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        footer.site-footer {
+            background: var(--primary-dark);
+            color: rgba(255,255,255,0.75);
+            padding: 30px 24px 20px;
+            margin-top: auto;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-inner p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 16px auto 0;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 980px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+            }
+
+            .registro-panel {
+                order: -1;
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .hamburger {
+                display: flex;
+            }
+
+            nav.main-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--primary-dark);
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px 24px 24px;
+                gap: 10px;
+                display: none;
+                border-top: 1px solid rgba(255,255,255,0.08);
+            }
+
+            nav.main-nav.open {
+                display: flex;
+            }
+
+            nav.main-nav .btn {
+                width: 100%;
+            }
+
+            .hero {
+                padding: 40px 16px 60px;
+            }
+
+            .registro-panel {
+                padding: 24px 18px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .registro-panel {
+                padding: 18px 14px;
+            }
+
+            .form-field input,
+            .form-field select {
+                font-size: 0.85rem;
+                padding: 9px 12px;
+            }
+
+            .btn {
+                font-size: 0.85rem;
+                padding: 11px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="#" class="brand" onclick="goHome(event)">
+                <div class="brand-mark">SB</div>
+                <div class="brand-text">
+                    <strong>Sistema de Becas</strong>
+                    <span>Universitarias</span>
+                </div>
+            </a>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="main-nav" id="mainNav">
+                <a href="index.html" class="btn btn-outline">Inicio</a>
+                <a href="login.html" class="btn btn-outline">Ingresar</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO / REGISTRO -->
+    <section class="hero" id="registro">
+        <div class="hero-content">
+            <div>
+                <span class="hero-eyebrow">Sistema de Becas</span>
+                <h1>Crea tu cuenta y <em>postula a una beca</em></h1>
+                <p class="lead">Regístrate como aspirante, estudiante o empleado y accede a todos los beneficios del sistema de becas universitarias.</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;">
+                    <a href="index.html" class="btn btn-outline">← Volver al inicio</a>
+                </div>
+            </div>
+
+            <!-- REGISTRO PANEL -->
+            <div class="registro-panel">
+                <div class="registro-panel-title">📝 Crear cuenta</div>
+                <p class="modal-sub">Completa tus datos para registrarte en el sistema.</p>
+
+                <div id="registro-error" class="login-error"></div>
+
+                <!-- ==========================================================
+                     CAMPO: TIPO DE USUARIO
+                     ========================================================== -->
+                <div class="form-field">
+                    <label>Tipo de usuario <span class="required">*</span></label>
+                    <select id="reg-tipo-usuario" class="form-control" onchange="toggleCamposRegistro()">
+                        <option value="aspirante">Aspirante (Aún no ingreso a la universidad)</option>
+                        <option value="estudiante">Estudiante (Ya estoy matriculado)</option>
+                        <option value="empleado">Empleado (TS, Comité, Auditor)</option>
+                    </select>
+                    <span class="hint">Los empleados deben esperar la aprobación del administrador para acceder a su panel.</span>
+                </div>
+
+                <!-- ==========================================================
+                     CAMPOS PARA ASPIRANTE
+                     ========================================================== -->
+                <div class="campos-aspirante visible" id="campos-aspirante">
+                    <div class="alert-box info">
+                        ℹ️ Como aspirante, puedes enviar solicitudes de beca sin necesidad de ser estudiante.
+                        Completa tus datos y postula a las convocatorias disponibles.
+                    </div>
+                </div>
+
+                <!-- ==========================================================
+                     CAMPOS PARA ESTUDIANTE (SIN FECHA DE NACIMIENTO)
+                     ========================================================== -->
+                <div class="campos-estudiante" id="campos-estudiante">
+                    <div class="alert-box success">
+                        ✅ Como estudiante, podrás solicitar becas y acceder a todos los beneficios del sistema.
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Carrera <span class="required">*</span></label>
+                            <select id="reg-carrera" class="form-control">
+                                <option value="">Selecciona tu carrera</option>
+                                <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
+                                <option value="Medicina">Medicina</option>
+                                <option value="Derecho">Derecho</option>
+                                <option value="Administración">Administración</option>
+                                <option value="Arquitectura">Arquitectura</option>
+                                <option value="Psicología">Psicología</option>
+                                <option value="Enfermería">Enfermería</option>
+                                <option value="Educación">Educación</option>
+                                <option value="Ingeniería Civil">Ingeniería Civil</option>
+                                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                                <option value="Comunicación">Comunicación</option>
+                                <option value="Diseño Gráfico">Diseño Gráfico</option>
+                                <option value="Otra">Otra</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Facultad <span class="required">*</span></label>
+                            <select id="reg-facultad" class="form-control">
+                                <option value="">Selecciona tu facultad</option>
+                                <option value="Ingeniería">Ingeniería</option>
+                                <option value="Ciencias de la Salud">Ciencias de la Salud</option>
+                                <option value="Ciencias Sociales">Ciencias Sociales</option>
+                                <option value="Arquitectura y Diseño">Arquitectura y Diseño</option>
+                                <option value="Artes">Artes</option>
+                                <option value="Educación">Educación</option>
+                                <option value="Ciencias Básicas">Ciencias Básicas</option>
+                                <option value="Agronomía">Agronomía</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Fecha de ingreso a la universidad <span class="required">*</span></label>
+                        <input type="date" id="reg-fecha-ingreso" class="form-control">
+                        <span class="hint">Fecha en la que iniciaste tus estudios universitarios.</span>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Sede <span class="required">*</span></label>
+                        <select id="reg-sede" class="form-control">
+                            <option value="">Selecciona tu sede</option>
+                            <option value="Central">Central</option>
+                            <option value="Occidente">Occidente</option>
+                            <option value="Atlántica">Atlántica</option>
+                            <option value="Brunca">Brunca</option>
+                            <option value="Chorotega">Chorotega</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Año de ingreso</label>
+                        <select id="reg-anio-ingreso" class="form-control">
+                            <option value="">Selecciona el año</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <option value="2018">2018</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ==========================================================
+                     CAMPOS PARA EMPLEADO
+                     ========================================================== -->
+                <div class="campos-empleado" id="campos-empleado">
+                    <div class="empleado-notificacion">
+                        <div class="icono">⏳</div>
+                        <div class="contenido">
+                            <h4>Tu panel se habilitará cuando el administrador lo permita</h4>
+                            <p>Como empleado, necesitas la aprobación del administrador para acceder a tu panel de trabajo.
+                            Mientras tanto, puedes explorar la vista general del sitio.</p>
+                        </div>
+                    </div>
+                    <div class="alert-box info">
+                        ℹ️ Los empleados (Trabajador Social, Comité, Auditor) deben ser aprobados por el administrador
+                        para poder acceder a sus paneles y funcionalidades específicas.
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Cargo <span class="required">*</span></label>
+                            <select id="reg-cargo" class="form-control">
+                                <option value="">Selecciona un cargo</option>
+                                <option value="Trabajador Social">Trabajador Social</option>
+                                <option value="Miembro del Comité">Miembro del Comité</option>
+                                <option value="Auditor">Auditor</option>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Departamento <span class="required">*</span></label>
+                            <select id="reg-departamento" class="form-control">
+                                <option value="">Selecciona un departamento</option>
+                                <option value="Oficina de Becas">Oficina de Becas</option>
+                                <option value="Comité de Becas">Comité de Becas</option>
+                                <option value="Auditoría">Auditoría</option>
+                                <option value="Administración">Administración</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==========================================================
+                     CAMPOS COMUNES
+                     ========================================================== -->
+
+                <!-- Cédula con consulta al padrón -->
+                <div class="form-field">
+                    <label>Cédula <span class="required">*</span></label>
+                    <input type="text" id="reg-cedula" class="form-control" placeholder="1-2345-6789" oninput="consultarPadron()">
+                    <div class="padron-status" id="padron-status">
+                        <span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>
+                    </div>
+                </div>
+
+                <!-- CAMPO UNIFICADO: Nombre completo -->
+                <div class="form-field">
+                    <label>Nombre completo <span class="required">*</span></label>
+                    <input type="text" id="reg-nombre-completo" class="form-control" placeholder="María José González Mora">
+                    <span class="hint">Se cargará automáticamente desde el padrón.</span>
+                </div>
+
+                <!-- Dirección (cargada desde el padrón) -->
+                <div class="form-field">
+                    <label>Dirección</label>
+                    <input type="text" id="reg-direccion" class="form-control" placeholder="Provincia, Cantón, Distrito">
+                    <span class="hint">Se cargará automáticamente desde el padrón.</span>
+                </div>
+
+                <div class="form-field">
+                    <label>Correo electrónico <span class="required">*</span></label>
+                    <input type="email" id="reg-email" class="form-control" placeholder="correo@ejemplo.com">
+                </div>
+
+                <div class="form-field">
+                    <label>Teléfono</label>
+                    <input type="text" id="reg-telefono" class="form-control" placeholder="8888-9999">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Contraseña <span class="required">*</span></label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div class="form-field">
+                        <label>Confirmar contraseña <span class="required">*</span></label>
+                        <input type="password" id="reg-confirmar" class="form-control" placeholder="Repite la contraseña">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="handleRegistro()">
+                    Crear cuenta
+                </button>
+
+                <div class="login-link">
+                    <span>¿Ya tienes cuenta? </span>
+                    <a href="login.html">Inicia sesión</a>
+                </div>
+
+                <div class="modal-credentials">
+                    <strong>📌 Nota:</strong>
+                    <span style="display:block;margin-top:4px;font-size:0.8rem;color:rgba(255,255,255,0.6);">
+                        Los <strong style="color:var(--accent-light);">aspirantes</strong> pueden enviar solicitudes sin ser estudiantes.
+                        Los <strong style="color:var(--accent-light);">empleados</strong> deben esperar la aprobación del administrador.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>© 2026 Sistema de Becas Universitarias. Todos los derechos reservados.</p>
+            <p>Hecho para estudiantes, por la universidad.</p>
+        </div>
+        <div class="footer-bottom">
+            <span>Versión 2.0</span>
+            <span>Contacto: becas@universidad.ac.cr</span>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================================
+        // CONSTANTES
+        // ============================================================
+        const SECRET_KEY = 'Becas2026Key';
+        const STORAGE_KEYS = {
+            usuarios: 'becas_usuarios',
+            session: 'becas_session',
+            bitacora: 'becas_bitacora',
+        };
+
+        // URL de la API externa de soportereal.com
+        const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
+
+        // ============================================================
+        // VARIABLES
+        // ============================================================
+        let timeoutConsultaPadron = null;
+        let ultimaCedulaConsultada = '';
+        let consultaEnProceso = false;
+
+        // ============================================================
+        // UTILIDADES
+        // ============================================================
+        function showToast(message, type) {
+            type = type || 'info';
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const colors = {
+                success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
+                error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
+                warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
+                info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
+            };
+            const c = colors[type] || colors.info;
+            const toast = document.createElement('div');
+            toast.className = 'toast-box';
+            toast.style.background = c.bg;
+            toast.style.border = '1px solid ' + c.border;
+            toast.style.color = c.color;
+            toast.innerHTML = '<span class="toast-icon">' + c.icon +
+                '</span><span style="flex:1;">' + message +
+                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
+            container.appendChild(toast);
+
+            const remove = () => {
+                toast.style.transition = 'opacity .3s ease, transform .3s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(24px)';
+                setTimeout(() => toast.remove(), 300);
+            };
+
+            toast.querySelector('.toast-close').addEventListener('click', remove);
+            setTimeout(remove, 4500);
+        }
+
+        function notify(message) {
+            let type = 'info';
+            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
+                type = 'success';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
+                message)) type = 'warning';
+            showToast(message, type);
+        }
+
+        function cifrarPassword(pwd) {
+            return CryptoJS.AES.encrypt(pwd, SECRET_KEY).toString();
+        }
+
+        function registrarBitacora(accion, expediente, sessionOverride) {
+            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const entrada = {
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Visitante',
+                rol: session ? session.rol : 'visitante',
+                accion: accion,
+                expediente: expediente || '—'
+            };
+            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
+            bitacora.unshift(entrada);
+            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
+            return entrada;
+        }
+
+        function goHome(e) {
+            if (e) e.preventDefault();
+            window.location.href = 'index.html';
+        }
+
+        // ============================================================
+        // CONSULTA AL PADRÓN ELECTORAL USANDO LA API EXTERNA
+        // ============================================================
+        function consultarPadron() {
+            const cedulaEl = document.getElementById('reg-cedula');
+            const statusEl = document.getElementById('padron-status');
+
+            // Limpiar la cédula: eliminar guiones, espacios y otros caracteres no numéricos
+            const digitos = cedulaEl.value.replace(/\D/g, '');
+
+            // Limpiar timeout anterior
+            clearTimeout(timeoutConsultaPadron);
+
+            // Si la cédula tiene menos de 9 dígitos, mostrar mensaje de espera
+            if (digitos.length < 9) {
+                statusEl.innerHTML = `<span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>`;
+                consultaEnProceso = false;
+                return;
+            }
+
+            // Si es la misma cédula que ya consultamos y no está en proceso, no repetir
+            if (digitos === ultimaCedulaConsultada && !consultaEnProceso) {
+                return;
+            }
+
+            // Mostrar indicador de carga
+            statusEl.innerHTML = `
+                <span class="spinner"></span>
+                <span class="info">Consultando padrón electoral...</span>
+            `;
+            consultaEnProceso = true;
+
+            // Debounce: esperar 500ms después de que el usuario deje de escribir
+            timeoutConsultaPadron = setTimeout(async () => {
+                try {
+                    const url = `${API_PADRON}/${digitos}`;
+                    console.log(`🔍 Consultando padrón para cédula: ${digitos}`);
+                    console.log(`📡 URL: ${url}`);
+
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        signal: AbortSignal.timeout(15000)
+                    });
+
+                    console.log(`📡 Respuesta: ${response.status} ${response.statusText}`);
+
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            statusEl.innerHTML = `<span class="error">⚠️ Cédula no encontrada en el padrón electoral</span>`;
+                            consultaEnProceso = false;
+                            return;
+                        }
+                        if (response.status === 400) {
+                            statusEl.innerHTML = `<span class="error">⚠️ Cédula inválida. Verifica el formato.</span>`;
+                            consultaEnProceso = false;
+                            return;
+                        }
+                        if (response.status === 429) {
+                            statusEl.innerHTML = `<span class="warning">⏳ Has excedido el límite de consultas. Espera un momento.</span>`;
+                            consultaEnProceso = false;
+                            return;
+                        }
+                        if (response.status === 503) {
+                            statusEl.innerHTML = `<span class="warning">⚠️ El servicio de padrón no está disponible. Intenta más tarde.</span>`;
+                            consultaEnProceso = false;
+                            return;
+                        }
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('📋 Datos recibidos del padrón:', data);
+
+                    // Guardar la cédula consultada para no repetir
+                    ultimaCedulaConsultada = digitos;
+                    consultaEnProceso = false;
+
+                    // ==========================================================
+                    // PROCESAR LA RESPUESTA DE LA API - CORREGIDO
+                    // ==========================================================
+
+                    // Verificar si es persona física (tipoIdentificacion === "01")
+                    const esFisica = data.tipoIdentificacion === '01';
+
+                    // Variable para almacenar el nombre completo
+                    let nombreCompleto = '';
+
+                    if (esFisica && data.persona) {
+                        // ==========================================================
+                        // CASO 2: Persona física sin bloque 'persona'
+                        // El campo 'nombre' ya contiene el nombre completo
+                        // ==========================================================
+                        nombreCompleto = data.nombre || '';
+
+                        // Limpiar espacios múltiples y convertir a formato adecuado
+                        nombreCompleto = nombreCompleto.replace(/\s+/g, ' ').trim();
+
+                        document.getElementById('reg-nombre-completo').value = nombreCompleto;
+
+                        // Intentar obtener dirección de otros campos si existen
+                        if (data.domicilio) {
+                            const domicilio = data.domicilio;
+                            let direccionCompleta = '';
+                            if (domicilio.provincia) direccionCompleta += domicilio.provincia;
+                            if (domicilio.canton) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.canton;
+                            if (domicilio.distrito) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.distrito;
+                            if (direccionCompleta) {
+                                document.getElementById('reg-direccion').value = direccionCompleta;
+                            }
+                        }
+
+                        statusEl.innerHTML = `
+                            <span class="success">✅ Datos cargados desde el padrón electoral</span>
+                        `;
+                        notify('✅ Datos del padrón cargados correctamente.');
+
+                    } else if (!esFisica && data.nombre) {
+                        // ==========================================================
+                        // CASO 3: Persona jurídica - solo cargar nombre
+                        // ==========================================================
+                        document.getElementById('reg-nombre-completo').value = data.nombre;
+                        statusEl.innerHTML = `
+                            <span class="warning">ℹ️ Cédula jurídica. Solo se cargó el nombre.</span>
+                        `;
+                        notify('ℹ️ Cédula jurídica detectada. Solo se cargó el nombre.');
+                    } else {
+                        // ==========================================================
+                        // CASO 4: No se pudieron extraer datos
+                        // ==========================================================
+                        statusEl.innerHTML = `
+                            <span class="warning">⚠️ No se pudieron cargar todos los datos. Completa manualmente.</span>
+                        `;
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error consultando padrón:', error);
+
+                    consultaEnProceso = false;
+
+                    if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+                        statusEl.innerHTML = `
+                            <span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>
+                        `;
+                        return;
+                    }
+
+                    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                        statusEl.innerHTML = `
+                            <span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>
+                        `;
+                        return;
+                    }
+
+                    if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                        statusEl.innerHTML = `
+                            <span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>
+                        `;
+                        return;
+                    }
+
+                    // Fallback para desarrollo
+                    if (digitos === '101053316' || digitos === '123456789' || digitos === '305660220') {
+                        document.getElementById('reg-nombre-completo').value = 'María José González Mora';
+                        document.getElementById('reg-direccion').value = 'San José, Montes de Oca, Sabanilla';
+                        ultimaCedulaConsultada = digitos;
+                        statusEl.innerHTML = `
+                            <span class="success">✅ Datos de prueba cargados (modo demostración)</span>
+                        `;
+                        notify('✅ Datos de prueba cargados correctamente.');
+                    } else {
+                        statusEl.innerHTML = `
+                            <span class="error">❌ Error al consultar el padrón. Intenta nuevamente.</span>
+                        `;
+                    }
+                }
+            }, 500);
+        }
+
+        // ============================================================
+        // TOGGLE DE CAMPOS
+        // ============================================================
+        function toggleCamposRegistro() {
+            const tipo = document.getElementById('reg-tipo-usuario').value;
+            const camposEstudiante = document.getElementById('campos-estudiante');
+            const camposAspirante = document.getElementById('campos-aspirante');
+            const camposEmpleado = document.getElementById('campos-empleado');
+
+            camposEstudiante.classList.remove('visible');
+            camposAspirante.classList.remove('visible');
+            camposEmpleado.classList.remove('visible');
+
+            if (tipo === 'estudiante') {
+                camposEstudiante.classList.add('visible');
+                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
+                    .forEach(el => {
+                        if (el.tagName === 'SELECT' && el.id !== 'reg-anio-ingreso') {
+                            el.required = true;
+                        } else if (el.type !== 'text' || el.id !== 'reg-telefono') {
+                            el.required = true;
+                        }
+                    });
+            } else if (tipo === 'aspirante') {
+                camposAspirante.classList.add('visible');
+                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
+                    .forEach(el => {
+                        el.required = false;
+                    });
+                document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
+                    .forEach(el => {
+                        el.required = false;
+                    });
+            } else if (tipo === 'empleado') {
+                camposEmpleado.classList.add('visible');
+                document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
+                    .forEach(el => {
+                        el.required = true;
+                    });
+                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
+                    .forEach(el => {
+                        el.required = false;
+                    });
+            }
+        }
+
+        // ============================================================
+        // REGISTRO PRINCIPAL
+        // ============================================================
+        function handleRegistro() {
+            const tipo = document.getElementById('reg-tipo-usuario').value;
+
+            // Campos comunes
+            const nombreCompleto = document.getElementById('reg-nombre-completo').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const cedula = document.getElementById('reg-cedula').value.trim();
+            const telefono = document.getElementById('reg-telefono').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmar = document.getElementById('reg-confirmar').value;
+            const direccion = document.getElementById('reg-direccion').value.trim();
+
+            // Campos de empleado
+            const cargo = document.getElementById('reg-cargo')?.value || '';
+            const departamento = document.getElementById('reg-departamento')?.value || '';
+
+            // Campos de estudiante
+            const carrera = document.getElementById('reg-carrera')?.value || '';
+            const facultad = document.getElementById('reg-facultad')?.value || '';
+            const fechaIngreso = document.getElementById('reg-fecha-ingreso')?.value || '';
+            const sede = document.getElementById('reg-sede')?.value || '';
+            const anioIngreso = document.getElementById('reg-anio-ingreso')?.value || '';
+
+            const errorBox = document.getElementById('registro-error');
+
+            errorBox.className = 'login-error';
+            errorBox.textContent = '';
+
+            // ==========================================================
+            // VALIDACIONES COMUNES
+            // ==========================================================
+            if (!nombreCompleto || !email || !cedula || !password) {
+                errorBox.textContent = '❌ Todos los campos marcados con * son obligatorios.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            // Formato de cédula (mínimo 9 dígitos)
+            const cedulaLimpia = cedula.replace(/\D/g, '');
+            if (cedulaLimpia.length < 9) {
+                errorBox.textContent = '❌ La cédula debe tener al menos 9 dígitos.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorBox.textContent = '❌ La contraseña debe tener al menos 6 caracteres.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            if (password !== confirmar) {
+                errorBox.textContent = '❌ Las contraseñas no coinciden.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                errorBox.textContent = '❌ Ingresa un correo electrónico válido.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            // ==========================================================
+            // VALIDACIONES ESPECÍFICAS
+            // ==========================================================
+            let rol = tipo;
+            let datosAdicionales = {};
+            let aprobado = true;
+            let puedeSolicitar = true;
+
+            if (tipo === 'estudiante') {
+                if (!carrera || !facultad || !fechaIngreso || !sede) {
+                    errorBox.textContent = '❌ Para registrarte como estudiante, completa todos los campos académicos.';
+                    errorBox.className = 'login-error visible';
+                    return;
+                }
+                datosAdicionales = {
+                    carrera: carrera,
+                    facultad: facultad,
+                    fechaIngreso: fechaIngreso,
+                    sede: sede,
+                    anioIngreso: anioIngreso || ''
+                };
+                rol = 'estudiante';
+                aprobado = true;
+                puedeSolicitar = true;
+            } else if (tipo === 'aspirante') {
+                rol = 'aspirante';
+                datosAdicionales = { esAspirante: true };
+                aprobado = true;
+                puedeSolicitar = true;
+            } else if (tipo === 'empleado') {
+                if (!cargo || !departamento) {
+                    errorBox.textContent = '❌ Para registrarte como empleado, completa el cargo y departamento.';
+                    errorBox.className = 'login-error visible';
+                    return;
+                }
+
+                const cargoLower = cargo.toLowerCase();
+                if (cargoLower.includes('trabajador social') || cargoLower === 'trabajador social') {
+                    rol = 'trabajador_social';
+                } else if (cargoLower.includes('comité') || cargoLower.includes('miembro del comité')) {
+                    rol = 'comite';
+                } else if (cargoLower.includes('auditor')) {
+                    rol = 'auditor';
+                } else if (cargoLower.includes('administrador')) {
+                    rol = 'admin';
+                } else {
+                    rol = 'empleado';
+                }
+
+                datosAdicionales = {
+                    cargo: cargo,
+                    departamento: departamento
+                };
+                aprobado = false;
+                puedeSolicitar = false;
+            }
+
+            // ==========================================================
+            // VERIFICAR SI EL CORREO YA ESTÁ REGISTRADO
+            // ==========================================================
+            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+            if (usuarios.some(u => u.email === email)) {
+                errorBox.textContent = '❌ Este correo electrónico ya está registrado.';
+                errorBox.className = 'login-error visible';
+                return;
+            }
+
+            // ==========================================================
+            // CREAR NUEVO USUARIO
+            // ==========================================================
+            const nuevoUsuario = {
+                email: email,
+                password: cifrarPassword(password),
+                rol: rol,
+                nombre: nombreCompleto,
+                cedula: cedula,
+                telefono: telefono || '',
+                direccion: direccion || '',
+                intentos: 0,
+                bloqueado: false,
+                twoFactorEnabled: false,
+                fechaRegistro: new Date().toISOString(),
+                datosAcademicos: datosAdicionales,
+                aprobado: aprobado,
+                puedeSolicitar: puedeSolicitar,
+                esEmpleado: tipo === 'empleado'
+            };
+
+            if (tipo === 'empleado') {
+                nuevoUsuario.cargo = cargo;
+                nuevoUsuario.departamento = departamento;
+            }
+
+            usuarios.push(nuevoUsuario);
+            localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+
+            registrarBitacora('Usuario registrado: ' + email + ' (Rol: ' + rol + ')', '—');
+
+            // ==========================================================
+            // LIMPIAR CAMPOS
+            // ==========================================================
+            document.getElementById('reg-nombre-completo').value = '';
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-cedula').value = '';
+            document.getElementById('reg-telefono').value = '';
+            document.getElementById('reg-direccion').value = '';
+            document.getElementById('reg-password').value = '';
+            document.getElementById('reg-confirmar').value = '';
+            document.getElementById('reg-carrera').value = '';
+            document.getElementById('reg-facultad').value = '';
+            document.getElementById('reg-fecha-ingreso').value = '';
+            document.getElementById('reg-sede').value = '';
+            document.getElementById('reg-anio-ingreso').value = '';
+            document.getElementById('reg-cargo').value = '';
+            document.getElementById('reg-departamento').value = '';
+
+            // Limpiar estado del padrón
+            document.getElementById('padron-status').innerHTML =
+                `<span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>`;
+            ultimaCedulaConsultada = '';
+
+            // ==========================================================
+            // NOTIFICACIÓN Y REDIRECCIÓN
+            // ==========================================================
+            if (tipo === 'empleado') {
+                notify('✅ ¡Cuenta creada exitosamente! Tu panel se habilitará cuando el administrador lo apruebe.');
+            } else if (tipo === 'aspirante') {
+                notify('✅ ¡Cuenta creada exitosamente! Ahora puedes enviar solicitudes de beca.');
+            } else if (tipo === 'estudiante') {
+                notify('✅ ¡Cuenta creada exitosamente! Ahora puedes iniciar sesión y solicitar becas.');
+            }
+
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+
+        // ============================================================
+        // INICIALIZACIÓN
+        // ============================================================
+        function initData() {
+            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
+                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
+                    { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
+                        nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
+                        direccion: 'San José, Montes de Oca, Sabanilla',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        datosAcademicos: {
+                            carrera: 'Ingeniería en Sistemas',
+                            facultad: 'Ingeniería',
+                            sede: 'Central',
+                            fechaIngreso: '2022-01-10',
+                            anioIngreso: '2022'
+                        },
+                        aprobado: true, puedeSolicitar: true },
+                    { email: 'aspirante@becas.com', password: cifrarPassword('123456'), rol: 'aspirante',
+                        nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
+                        direccion: 'Alajuela, San Ramón',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        datosAcademicos: { esAspirante: true },
+                        aprobado: true, puedeSolicitar: true },
+                    { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
+                        nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
+                        direccion: 'Heredia, San Pablo',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
+                        nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
+                        direccion: 'Cartago, Paraíso',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
+                        nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
+                        direccion: 'San José, Centro',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
+                        nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
+                        direccion: 'Puntarenas, Esparza',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        fechaRegistro: new Date().toISOString(),
+                        aprobado: true, puedeSolicitar: false }
+                ]));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
+                localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
+                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system',
+                        accion: 'Sistema iniciado', expediente: '—' }
+                ]));
+            }
+        }
+
+        // ============================================================
+        // EVENTOS
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initData();
+            toggleCamposRegistro();
+
+            document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
+                document.getElementById('mainNav').classList.toggle('open');
+            });
+
+            // Enter key para navegar entre campos
+            const campos = ['reg-cedula', 'reg-nombre-completo', 'reg-direccion', 'reg-email', 'reg-telefono',
+                'reg-password', 'reg-confirmar'
+            ];
+            campos.forEach((id, index) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            if (index < campos.length - 1) {
+                                document.getElementById(campos[index + 1]).focus();
+                            } else {
+                                handleRegistro();
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Verificar conexión con la API externa al cargar la página
+            async function verificarConexionAPI() {
+                try {
+                    const response = await fetch(`${API_PADRON}/999999999`, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    console.log('✅ Conexión con API de padrón verificada');
+                } catch (error) {
+                    console.warn('⚠️ No se pudo conectar con la API de padrón. Modo offline activado.');
+                }
+            }
+            verificarConexionAPI();
+        });
+    </script>
+
+</body>
+</html>

@@ -18,7 +18,7 @@ async function initDatabase() {
     // CREAR TABLAS
     // =====================================================
     
-    // Tabla usuarios
+    // 1. Tabla usuarios (COMPLETA)
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='usuarios' AND xtype='U')
       CREATE TABLE usuarios (
@@ -31,11 +31,20 @@ async function initDatabase() {
         bloqueado BIT DEFAULT 0,
         two_factor_enabled BIT DEFAULT 0,
         created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME DEFAULT GETDATE()
+        updated_at DATETIME DEFAULT GETDATE(),
+        cedula NVARCHAR(20) NULL,
+        fecha_nacimiento NVARCHAR(20) NULL,
+        direccion NVARCHAR(500) NULL,
+        telefono NVARCHAR(50) NULL,
+        info_padron NVARCHAR(MAX) NULL,
+        aprobado BIT DEFAULT 1,
+        puede_solicitar BIT DEFAULT 1,
+        cargo NVARCHAR(255) NULL,
+        departamento NVARCHAR(255) NULL
       )
     `);
 
-    // Tabla tipos_beca
+    // 2. Tabla tipos_beca
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tipos_beca' AND xtype='U')
       CREATE TABLE tipos_beca (
@@ -48,13 +57,12 @@ async function initDatabase() {
         rubros NVARCHAR(MAX) DEFAULT '[]',
         requisitos NVARCHAR(MAX) DEFAULT '[]',
         activo BIT DEFAULT 1,
-        campos_personalizados NVARCHAR(MAX) DEFAULT '[]',
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla solicitudes
+    // 3. Tabla solicitudes (COMPLETA)
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='solicitudes' AND xtype='U')
       CREATE TABLE solicitudes (
@@ -64,9 +72,9 @@ async function initDatabase() {
         estudiante_email NVARCHAR(255) NOT NULL,
         nombres NVARCHAR(255) NOT NULL,
         apellidos NVARCHAR(255) NOT NULL,
-        cedula NVARCHAR(50),
-        correo NVARCHAR(255),
-        telefono NVARCHAR(50),
+        cedula NVARCHAR(50) NULL,
+        correo NVARCHAR(255) NULL,
+        telefono NVARCHAR(50) NULL,
         tipo_beca NVARCHAR(255) NOT NULL,
         estado NVARCHAR(50) NOT NULL DEFAULT 'Enviada',
         progreso INT DEFAULT 10,
@@ -74,109 +82,156 @@ async function initDatabase() {
         promedio FLOAT DEFAULT 0,
         ingreso_familiar FLOAT DEFAULT 0,
         datos_completos NVARCHAR(MAX) DEFAULT '{}',
-        documentos NVARCHAR(MAX) DEFAULT '{}',
         aceptado BIT DEFAULT 0,
-        porcentaje_cobertura NVARCHAR(50),
-        observacion_ts NVARCHAR(MAX),
-        observaciones_comite NVARCHAR(MAX),
-        motivo_rechazo NVARCHAR(MAX),
-        suspension_motivo NVARCHAR(MAX),
-        suspension_observaciones NVARCHAR(MAX),
-        suspension_fecha NVARCHAR(50),
-        restaurado_fecha NVARCHAR(50),
-        fecha_cierre NVARCHAR(50),
+        porcentaje_cobertura NVARCHAR(50) NULL,
+        observacion_ts NVARCHAR(MAX) NULL,
+        observaciones_comite NVARCHAR(MAX) NULL,
+        motivo_rechazo NVARCHAR(MAX) NULL,
+        suspension_motivo NVARCHAR(MAX) NULL,
+        suspension_observaciones NVARCHAR(MAX) NULL,
+        suspension_fecha NVARCHAR(50) NULL,
+        restaurado_fecha NVARCHAR(50) NULL,
+        fecha_cierre NVARCHAR(50) NULL,
         created_at DATETIME DEFAULT GETDATE(),
-        updated_at DATETIME DEFAULT GETDATE()
+        updated_at DATETIME DEFAULT GETDATE(),
+        documentos NVARCHAR(MAX) DEFAULT '{}',
+        historial NVARCHAR(MAX) DEFAULT '[]',
+        fecha_nacimiento NVARCHAR(50) NULL,
+        carrera NVARCHAR(255) NULL,
+        sede NVARCHAR(255) NULL,
+        facultad NVARCHAR(255) NULL,
+        ano_ingreso NVARCHAR(50) NULL,
+        avance_curricular NVARCHAR(50) NULL,
+        dependientes_economicos INT DEFAULT 0,
+        miembros_trabajan INT DEFAULT 0,
+        tipo_vivienda NVARCHAR(100) NULL,
+        gastos_mensuales FLOAT DEFAULT 0,
+        situacion_laboral NVARCHAR(255) NULL,
+        discapacidad BIT DEFAULT 0,
+        beca_anterior BIT DEFAULT 0,
+        justificacion_merito NVARCHAR(MAX) NULL,
+        ingreso_percapita FLOAT DEFAULT 0,
+        fecha_aprobacion NVARCHAR(50) NULL,
+        fecha_rechazo NVARCHAR(50) NULL
       )
     `);
 
-    // Tabla noticias
+    // 4. Tabla documentos
     await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='noticias' AND xtype='U')
-      CREATE TABLE noticias (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        titulo NVARCHAR(255) NOT NULL,
-        contenido NVARCHAR(MAX) NOT NULL,
-        fecha NVARCHAR(50) NOT NULL,
-        fecha_edicion NVARCHAR(50),
-        created_at DATETIME DEFAULT GETDATE()
-      )
-    `);
-
-    // Tabla justificaciones
-    await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='justificaciones' AND xtype='U')
-      CREATE TABLE justificaciones (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        estudiante_email NVARCHAR(255) NOT NULL,
-        nombre_estudiante NVARCHAR(255),
-        curso NVARCHAR(255) NOT NULL,
-        codigo NVARCHAR(50),
-        periodo NVARCHAR(50) NOT NULL,
-        nota FLOAT,
-        motivo NVARCHAR(MAX) NOT NULL,
-        estado NVARCHAR(50) DEFAULT 'Pendiente',
-        observacion NVARCHAR(MAX) DEFAULT '',
-        fecha NVARCHAR(50) NOT NULL,
-        archivo NVARCHAR(MAX),
-        created_at DATETIME DEFAULT GETDATE()
-      )
-    `);
-
-    // Tabla apelaciones
-    await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='apelaciones' AND xtype='U')
-      CREATE TABLE apelaciones (
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='documentos' AND xtype='U')
+      CREATE TABLE documentos (
         id INT IDENTITY(1,1) PRIMARY KEY,
         expediente NVARCHAR(50) NOT NULL,
-        email NVARCHAR(255) NOT NULL,
-        nombre_estudiante NVARCHAR(255),
-        motivo NVARCHAR(MAX) NOT NULL,
+        solicitud_id INT NULL,
+        doc_key NVARCHAR(50) NULL,
+        label NVARCHAR(150) NULL,
+        nombre NVARCHAR(255) NULL,
+        tipo NVARCHAR(100) NULL,
+        tamano INT NULL,
+        fecha NVARCHAR(50) NULL,
+        datos NVARCHAR(MAX) NULL,
         estado NVARCHAR(50) DEFAULT 'Pendiente',
-        fecha NVARCHAR(50) NOT NULL,
-        decision NVARCHAR(MAX),
-        archivo NVARCHAR(MAX),
-        tipo_beca NVARCHAR(255),
+        observacion NVARCHAR(MAX) NULL,
         created_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla suspensiones
+    // 5. Tabla integrantes_familia
     await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='suspensiones' AND xtype='U')
-      CREATE TABLE suspensiones (
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='integrantes_familia' AND xtype='U')
+      CREATE TABLE integrantes_familia (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        email NVARCHAR(255) NOT NULL,
-        expediente NVARCHAR(50),
-        tipo NVARCHAR(50) NOT NULL,
-        dias NVARCHAR(50),
-        motivo NVARCHAR(MAX) NOT NULL,
-        observaciones NVARCHAR(MAX),
-        fecha NVARCHAR(50) NOT NULL,
-        estado NVARCHAR(50) DEFAULT 'Activa',
-        evidencia NVARCHAR(MAX),
-        nombre_estudiante NVARCHAR(255),
+        expediente NVARCHAR(50) NOT NULL,
+        nombre_completo NVARCHAR(255) NULL,
+        edad INT NULL,
+        estudia BIT DEFAULT 0,
+        trabaja BIT DEFAULT 0,
+        salario_mensual FLOAT DEFAULT 0,
+        tiene_transporte BIT DEFAULT 0,
+        casa_propia BIT DEFAULT 0,
+        vivienda_nombre_propio BIT DEFAULT 0,
         created_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla visitas - CON nombreEstudiante
+    // 6. Tabla visitas (COMPLETA)
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='visitas' AND xtype='U')
       CREATE TABLE visitas (
         id INT IDENTITY(1,1) PRIMARY KEY,
         expediente NVARCHAR(50) NOT NULL,
         fecha NVARCHAR(50) NOT NULL,
-        condiciones NVARCHAR(MAX),
-        coincide NVARCHAR(50) DEFAULT 'Sí',
-        archivo NVARCHAR(MAX),
-        nombreEstudiante NVARCHAR(255) NULL,
+        condiciones NVARCHAR(MAX) NULL,
+        coincide NVARCHAR(50) NULL,
+        archivo NVARCHAR(MAX) NULL,
         fecha_registro NVARCHAR(50) NOT NULL,
+        estado NVARCHAR(50) DEFAULT 'Pendiente',
+        created_at DATETIME DEFAULT GETDATE(),
+        nombreEstudiante VARCHAR(200) NULL,
+        evidencia_fecha NVARCHAR(50) NULL,
+        evidencia_hora NVARCHAR(20) NULL,
+        evidencia_cedula NVARCHAR(20) NULL,
+        metadata NVARCHAR(MAX) NULL
+      )
+    `);
+
+    // 7. Tabla suspensiones (COMPLETA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='suspensiones' AND xtype='U')
+      CREATE TABLE suspensiones (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        email NVARCHAR(255) NOT NULL,
+        expediente NVARCHAR(50) NULL,
+        tipo NVARCHAR(50) NOT NULL,
+        dias NVARCHAR(50) NULL,
+        motivo NVARCHAR(MAX) NOT NULL,
+        observaciones NVARCHAR(MAX) NULL,
+        fecha NVARCHAR(50) NOT NULL,
+        estado NVARCHAR(50) DEFAULT 'Activa',
+        evidencia NVARCHAR(MAX) NULL,
+        nombre_estudiante NVARCHAR(255) NULL,
         created_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla convocatorias
+    // 8. Tabla apelaciones (COMPLETA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='apelaciones' AND xtype='U')
+      CREATE TABLE apelaciones (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        expediente NVARCHAR(50) NOT NULL,
+        email NVARCHAR(255) NOT NULL,
+        nombre_estudiante NVARCHAR(255) NULL,
+        motivo NVARCHAR(MAX) NOT NULL,
+        estado NVARCHAR(50) DEFAULT 'Pendiente',
+        fecha NVARCHAR(50) NOT NULL,
+        decision NVARCHAR(MAX) NULL,
+        archivo NVARCHAR(MAX) NULL,
+        created_at DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 9. Tabla justificaciones (COMPLETA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='justificaciones' AND xtype='U')
+      CREATE TABLE justificaciones (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        estudiante_email NVARCHAR(255) NOT NULL,
+        nombre_estudiante NVARCHAR(255) NULL,
+        curso NVARCHAR(255) NOT NULL,
+        codigo NVARCHAR(50) NULL,
+        periodo NVARCHAR(50) NOT NULL,
+        nota FLOAT NULL,
+        motivo NVARCHAR(MAX) NOT NULL,
+        estado NVARCHAR(50) DEFAULT 'Pendiente',
+        observacion NVARCHAR(MAX) DEFAULT '',
+        fecha NVARCHAR(50) NOT NULL,
+        archivo NVARCHAR(MAX) NULL,
+        created_at DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 10. Tabla convocatorias (COMPLETA)
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='convocatorias' AND xtype='U')
       CREATE TABLE convocatorias (
@@ -187,34 +242,42 @@ async function initDatabase() {
         fecha_apertura NVARCHAR(50) NOT NULL,
         fecha_cierre NVARCHAR(50) NOT NULL,
         estado NVARCHAR(50) DEFAULT 'Borrador',
-        created_at DATETIME DEFAULT GETDATE()
+        created_at DATETIME DEFAULT GETDATE(),
+        hora_apertura NVARCHAR(5) DEFAULT '00:00',
+        hora_cierre NVARCHAR(5) DEFAULT '23:59'
       )
     `);
 
-    // Tabla empleados
+    // 11. Tabla noticias (COMPLETA)
     await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='empleados' AND xtype='U')
-      CREATE TABLE empleados (
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='noticias' AND xtype='U')
+      CREATE TABLE noticias (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(255) NOT NULL,
-        departamento NVARCHAR(255),
-        cargo NVARCHAR(255),
-        correo NVARCHAR(255),
-        telefono NVARCHAR(50),
+        titulo NVARCHAR(255) NOT NULL,
+        contenido NVARCHAR(MAX) NOT NULL,
+        fecha NVARCHAR(50) NOT NULL,
+        fecha_edicion NVARCHAR(50) NULL,
+        fecha_publicacion NVARCHAR(50) NULL,
         created_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla config
+    // 12. Tabla notificaciones
     await pool.request().query(`
-      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='config' AND xtype='U')
-      CREATE TABLE config (
-        [key] NVARCHAR(255) PRIMARY KEY,
-        value NVARCHAR(MAX) NOT NULL
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='notificaciones' AND xtype='U')
+      CREATE TABLE notificaciones (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        usuario_email NVARCHAR(255) NOT NULL,
+        titulo NVARCHAR(255) NOT NULL,
+        mensaje NVARCHAR(MAX) NULL,
+        tipo NVARCHAR(20) DEFAULT 'info',
+        leida BIT DEFAULT 0,
+        expediente NVARCHAR(50) NULL,
+        created_at DATETIME DEFAULT GETDATE()
       )
     `);
 
-    // Tabla bitacora
+    // 13. Tabla bitacora
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='bitacora' AND xtype='U')
       CREATE TABLE bitacora (
@@ -228,7 +291,21 @@ async function initDatabase() {
       )
     `);
 
-    // Tabla alertas_seguridad
+    // 14. Tabla empleados
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='empleados' AND xtype='U')
+      CREATE TABLE empleados (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        nombre NVARCHAR(255) NOT NULL,
+        departamento NVARCHAR(255) NULL,
+        cargo NVARCHAR(255) NULL,
+        correo NVARCHAR(255) NULL,
+        telefono NVARCHAR(50) NULL,
+        created_at DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 15. Tabla alertas_seguridad
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='alertas_seguridad' AND xtype='U')
       CREATE TABLE alertas_seguridad (
@@ -241,18 +318,294 @@ async function initDatabase() {
       )
     `);
 
-    // Tabla borrador_solicitud
+    // 16. Tabla config
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='config' AND xtype='U')
+      CREATE TABLE config (
+        [key] NVARCHAR(255) PRIMARY KEY,
+        value NVARCHAR(MAX) NOT NULL
+      )
+    `);
+
+    // 17. Tabla borrador_solicitud
     await pool.request().query(`
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='borrador_solicitud' AND xtype='U')
       CREATE TABLE borrador_solicitud (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        session_email NVARCHAR(255),
+        session_email NVARCHAR(255) NULL,
         datos NVARCHAR(MAX) DEFAULT '{}',
         updated_at DATETIME DEFAULT GETDATE()
       )
     `);
 
+    // 18. Tabla chatbot_preguntas
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='chatbot_preguntas' AND xtype='U')
+      CREATE TABLE chatbot_preguntas (
+        id_pregunta INT IDENTITY(1,1) PRIMARY KEY,
+        pregunta NVARCHAR(MAX) NOT NULL,
+        respuesta NVARCHAR(MAX) NOT NULL,
+        categoria NVARCHAR(100) NULL,
+        activa BIT DEFAULT 1,
+        created_at DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 19. Tabla miembros_comite (NUEVA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='miembros_comite' AND xtype='U')
+      CREATE TABLE miembros_comite (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        rol_en_comite NVARCHAR(100) DEFAULT 'Miembro',
+        activo BIT DEFAULT 1,
+        fecha_agregado DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 20. Tabla votaciones (NUEVA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='votaciones' AND xtype='U')
+      CREATE TABLE votaciones (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        expediente NVARCHAR(50) NOT NULL,
+        fecha_inicio DATETIME NOT NULL DEFAULT GETDATE(),
+        fecha_cierre DATETIME NULL,
+        estado NVARCHAR(50) NOT NULL DEFAULT 'En curso',
+        resultado NVARCHAR(50) NULL
+      )
+    `);
+
+    // 21. Tabla votos (NUEVA)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='votos' AND xtype='U')
+      CREATE TABLE votos (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        votacion_id INT NOT NULL,
+        miembro_comite_id INT NOT NULL,
+        decision NVARCHAR(20) NULL,
+        observacion NVARCHAR(MAX) NULL,
+        fecha_voto DATETIME DEFAULT GETDATE()
+      )
+    `);
+
+    // 22. Tabla votaciones_comite (deprecada - compatibilidad)
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='votaciones_comite' AND xtype='U')
+      CREATE TABLE votaciones_comite (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        expediente NVARCHAR(50) NOT NULL,
+        id_miembro_comite INT NOT NULL,
+        decision NVARCHAR(20) NOT NULL,
+        observaciones NVARCHAR(MAX) NULL,
+        porcentaje_cobertura NVARCHAR(10) NULL,
+        fecha_voto DATETIME DEFAULT GETDATE()
+      )
+    `);
+
     console.log('✅ Tablas creadas correctamente');
+
+    // =====================================================
+    // CREAR ÍNDICES
+    // =====================================================
+    console.log('📋 Creando índices...');
+
+    // Índices para solicitudes
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_solicitudes_estudiante_email' AND object_id = OBJECT_ID('solicitudes'))
+      CREATE NONCLUSTERED INDEX idx_solicitudes_estudiante_email ON solicitudes (estudiante_email)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_solicitudes_estado' AND object_id = OBJECT_ID('solicitudes'))
+      CREATE NONCLUSTERED INDEX idx_solicitudes_estado ON solicitudes (estado)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_solicitudes_expediente' AND object_id = OBJECT_ID('solicitudes'))
+      CREATE NONCLUSTERED INDEX idx_solicitudes_expediente ON solicitudes (expediente)
+    `);
+
+    // Índices para documentos
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_documentos_expediente' AND object_id = OBJECT_ID('documentos'))
+      CREATE NONCLUSTERED INDEX idx_documentos_expediente ON documentos (expediente)
+    `);
+
+    // Índices para visitas
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_visitas_expediente' AND object_id = OBJECT_ID('visitas'))
+      CREATE NONCLUSTERED INDEX idx_visitas_expediente ON visitas (expediente)
+    `);
+
+    // Índices para suspensiones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_suspensiones_expediente' AND object_id = OBJECT_ID('suspensiones'))
+      CREATE NONCLUSTERED INDEX idx_suspensiones_expediente ON suspensiones (expediente)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_suspensiones_email' AND object_id = OBJECT_ID('suspensiones'))
+      CREATE NONCLUSTERED INDEX idx_suspensiones_email ON suspensiones (email)
+    `);
+
+    // Índices para apelaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_apelaciones_expediente' AND object_id = OBJECT_ID('apelaciones'))
+      CREATE NONCLUSTERED INDEX idx_apelaciones_expediente ON apelaciones (expediente)
+    `);
+
+    // Índices para justificaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_justificaciones_estudiante_email' AND object_id = OBJECT_ID('justificaciones'))
+      CREATE NONCLUSTERED INDEX idx_justificaciones_estudiante_email ON justificaciones (estudiante_email)
+    `);
+
+    // Índices para notificaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_notificaciones_usuario' AND object_id = OBJECT_ID('notificaciones'))
+      CREATE NONCLUSTERED INDEX idx_notificaciones_usuario ON notificaciones (usuario_email)
+    `);
+
+    // Índices para bitácora
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_bitacora_fecha' AND object_id = OBJECT_ID('bitacora'))
+      CREATE NONCLUSTERED INDEX idx_bitacora_fecha ON bitacora (fecha DESC)
+    `);
+
+    // Índices para convocatorias
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_convocatorias_fecha_apertura' AND object_id = OBJECT_ID('convocatorias'))
+      CREATE NONCLUSTERED INDEX idx_convocatorias_fecha_apertura ON convocatorias (fecha_apertura)
+    `);
+
+    // Índices para miembros_comite
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_miembros_comite_usuario_id' AND object_id = OBJECT_ID('miembros_comite'))
+      CREATE NONCLUSTERED INDEX idx_miembros_comite_usuario_id ON miembros_comite (usuario_id)
+    `);
+
+    // Índices para votaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_votaciones_expediente' AND object_id = OBJECT_ID('votaciones'))
+      CREATE NONCLUSTERED INDEX idx_votaciones_expediente ON votaciones (expediente)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_votaciones_estado' AND object_id = OBJECT_ID('votaciones'))
+      CREATE NONCLUSTERED INDEX idx_votaciones_estado ON votaciones (estado)
+    `);
+
+    // Índices para votos
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_votos_votacion_id' AND object_id = OBJECT_ID('votos'))
+      CREATE NONCLUSTERED INDEX idx_votos_votacion_id ON votos (votacion_id)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='idx_votos_miembro_comite_id' AND object_id = OBJECT_ID('votos'))
+      CREATE NONCLUSTERED INDEX idx_votos_miembro_comite_id ON votos (miembro_comite_id)
+    `);
+
+    // Índice único para solicitudes activas
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='UX_solicitudes_una_beca_activa' AND object_id = OBJECT_ID('solicitudes'))
+      CREATE UNIQUE NONCLUSTERED INDEX UX_solicitudes_una_beca_activa ON solicitudes (estudiante_email) WHERE (estado IN ('Aprobada', 'Beneficio Activo'))
+    `);
+
+    console.log('✅ Índices creados correctamente');
+
+    // =====================================================
+    // CREAR FOREIGN KEYS
+    // =====================================================
+    console.log('📋 Creando relaciones (FOREIGN KEYS)...');
+
+    // Relaciones de solicitudes
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_solicitudes_usuarios')
+      ALTER TABLE solicitudes ADD CONSTRAINT FK_solicitudes_usuarios FOREIGN KEY (estudiante_email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de documentos
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_documentos_solicitudes')
+      ALTER TABLE documentos ADD CONSTRAINT FK_documentos_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+
+    // Relaciones de integrantes_familia
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_integrantes_familia_solicitudes')
+      ALTER TABLE integrantes_familia ADD CONSTRAINT FK_integrantes_familia_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+
+    // Relaciones de visitas
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_visitas_solicitudes')
+      ALTER TABLE visitas ADD CONSTRAINT FK_visitas_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+
+    // Relaciones de suspensiones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_suspensiones_solicitudes')
+      ALTER TABLE suspensiones ADD CONSTRAINT FK_suspensiones_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_suspensiones_usuarios')
+      ALTER TABLE suspensiones ADD CONSTRAINT FK_suspensiones_usuarios FOREIGN KEY (email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de apelaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_apelaciones_solicitudes')
+      ALTER TABLE apelaciones ADD CONSTRAINT FK_apelaciones_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_apelaciones_usuarios')
+      ALTER TABLE apelaciones ADD CONSTRAINT FK_apelaciones_usuarios FOREIGN KEY (email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de justificaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_justificaciones_usuarios')
+      ALTER TABLE justificaciones ADD CONSTRAINT FK_justificaciones_usuarios FOREIGN KEY (estudiante_email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de notificaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_notificaciones_usuarios')
+      ALTER TABLE notificaciones ADD CONSTRAINT FK_notificaciones_usuarios FOREIGN KEY (usuario_email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de borrador_solicitud
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_borrador_usuarios')
+      ALTER TABLE borrador_solicitud ADD CONSTRAINT FK_borrador_usuarios FOREIGN KEY (session_email) REFERENCES usuarios(email)
+    `);
+
+    // Relaciones de miembros_comite
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_miembros_comite_usuarios')
+      ALTER TABLE miembros_comite ADD CONSTRAINT FK_miembros_comite_usuarios FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    `);
+
+    // Relaciones de votaciones
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_votaciones_solicitudes')
+      ALTER TABLE votaciones ADD CONSTRAINT FK_votaciones_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+
+    // Relaciones de votos
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_votos_votaciones')
+      ALTER TABLE votos ADD CONSTRAINT FK_votos_votaciones FOREIGN KEY (votacion_id) REFERENCES votaciones(id)
+    `);
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_votos_miembros_comite')
+      ALTER TABLE votos ADD CONSTRAINT FK_votos_miembros_comite FOREIGN KEY (miembro_comite_id) REFERENCES miembros_comite(id)
+    `);
+
+    // Relaciones de votaciones_comite
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_votaciones_comite_solicitudes')
+      ALTER TABLE votaciones_comite ADD CONSTRAINT FK_votaciones_comite_solicitudes FOREIGN KEY (expediente) REFERENCES solicitudes(expediente)
+    `);
+
+    console.log('✅ Foreign Keys creados correctamente');
 
     // =====================================================
     // INSERTAR DATOS DE PRUEBA
@@ -262,17 +615,19 @@ async function initDatabase() {
     // ---- 1. USUARIOS ----
     console.log('📌 Insertando usuarios...');
     const usuarios = [
-      ['estudiante@becas.com', cifrarPassword('123456'), 'estudiante', 'María Gómez'],
-      ['estudiante2@becas.com', cifrarPassword('123456'), 'estudiante', 'José Ramírez'],
-      ['estudiante3@becas.com', cifrarPassword('123456'), 'estudiante', 'Ana López'],
-      ['estudiante4@becas.com', cifrarPassword('123456'), 'estudiante', 'Carlos Méndez'],
-      ['estudiante5@becas.com', cifrarPassword('123456'), 'estudiante', 'Laura Fernández'],
-      ['social@becas.com', cifrarPassword('123456'), 'trabajador_social', 'Carlos Rodríguez'],
-      ['social2@becas.com', cifrarPassword('123456'), 'trabajador_social', 'Ana Martínez'],
-      ['comite@becas.com', cifrarPassword('123456'), 'comite', 'Dra. Ana Méndez'],
-      ['comite2@becas.com', cifrarPassword('123456'), 'comite', 'Dr. Roberto Jiménez'],
-      ['admin@becas.com', cifrarPassword('123456'), 'admin', 'Admin Sistema'],
-      ['auditor@becas.com', cifrarPassword('123456'), 'auditor', 'Luis Fernández']
+      ['estudiante@becas.com', cifrarPassword('123456'), 'estudiante', 'María Gómez', '1-2345-6789', '8888-1111', 'San José, Montes de Oca, Sabanilla', 1, 1],
+      ['estudiante2@becas.com', cifrarPassword('123456'), 'estudiante', 'José Ramírez', '2-3456-7890', '8888-2222', 'Alajuela, San Ramón', 1, 1],
+      ['estudiante3@becas.com', cifrarPassword('123456'), 'estudiante', 'Ana López', '3-4567-8901', '8888-3333', 'Cartago, Paraíso', 1, 1],
+      ['estudiante4@becas.com', cifrarPassword('123456'), 'estudiante', 'Carlos Méndez', '4-5678-9012', '8888-4444', 'Heredia, San Pablo', 1, 1],
+      ['estudiante5@becas.com', cifrarPassword('123456'), 'estudiante', 'Laura Fernández', '5-6789-0123', '8888-5555', 'Puntarenas, Esparza', 1, 1],
+      ['social@becas.com', cifrarPassword('123456'), 'trabajador_social', 'Carlos Rodríguez', '6-7890-1234', '8888-6666', 'San José, Central', 1, 0],
+      ['social2@becas.com', cifrarPassword('123456'), 'trabajador_social', 'Ana Martínez', '7-8901-2345', '8888-7777', 'San José, Curridabat', 1, 0],
+      ['comite@becas.com', cifrarPassword('123456'), 'comite', 'Dra. Ana Méndez', '8-9012-3456', '8888-8888', 'San José, Escazú', 1, 0],
+      ['comite2@becas.com', cifrarPassword('123456'), 'comite', 'Dr. Roberto Jiménez', '9-0123-4567', '8888-9999', 'San José, Santa Ana', 1, 0],
+      ['carlos.montero@becas.com', cifrarPassword('123456'), 'comite', 'Dr. Carlos Montero', '7-8901-2345', '8888-7777', 'Cartago, Cartago', 1, 0],
+      ['laura.chaves@becas.com', cifrarPassword('123456'), 'comite', 'Dra. Laura Chaves', '8-9012-3456', '8888-8888', 'Heredia, Heredia', 1, 0],
+      ['admin@becas.com', cifrarPassword('123456'), 'admin', 'Admin Sistema', '1-2345-6789', '8888-0000', 'San José, Central', 1, 0],
+      ['auditor@becas.com', cifrarPassword('123456'), 'auditor', 'Luis Fernández', '9-0123-4567', '8888-9999', 'San José, San Pedro', 1, 0]
     ];
 
     for (const u of usuarios) {
@@ -281,56 +636,57 @@ async function initDatabase() {
         .input('password', u[1])
         .input('rol', u[2])
         .input('nombre', u[3])
+        .input('cedula', u[4])
+        .input('telefono', u[5])
+        .input('direccion', u[6])
+        .input('aprobado', u[7])
+        .input('puede_solicitar', u[8])
         .query(`
           IF NOT EXISTS (SELECT 1 FROM usuarios WHERE email = @email)
-          INSERT INTO usuarios (email, password, rol, nombre, intentos, bloqueado, two_factor_enabled)
-          VALUES (@email, @password, @rol, @nombre, 0, 0, 0)
+          INSERT INTO usuarios (email, password, rol, nombre, intentos, bloqueado, two_factor_enabled, cedula, telefono, direccion, aprobado, puede_solicitar)
+          VALUES (@email, @password, @rol, @nombre, 0, 0, 0, @cedula, @telefono, @direccion, @aprobado, @puede_solicitar)
         `);
     }
     console.log('✅ Usuarios insertados (' + usuarios.length + ' registros)');
 
-    // ---- 2. TIPOS DE BECA ----
+    // ---- 2. MIEMBROS DEL COMITÉ ----
+    console.log('📌 Insertando miembros del comité...');
+    // Obtener IDs de usuarios del comité
+    const miembrosData = [
+      ['comite@becas.com', 'Presidenta', 1],
+      ['comite2@becas.com', 'Vocal', 1],
+      ['carlos.montero@becas.com', 'Vocal', 1],
+      ['laura.chaves@becas.com', 'Vocal', 1]
+    ];
+
+    for (const m of miembrosData) {
+      const result = await pool.request()
+        .input('email', m[0])
+        .query('SELECT id FROM usuarios WHERE email = @email');
+      
+      if (result.recordset.length > 0) {
+        const usuarioId = result.recordset[0].id;
+        await pool.request()
+          .input('usuario_id', usuarioId)
+          .input('rol_en_comite', m[1])
+          .input('activo', m[2])
+          .query(`
+            IF NOT EXISTS (SELECT 1 FROM miembros_comite WHERE usuario_id = @usuario_id)
+            INSERT INTO miembros_comite (usuario_id, rol_en_comite, activo)
+            VALUES (@usuario_id, @rol_en_comite, @activo)
+          `);
+      }
+    }
+    console.log('✅ Miembros del comité insertados (' + miembrosData.length + ' registros)');
+
+    // ---- 3. TIPOS DE BECA ----
     console.log('📌 Insertando tipos de beca...');
     const tipos = [
-      ['Socioeconómica', '💰', 'Apoyo financiero para estudiantes con recursos limitados', 25, 100, 
-       JSON.stringify(['Matrícula', 'Aranceles', 'Materiales']),
-       JSON.stringify(['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos', 'Constancia de ingresos', 'Recibo de servicios públicos']), 1, '[]'],
-      ['Excelencia Académica', '🎓', 'Para estudiantes con promedio destacado', 50, 100,
-       JSON.stringify(['Matrícula', 'Aranceles']),
-       JSON.stringify(['Promedio mínimo 90', 'Sin sanciones disciplinarias', 'Carga mínima 12 créditos', 'Carta de recomendación']), 1,
-       JSON.stringify([
-         { id: 'f-publicaciones', label: 'Publicaciones o investigaciones', type: 'textarea', placeholder: 'Lista de publicaciones' },
-         { id: 'f-proyectos', label: 'Proyectos de investigación', type: 'textarea', placeholder: 'Proyectos de investigación' }
-       ])],
-      ['Deportiva', '⚽', 'Para estudiantes con alto rendimiento deportivo', 25, 75,
-       JSON.stringify(['Matrícula']),
-       JSON.stringify(['Promedio mínimo 80', 'Representación universitaria', 'Carta de la coordinación deportiva', 'Participación activa']), 1,
-       JSON.stringify([
-         { id: 'f-deporte', label: 'Deporte que practica', type: 'text', placeholder: 'Ej: Natación' },
-         { id: 'f-nivel-deporte', label: 'Nivel de competencia', type: 'select', options: ['Local', 'Regional', 'Nacional', 'Internacional'] },
-         { id: 'f-logros-deportivos', label: 'Logros deportivos', type: 'textarea', placeholder: 'Principales logros' }
-       ])],
-      ['Cultural', '🎭', 'Artes, música, teatro', 25, 75,
-       JSON.stringify(['Matrícula']),
-       JSON.stringify(['Promedio mínimo 80', 'Portafolio artístico', 'Carta de la coordinación cultural', 'Participación en actividades']), 1,
-       JSON.stringify([
-         { id: 'f-disciplina', label: 'Disciplina artística', type: 'text', placeholder: 'Ej: Teatro' },
-         { id: 'f-portafolio', label: 'Descripción del portafolio artístico', type: 'textarea', placeholder: 'Describa su portafolio' }
-       ])],
-      ['Discapacidad', '♿', 'Apoyo para estudiantes con discapacidad certificada', 50, 100,
-       JSON.stringify(['Matrícula', 'Aranceles', 'Materiales', 'Transporte']),
-       JSON.stringify(['Promedio mínimo 80', 'Certificado médico vigente', 'Constancia de ingresos', 'Informe de necesidades especiales']), 1,
-       JSON.stringify([
-         { id: 'f-tipo-discapacidad', label: 'Tipo de discapacidad', type: 'text', placeholder: 'Ej: Motora' },
-         { id: 'f-requiere-adaptacion', label: '¿Requiere adaptaciones curriculares?', type: 'select', options: ['No', 'Sí'] }
-       ])],
-      ['Investigación', '🔬', 'Para asistentes de investigación', 25, 75,
-       JSON.stringify(['Matrícula', 'Estipendio']),
-       JSON.stringify(['Promedio mínimo 85', 'Proyecto de investigación activo', 'Carta del director del proyecto', 'Disponibilidad horaria']), 1,
-       JSON.stringify([
-         { id: 'f-area-investigacion', label: 'Área de investigación', type: 'text', placeholder: 'Ej: Biología Molecular' },
-         { id: 'f-proyecto-investigacion', label: 'Nombre del proyecto', type: 'text', placeholder: 'Nombre del proyecto' }
-       ])]
+      ['Socioeconómica', '💰', 'Apoyo financiero para estudiantes con recursos limitados', 25, 100, '["Matrícula", "Aranceles", "Materiales"]', '["Promedio mínimo 80", "Ingreso familiar máximo 2 salarios mínimos"]', 1],
+      ['Excelencia Académica', '🎓', 'Para estudiantes con promedio destacado', 50, 100, '["Matrícula", "Aranceles"]', '["Promedio mínimo 90", "Sin sanciones disciplinarias"]', 1],
+      ['Deportiva', '⚽', 'Para estudiantes con alto rendimiento deportivo', 25, 75, '["Matrícula"]', '["Promedio mínimo 80"]', 1],
+      ['Cultural', '🎭', 'Artes, música, teatro', 25, 75, '["Matrícula"]', '["Promedio mínimo 80"]', 1],
+      ['Investigación', '🔬', 'Para asistentes de investigación', 25, 75, '["Matrícula", "Estipendio"]', '["Promedio mínimo 85", "Proyecto de investigación activo"]', 1]
     ];
 
     for (const t of tipos) {
@@ -343,16 +699,15 @@ async function initDatabase() {
         .input('rubros', t[5])
         .input('requisitos', t[6])
         .input('activo', t[7])
-        .input('campos', t[8])
         .query(`
           IF NOT EXISTS (SELECT 1 FROM tipos_beca WHERE nombre = @nombre)
-          INSERT INTO tipos_beca (nombre, icon, description, min_pct, max_pct, rubros, requisitos, activo, campos_personalizados)
-          VALUES (@nombre, @icon, @description, @min_pct, @max_pct, @rubros, @requisitos, @activo, @campos)
+          INSERT INTO tipos_beca (nombre, icon, description, min_pct, max_pct, rubros, requisitos, activo)
+          VALUES (@nombre, @icon, @description, @min_pct, @max_pct, @rubros, @requisitos, @activo)
         `);
     }
     console.log('✅ Tipos de beca insertados (' + tipos.length + ' registros)');
 
-    // ---- 3. CONFIGURACIÓN ----
+    // ---- 4. CONFIGURACIÓN ----
     console.log('📌 Insertando configuración...');
     const configs = [
       ['socio', '40'], ['academico', '35'], ['vulnerabilidad', '15'], ['meritos', '10'],
@@ -374,49 +729,12 @@ async function initDatabase() {
     }
     console.log('✅ Configuración insertada (' + configs.length + ' registros)');
 
-    // ---- 4. CONVOCATORIAS ----
-    console.log('📌 Insertando convocatorias...');
-    const hoy = new Date();
-    const fmt = (d) => d.toISOString().slice(0, 10);
-    const apertura = new Date(hoy.getTime() - 10 * 86400000);
-    const cierre = new Date(hoy.getTime() + 20 * 86400000);
-
-    const convocatorias = [
-      ['Beca Socioeconómica 2026-I', 'Socioeconómica', 20, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca de Excelencia Académica 2026-I', 'Excelencia Académica', 10, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca Deportiva 2026-I', 'Deportiva', 15, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca Cultural 2026-I', 'Cultural', 10, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca Discapacidad 2026-I', 'Discapacidad', 8, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca Investigación 2026-I', 'Investigación', 5, fmt(apertura), fmt(cierre), 'Activa'],
-      ['Beca Socioeconómica 2026-II', 'Socioeconómica', 25, fmt(new Date(hoy.getTime() + 30 * 86400000)), fmt(new Date(hoy.getTime() + 60 * 86400000)), 'Borrador'],
-      ['Beca Excelencia Académica 2026-II', 'Excelencia Académica', 12, fmt(new Date(hoy.getTime() + 30 * 86400000)), fmt(new Date(hoy.getTime() + 60 * 86400000)), 'Borrador']
-    ];
-
-    for (const c of convocatorias) {
-      await pool.request()
-        .input('nombre', c[0])
-        .input('tipo', c[1])
-        .input('cupos', c[2])
-        .input('fecha_apertura', c[3])
-        .input('fecha_cierre', c[4])
-        .input('estado', c[5])
-        .query(`
-          IF NOT EXISTS (SELECT 1 FROM convocatorias WHERE nombre = @nombre)
-          INSERT INTO convocatorias (nombre, tipo, cupos, fecha_apertura, fecha_cierre, estado)
-          VALUES (@nombre, @tipo, @cupos, @fecha_apertura, @fecha_cierre, @estado)
-        `);
-    }
-    console.log('✅ Convocatorias insertadas (' + convocatorias.length + ' registros)');
-
     // ---- 5. NOTICIAS ----
     console.log('📌 Insertando noticias...');
     const noticias = [
-      ['Convocatoria 2026 abierta', 'Ya están disponibles las becas para el período 2026. Las solicitudes se recibirán hasta el 31 de marzo de 2026. No pierdas esta oportunidad de obtener apoyo para tus estudios.', '15/01/2026'],
-      ['Plazo de subsanación extendido', 'Se extiende el plazo de subsanación de documentos hasta el 15 de abril de 2026. Los estudiantes podrán completar la documentación faltante sin penalización.', '01/03/2026'],
-      ['Nuevas becas de investigación', 'Se abre convocatoria para becas de investigación con un estipendio mensual de ₡300,000. Dirigido a estudiantes de posgrado y últimos años de carrera.', '01/06/2026'],
-      ['Resultados de becas 2026-I', 'Ya están disponibles los resultados de las becas para el primer semestre de 2026. Los estudiantes pueden consultar su estado en el sistema.', '30/06/2026'],
-      ['Importante: Actualización de requisitos', 'Se han actualizado los requisitos para la beca de Excelencia Académica. El promedio mínimo requerido es ahora 90.', '15/07/2026'],
-      ['Cierre de convocatoria 2026-II', 'La convocatoria para el segundo semestre de 2026 cierra el 31 de agosto. Asegúrate de completar tu solicitud a tiempo.', '01/08/2026']
+      ['Convocatoria 2026 abierta', 'Ya están disponibles las becas para el período 2026. Las solicitudes se recibirán hasta el 31 de marzo de 2026.', CONVERT(nvarchar(50), GETDATE(), 103), CONVERT(nvarchar(50), GETDATE(), 23)],
+      ['Plazo de subsanación extendido', 'Se extiende el plazo de subsanación de documentos hasta el 15 de abril de 2026.', CONVERT(nvarchar(50), GETDATE(), 103), CONVERT(nvarchar(50), GETDATE(), 23)],
+      ['Nuevas becas de investigación', 'Se abre convocatoria para becas de investigación con un estipendio mensual de ₡300,000.', CONVERT(nvarchar(50), GETDATE(), 103), CONVERT(nvarchar(50), GETDATE(), 23)]
     ];
 
     for (const n of noticias) {
@@ -424,9 +742,11 @@ async function initDatabase() {
         .input('titulo', n[0])
         .input('contenido', n[1])
         .input('fecha', n[2])
+        .input('fecha_publicacion', n[3])
         .query(`
           IF NOT EXISTS (SELECT 1 FROM noticias WHERE titulo = @titulo)
-          INSERT INTO noticias (titulo, contenido, fecha) VALUES (@titulo, @contenido, @fecha)
+          INSERT INTO noticias (titulo, contenido, fecha, fecha_publicacion)
+          VALUES (@titulo, @contenido, @fecha, @fecha_publicacion)
         `);
     }
     console.log('✅ Noticias insertadas (' + noticias.length + ' registros)');
@@ -437,10 +757,7 @@ async function initDatabase() {
       ['Dra. Laura Chaves', 'Oficina de Becas', 'Coordinadora de Becas', 'laura.chaves@becas.ac.cr', '2200-1001'],
       ['M.Sc. Roberto Jiménez', 'Registro Académico', 'Analista de Expedientes', 'roberto.jimenez@becas.ac.cr', '2200-1002'],
       ['Lic. Marcela Solano', 'Finanzas', 'Tesorera', 'marcela.solano@becas.ac.cr', '2200-1003'],
-      ['Dr. Carlos Montero', 'Comité de Becas', 'Miembro del Comité', 'carlos.montero@becas.ac.cr', '2200-1004'],
-      ['Lic. Patricia Fernández', 'Oficina de Becas', 'Asistente de Becas', 'patricia.fernandez@becas.ac.cr', '2200-1005'],
-      ['M.Sc. Eduardo Rojas', 'Registro Académico', 'Jefe de Registro', 'eduardo.rojas@becas.ac.cr', '2200-1006'],
-      ['Dra. María José Mora', 'Comité de Becas', 'Presidenta del Comité', 'maria.mora@becas.ac.cr', '2200-1007']
+      ['Dr. Carlos Montero', 'Comité de Becas', 'Miembro del Comité', 'carlos.montero@becas.ac.cr', '2200-1004']
     ];
 
     for (const e of empleados) {
@@ -451,7 +768,7 @@ async function initDatabase() {
         .input('correo', e[3])
         .input('telefono', e[4])
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM empleados WHERE nombre = @nombre AND correo = @correo)
+          IF NOT EXISTS (SELECT 1 FROM empleados WHERE correo = @correo)
           INSERT INTO empleados (nombre, departamento, cargo, correo, telefono)
           VALUES (@nombre, @departamento, @cargo, @correo, @telefono)
         `);
@@ -480,11 +797,7 @@ async function initDatabase() {
         porcentaje_cobertura: '75%',
         observacion_ts: 'Documentación completa. Visita realizada y condiciones verificadas.',
         observaciones_comite: 'Aprobada por unanimidad. Excelente perfil académico.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'María', 'f-apellidos': 'Gómez', 'f-carrera': 'Medicina', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({
-          'f-cedula-f': { label: 'Copia de cédula (frontal)', nombre: 'cedula_f.jpg', tipo: 'image/jpeg', tamano: 245678, fecha: '2026-01-15T10:00:00.000Z', estado: 'Aprobado' },
-          'f-constancia': { label: 'Constancia de ingresos', nombre: 'constancia.pdf', tipo: 'application/pdf', tamano: 123456, fecha: '2026-01-15T10:00:00.000Z', estado: 'Aprobado' }
-        })
+        datos_completos: JSON.stringify({ 'f-carrera': 'Medicina', 'f-sede': 'Central', 'f-facultad': 'Ciencias de la Salud' })
       },
       {
         expediente: 'BEC-2026-002',
@@ -503,10 +816,7 @@ async function initDatabase() {
         ingreso_familiar: 350000,
         aceptado: 0,
         observacion_ts: 'Pendiente de visita domiciliaria.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'José', 'f-apellidos': 'Ramírez', 'f-carrera': 'Ingeniería en Sistemas', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({
-          'f-cedula-f': { label: 'Copia de cédula (frontal)', nombre: 'cedula_jose.jpg', tipo: 'image/jpeg', tamano: 189234, fecha: '2026-06-20T10:00:00.000Z', estado: 'Pendiente' }
-        })
+        datos_completos: JSON.stringify({ 'f-carrera': 'Ingeniería en Sistemas', 'f-sede': 'Central', 'f-facultad': 'Ingeniería' })
       },
       {
         expediente: 'BEC-2026-003',
@@ -525,8 +835,7 @@ async function initDatabase() {
         ingreso_familiar: 280000,
         aceptado: 0,
         observacion_ts: 'Pendiente de verificación de documentación.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'Ana', 'f-apellidos': 'López', 'f-carrera': 'Derecho', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({})
+        datos_completos: JSON.stringify({ 'f-carrera': 'Derecho', 'f-sede': 'Central', 'f-facultad': 'Ciencias Sociales' })
       },
       {
         expediente: 'BEC-2026-004',
@@ -544,8 +853,7 @@ async function initDatabase() {
         promedio: 82,
         ingreso_familiar: 420000,
         aceptado: 0,
-        datos_completos: JSON.stringify({ 'f-nombres': 'Carlos', 'f-apellidos': 'Méndez', 'f-carrera': 'Administración', 'f-sede': 'Occidente' }),
-        documentos: JSON.stringify({})
+        datos_completos: JSON.stringify({ 'f-carrera': 'Administración', 'f-sede': 'Occidente', 'f-facultad': 'Ciencias Sociales' })
       },
       {
         expediente: 'BEC-2026-005',
@@ -564,9 +872,7 @@ async function initDatabase() {
         ingreso_familiar: 320000,
         aceptado: 0,
         observacion_ts: 'Documentación incompleta. Se requiere subsanación.',
-        motivo_rechazo: 'Falta constancia de ingresos',
-        datos_completos: JSON.stringify({ 'f-nombres': 'Laura', 'f-apellidos': 'Fernández', 'f-carrera': 'Arquitectura', 'f-sede': 'Atlántica' }),
-        documentos: JSON.stringify({})
+        datos_completos: JSON.stringify({ 'f-carrera': 'Arquitectura', 'f-sede': 'Atlántica', 'f-facultad': 'Arquitectura y Diseño' })
       },
       {
         expediente: 'BEC-2026-006',
@@ -577,7 +883,7 @@ async function initDatabase() {
         cedula: '1-2345-6789',
         correo: 'estudiante@becas.com',
         telefono: '8888-1111',
-        tipo_beca: 'Discapacidad',
+        tipo_beca: 'Investigación',
         estado: 'En comité',
         progreso: 80,
         puntaje: 88,
@@ -586,10 +892,7 @@ async function initDatabase() {
         aceptado: 0,
         observacion_ts: 'Visita realizada. Documentación completa.',
         observaciones_comite: 'En evaluación por el comité.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'María', 'f-apellidos': 'Gómez', 'f-carrera': 'Medicina', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({
-          'f-certificado': { label: 'Certificado médico', nombre: 'certificado.pdf', tipo: 'application/pdf', tamano: 234567, fecha: '2026-07-20T10:00:00.000Z', estado: 'Aprobado' }
-        })
+        datos_completos: JSON.stringify({ 'f-carrera': 'Medicina', 'f-sede': 'Central', 'f-facultad': 'Ciencias de la Salud' })
       },
       {
         expediente: 'BEC-2026-007',
@@ -610,10 +913,7 @@ async function initDatabase() {
         porcentaje_cobertura: '50%',
         observacion_ts: 'Visita realizada exitosamente.',
         observaciones_comite: 'Aprobada por el comité. Buen perfil investigativo.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'José', 'f-apellidos': 'Ramírez', 'f-carrera': 'Ingeniería en Sistemas', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({
-          'f-proyecto': { label: 'Proyecto de investigación', nombre: 'proyecto.pdf', tipo: 'application/pdf', tamano: 456789, fecha: '2026-08-01T10:00:00.000Z', estado: 'Aprobado' }
-        })
+        datos_completos: JSON.stringify({ 'f-carrera': 'Ingeniería en Sistemas', 'f-sede': 'Central', 'f-facultad': 'Ingeniería' })
       },
       {
         expediente: 'BEC-2026-008',
@@ -633,51 +933,7 @@ async function initDatabase() {
         aceptado: 0,
         observacion_ts: 'Visita realizada. No cumple requisitos de ingreso.',
         motivo_rechazo: 'Ingreso familiar supera el límite establecido',
-        datos_completos: JSON.stringify({ 'f-nombres': 'Ana', 'f-apellidos': 'López', 'f-carrera': 'Derecho', 'f-sede': 'Central' }),
-        documentos: JSON.stringify({})
-      },
-      {
-        expediente: 'BEC-2026-009',
-        fecha: '2026-08-10',
-        estudiante_email: 'estudiante4@becas.com',
-        nombres: 'Carlos',
-        apellidos: 'Méndez',
-        cedula: '4-5678-9012',
-        correo: 'estudiante4@becas.com',
-        telefono: '8888-4444',
-        tipo_beca: 'Excelencia Académica',
-        estado: 'Enviada',
-        progreso: 10,
-        puntaje: 0,
-        promedio: 93,
-        ingreso_familiar: 380000,
-        aceptado: 0,
-        datos_completos: JSON.stringify({ 'f-nombres': 'Carlos', 'f-apellidos': 'Méndez', 'f-carrera': 'Administración', 'f-sede': 'Occidente' }),
-        documentos: JSON.stringify({})
-      },
-      {
-        expediente: 'BEC-2026-010',
-        fecha: '2026-08-15',
-        estudiante_email: 'estudiante5@becas.com',
-        nombres: 'Laura',
-        apellidos: 'Fernández',
-        cedula: '5-6789-0123',
-        correo: 'estudiante5@becas.com',
-        telefono: '8888-5555',
-        tipo_beca: 'Cultural',
-        estado: 'Beneficio Activo',
-        progreso: 100,
-        puntaje: 85,
-        promedio: 89,
-        ingreso_familiar: 320000,
-        aceptado: 1,
-        porcentaje_cobertura: '75%',
-        observacion_ts: 'Documentación verificada y aprobada.',
-        observaciones_comite: 'Aprobada. Excelente portafolio artístico.',
-        datos_completos: JSON.stringify({ 'f-nombres': 'Laura', 'f-apellidos': 'Fernández', 'f-carrera': 'Arquitectura', 'f-sede': 'Atlántica' }),
-        documentos: JSON.stringify({
-          'f-portafolio': { label: 'Portafolio artístico', nombre: 'portafolio.pdf', tipo: 'application/pdf', tamano: 567890, fecha: '2026-08-15T10:00:00.000Z', estado: 'Aprobado' }
-        })
+        datos_completos: JSON.stringify({ 'f-carrera': 'Derecho', 'f-sede': 'Central', 'f-facultad': 'Ciencias Sociales' })
       }
     ];
 
@@ -703,19 +959,18 @@ async function initDatabase() {
         .input('observaciones_comite', s.observaciones_comite || null)
         .input('motivo_rechazo', s.motivo_rechazo || null)
         .input('datos_completos', s.datos_completos)
-        .input('documentos', s.documentos)
         .query(`
           IF NOT EXISTS (SELECT 1 FROM solicitudes WHERE expediente = @expediente)
           INSERT INTO solicitudes (
             expediente, fecha, estudiante_email, nombres, apellidos, cedula, correo, telefono,
             tipo_beca, estado, progreso, puntaje, promedio, ingreso_familiar, aceptado,
             porcentaje_cobertura, observacion_ts, observaciones_comite, motivo_rechazo,
-            datos_completos, documentos
+            datos_completos
           ) VALUES (
             @expediente, @fecha, @estudiante_email, @nombres, @apellidos, @cedula, @correo, @telefono,
             @tipo_beca, @estado, @progreso, @puntaje, @promedio, @ingreso_familiar, @aceptado,
             @porcentaje_cobertura, @observacion_ts, @observaciones_comite, @motivo_rechazo,
-            @datos_completos, @documentos
+            @datos_completos
           )
         `);
     }
@@ -724,12 +979,11 @@ async function initDatabase() {
     // ---- 8. VISITAS ----
     console.log('📌 Insertando visitas...');
     const visitas = [
-      ['BEC-2026-001', '2026-07-15', 'Vivienda en buen estado, familia presente, condiciones económicas estables. La información proporcionada coincide con lo declarado.', 'Sí', null, 'María Gómez', '2026-07-15 14:30:00'],
-      ['BEC-2026-002', '2026-07-20', 'Vivienda modesta, familia numerosa (5 miembros), ingreso limitado, necesidades básicas cubiertas.', 'Sí', null, 'José Ramírez', '2026-07-20 10:15:00'],
-      ['BEC-2026-003', '2026-07-25', 'Vivienda en zona rural, acceso limitado a servicios básicos, condiciones de hacinamiento. Se recomienda seguimiento.', 'Parcialmente', null, 'Ana López', '2026-07-25 16:45:00'],
-      ['BEC-2026-006', '2026-08-01', 'Vivienda en alquiler, buen estado, familia con 2 dependientes económicos, ingreso estable.', 'Sí', null, 'Carlos Méndez', '2026-08-01 09:30:00'],
-      ['BEC-2026-007', '2026-08-05', 'Vivienda propia, condiciones regulares, problemas estructurales menores, familia de 4 miembros.', 'Parcialmente', null, 'Laura Fernández', '2026-08-05 11:00:00'],
-      ['BEC-2026-008', '2026-08-10', 'Vivienda en condición precaria, falta de servicios básicos, situación económica crítica.', 'No', null, 'Pedro Sánchez', '2026-08-10 13:20:00']
+      ['BEC-2026-001', '2026-07-15', 'Vivienda en buen estado, familia presente, condiciones económicas estables.', 'Sí', 'María Gómez', '2026-07-15 14:30:00', 'Realizada'],
+      ['BEC-2026-002', '2026-07-20', 'Vivienda modesta, familia numerosa (5 miembros), ingreso limitado.', 'Sí', 'José Ramírez', '2026-07-20 10:15:00', 'Realizada'],
+      ['BEC-2026-003', '2026-07-25', 'Vivienda en zona rural, acceso limitado a servicios básicos.', 'Parcialmente', 'Ana López', '2026-07-25 16:45:00', 'Realizada'],
+      ['BEC-2026-006', '2026-08-01', 'Vivienda en alquiler, buen estado, familia con 2 dependientes económicos.', 'Sí', 'María Gómez', '2026-08-01 09:30:00', 'Realizada'],
+      ['BEC-2026-005', '2026-08-10', 'Pendiente de realizar', 'Pendiente', 'Laura Fernández', '2026-08-10 13:20:00', 'Pendiente']
     ];
 
     for (const v of visitas) {
@@ -738,13 +992,12 @@ async function initDatabase() {
         .input('fecha', v[1])
         .input('condiciones', v[2])
         .input('coincide', v[3])
-        .input('archivo', v[4])
-        .input('nombreEstudiante', v[5])
-        .input('fecha_registro', v[6])
+        .input('nombreEstudiante', v[4])
+        .input('fecha_registro', v[5])
+        .input('estado', v[6])
         .query(`
-          IF NOT EXISTS (SELECT 1 FROM visitas WHERE expediente = @expediente AND fecha = @fecha)
-          INSERT INTO visitas (expediente, fecha, condiciones, coincide, archivo, nombreEstudiante, fecha_registro)
-          VALUES (@expediente, @fecha, @condiciones, @coincide, @archivo, @nombreEstudiante, @fecha_registro)
+          INSERT INTO visitas (expediente, fecha, condiciones, coincide, nombreEstudiante, fecha_registro, estado)
+          VALUES (@expediente, @fecha, @condiciones, @coincide, @nombreEstudiante, @fecha_registro, @estado)
         `);
     }
     console.log('✅ Visitas insertadas (' + visitas.length + ' registros)');
@@ -752,11 +1005,9 @@ async function initDatabase() {
     // ---- 9. JUSTIFICACIONES ----
     console.log('📌 Insertando justificaciones...');
     const justificaciones = [
-      ['estudiante@becas.com', 'María Gómez', 'Matemática I', 'MA-1001', 'I-2026', 65, 'Problemas de salud durante el periodo de exámenes. Adjunto certificado médico.', 'Pendiente', '', '2026-07-15 14:30:00', null],
-      ['estudiante2@becas.com', 'José Ramírez', 'Física I', 'FI-1001', 'I-2026', 58, 'Fallecimiento de un familiar cercano que afectó mi rendimiento académico.', 'Aprobada', 'Justificación aceptada. Se adjunta acta de defunción.', '2026-07-20 10:15:00', null],
-      ['estudiante3@becas.com', 'Ana López', 'Química I', 'QU-1001', 'I-2026', 70, 'Problemas económicos que me obligaron a trabajar tiempo completo durante el semestre.', 'Pendiente', '', '2026-07-25 16:45:00', null],
-      ['estudiante4@becas.com', 'Carlos Méndez', 'Cálculo I', 'CA-1001', 'II-2025', 60, 'Enfermedad prolongada que me impidió asistir a clases regularmente.', 'Aprobada', 'Justificación aceptada. Se adjunta certificado médico.', '2026-08-01 09:30:00', null],
-      ['estudiante5@becas.com', 'Laura Fernández', 'Dibujo Técnico', 'DT-1001', 'II-2025', 55, 'Problemas familiares que afectaron mi concentración durante el semestre.', 'Rechazada', 'No se presentó evidencia suficiente para justificar la pérdida del curso.', '2026-08-05 11:00:00', null]
+      ['estudiante@becas.com', 'María Gómez', 'Matemática I', 'MA-1001', 'I-2026', 65, 'Problemas de salud durante el periodo de exámenes.', 'Pendiente', '', '2026-07-15 14:30:00'],
+      ['estudiante2@becas.com', 'José Ramírez', 'Física I', 'FI-1001', 'I-2026', 58, 'Fallecimiento de un familiar cercano.', 'Aprobada', 'Justificación aceptada.', '2026-07-20 10:15:00'],
+      ['estudiante3@becas.com', 'Ana López', 'Química I', 'QU-1001', 'I-2026', 70, 'Problemas económicos que me obligaron a trabajar tiempo completo.', 'Pendiente', '', '2026-07-25 16:45:00']
     ];
 
     for (const j of justificaciones) {
@@ -771,10 +1022,9 @@ async function initDatabase() {
         .input('estado', j[7])
         .input('observacion', j[8])
         .input('fecha', j[9])
-        .input('archivo', j[10])
         .query(`
-          INSERT INTO justificaciones (estudiante_email, nombre_estudiante, curso, codigo, periodo, nota, motivo, estado, observacion, fecha, archivo)
-          VALUES (@estudiante_email, @nombre_estudiante, @curso, @codigo, @periodo, @nota, @motivo, @estado, @observacion, @fecha, @archivo)
+          INSERT INTO justificaciones (estudiante_email, nombre_estudiante, curso, codigo, periodo, nota, motivo, estado, observacion, fecha)
+          VALUES (@estudiante_email, @nombre_estudiante, @curso, @codigo, @periodo, @nota, @motivo, @estado, @observacion, @fecha)
         `);
     }
     console.log('✅ Justificaciones insertadas (' + justificaciones.length + ' registros)');
@@ -782,9 +1032,8 @@ async function initDatabase() {
     // ---- 10. APELACIONES ----
     console.log('📌 Insertando apelaciones...');
     const apelaciones = [
-      ['BEC-2026-008', 'estudiante3@becas.com', 'Ana López', 'Considero que mi solicitud fue rechazada injustamente. El ingreso familiar que declaré es correcto y cumple con todos los requisitos establecidos para la beca socioeconómica. Adjunto documentación adicional que respalda mi situación.', 'Pendiente', '2026-08-20 10:00:00', null, null, 'Socioeconómica'],
-      ['BEC-2026-005', 'estudiante5@becas.com', 'Laura Fernández', 'La subsanación solicitada ya fue completada. Subí todos los documentos requeridos dentro del plazo establecido. Solicito una revisión de mi expediente.', 'Revisada', '2026-08-10 15:30:00', 'Se acepta la apelación. La documentación presentada es correcta y completa. La solicitud pasa a revisión.', null, 'Cultural'],
-      ['BEC-2026-004', 'estudiante4@becas.com', 'Carlos Méndez', 'Mi solicitud de beca deportiva fue rechazada pero tengo evidencia de mi participación en competencias nacionales. Adjunto cartas de la federación deportiva que confirman mi rendimiento.', 'Pendiente', '2026-08-25 14:00:00', null, null, 'Deportiva']
+      ['BEC-2026-008', 'estudiante3@becas.com', 'Ana López', 'Considero que mi solicitud fue rechazada injustamente. El ingreso familiar que declaré es correcto.', 'Pendiente', '2026-08-20 10:00:00', null],
+      ['BEC-2026-005', 'estudiante5@becas.com', 'Laura Fernández', 'La subsanación solicitada ya fue completada. Subí todos los documentos requeridos dentro del plazo.', 'Revisada', '2026-08-10 15:30:00', 'Se acepta la apelación. La documentación presentada es correcta y completa.']
     ];
 
     for (const a of apelaciones) {
@@ -796,11 +1045,9 @@ async function initDatabase() {
         .input('estado', a[4])
         .input('fecha', a[5])
         .input('decision', a[6])
-        .input('archivo', a[7])
-        .input('tipo_beca', a[8])
         .query(`
-          INSERT INTO apelaciones (expediente, email, nombre_estudiante, motivo, estado, fecha, decision, archivo, tipo_beca)
-          VALUES (@expediente, @email, @nombre_estudiante, @motivo, @estado, @fecha, @decision, @archivo, @tipo_beca)
+          INSERT INTO apelaciones (expediente, email, nombre_estudiante, motivo, estado, fecha, decision)
+          VALUES (@expediente, @email, @nombre_estudiante, @motivo, @estado, @fecha, @decision)
         `);
     }
     console.log('✅ Apelaciones insertadas (' + apelaciones.length + ' registros)');
@@ -808,9 +1055,8 @@ async function initDatabase() {
     // ---- 11. SUSPENSIONES ----
     console.log('📌 Insertando suspensiones...');
     const suspensiones = [
-      ['estudiante@becas.com', 'BEC-2026-001', 'suspension', '30', 'Bajo rendimiento académico', 'El estudiante no mantuvo el promedio mínimo requerido de 80. Se le otorga un plazo de 30 días para mejorar su rendimiento.', '2026-07-01 08:00:00', 'Activa', null, 'María Gómez'],
-      ['estudiante2@becas.com', 'BEC-2026-007', 'suspension', '15', 'Incumplimiento de requisitos', 'El estudiante no presentó la documentación requerida para la renovación de la beca.', '2026-08-01 10:00:00', 'Restaurada', null, 'José Ramírez'],
-      ['estudiante3@becas.com', 'BEC-2026-010', 'cancelacion', 'Cancelada', 'Fraude en documentación', 'Se detectaron irregularidades en la documentación presentada. La beca es cancelada de manera definitiva.', '2026-08-15 14:30:00', 'Activa', null, 'Laura Fernández']
+      ['estudiante@becas.com', 'BEC-2026-001', 'suspension', '30', 'Bajo rendimiento académico', 'El estudiante no mantuvo el promedio mínimo requerido de 80.', '2026-07-01 08:00:00', 'Activa', 'María Gómez'],
+      ['estudiante2@becas.com', 'BEC-2026-007', 'suspension', '15', 'Incumplimiento de requisitos', 'El estudiante no presentó la documentación requerida para la renovación.', '2026-08-01 10:00:00', 'Restaurada', 'José Ramírez']
     ];
 
     for (const sus of suspensiones) {
@@ -823,19 +1069,102 @@ async function initDatabase() {
         .input('observaciones', sus[5])
         .input('fecha', sus[6])
         .input('estado', sus[7])
-        .input('evidencia', sus[8])
-        .input('nombre_estudiante', sus[9])
+        .input('nombre_estudiante', sus[8])
         .query(`
-          INSERT INTO suspensiones (email, expediente, tipo, dias, motivo, observaciones, fecha, estado, evidencia, nombre_estudiante)
-          VALUES (@email, @expediente, @tipo, @dias, @motivo, @observaciones, @fecha, @estado, @evidencia, @nombre_estudiante)
+          INSERT INTO suspensiones (email, expediente, tipo, dias, motivo, observaciones, fecha, estado, nombre_estudiante)
+          VALUES (@email, @expediente, @tipo, @dias, @motivo, @observaciones, @fecha, @estado, @nombre_estudiante)
         `);
     }
     console.log('✅ Suspensiones insertadas (' + suspensiones.length + ' registros)');
 
-    // ---- 12. BITACORA ----
+    // ---- 12. CONVOCATORIAS ----
+    console.log('📌 Insertando convocatorias...');
+    const hoy = new Date();
+    const fmt = (d) => d.toISOString().slice(0, 10);
+    const apertura = new Date(hoy.getTime() - 10 * 86400000);
+    const cierre = new Date(hoy.getTime() + 20 * 86400000);
+    const apertura2 = new Date(hoy.getTime() + 30 * 86400000);
+    const cierre2 = new Date(hoy.getTime() + 60 * 86400000);
+
+    const convocatorias = [
+      ['Beca Socioeconómica 2026-I', 'Socioeconómica', 20, fmt(apertura), fmt(cierre), 'Activa', '08:00', '17:00'],
+      ['Beca de Excelencia Académica 2026-I', 'Excelencia Académica', 10, fmt(apertura), fmt(cierre), 'Activa', '08:00', '17:00'],
+      ['Beca Deportiva 2026-I', 'Deportiva', 15, fmt(apertura), fmt(cierre), 'Activa', '08:00', '17:00'],
+      ['Beca Cultural 2026-I', 'Cultural', 10, fmt(apertura), fmt(cierre), 'Activa', '08:00', '17:00'],
+      ['Beca Investigación 2026-I', 'Investigación', 5, fmt(apertura), fmt(cierre), 'Activa', '08:00', '17:00'],
+      ['Beca Socioeconómica 2026-II', 'Socioeconómica', 25, fmt(apertura2), fmt(cierre2), 'Borrador', '08:00', '17:00']
+    ];
+
+    for (const c of convocatorias) {
+      await pool.request()
+        .input('nombre', c[0])
+        .input('tipo', c[1])
+        .input('cupos', c[2])
+        .input('fecha_apertura', c[3])
+        .input('fecha_cierre', c[4])
+        .input('estado', c[5])
+        .input('hora_apertura', c[6])
+        .input('hora_cierre', c[7])
+        .query(`
+          IF NOT EXISTS (SELECT 1 FROM convocatorias WHERE nombre = @nombre)
+          INSERT INTO convocatorias (nombre, tipo, cupos, fecha_apertura, fecha_cierre, estado, hora_apertura, hora_cierre)
+          VALUES (@nombre, @tipo, @cupos, @fecha_apertura, @fecha_cierre, @estado, @hora_apertura, @hora_cierre)
+        `);
+    }
+    console.log('✅ Convocatorias insertadas (' + convocatorias.length + ' registros)');
+
+    // ---- 13. VOTACIONES ----
+    console.log('📌 Insertando votaciones...');
+    const votaciones = [
+      ['BEC-2026-006', DATEADD(HOUR, -2, GETDATE()), 'En curso', null],
+      ['BEC-2026-001', DATEADD(DAY, -2, GETDATE()), 'Cerrada', 'Aprobada']
+    ];
+
+    for (const v of votaciones) {
+      await pool.request()
+        .input('expediente', v[0])
+        .input('fecha_inicio', v[1])
+        .input('estado', v[2])
+        .input('resultado', v[3])
+        .query(`
+          INSERT INTO votaciones (expediente, fecha_inicio, estado, resultado)
+          VALUES (@expediente, @fecha_inicio, @estado, @resultado)
+        `);
+    }
+    console.log('✅ Votaciones insertadas (' + votaciones.length + ' registros)');
+
+    // ---- 14. VOTOS ----
+    console.log('📌 Insertando votos...');
+    // Obtener IDs de miembros del comité y votaciones
+    const miembros = await pool.request().query('SELECT id FROM miembros_comite');
+    const votacionesIds = await pool.request().query('SELECT id, expediente FROM votaciones WHERE estado = "En curso"');
+
+    if (miembros.recordset.length >= 3 && votacionesIds.recordset.length > 0) {
+      const votacionId = votacionesIds.recordset[0].id;
+      const votosData = [
+        [votacionId, miembros.recordset[0].id, 'A favor', 'Excelente expediente, recomiendo aprobar.'],
+        [votacionId, miembros.recordset[1].id, 'A favor', 'Cumple con todos los requisitos.'],
+        [votacionId, miembros.recordset[2].id, null, null]
+      ];
+
+      for (const voto of votosData) {
+        await pool.request()
+          .input('votacion_id', voto[0])
+          .input('miembro_comite_id', voto[1])
+          .input('decision', voto[2])
+          .input('observacion', voto[3])
+          .query(`
+            INSERT INTO votos (votacion_id, miembro_comite_id, decision, observacion)
+            VALUES (@votacion_id, @miembro_comite_id, @decision, @observacion)
+          `);
+      }
+      console.log('✅ Votos insertados (' + votosData.length + ' registros)');
+    }
+
+    // ---- 15. BITACORA ----
     console.log('📌 Insertando bitácora...');
-    const ahora = new Date();
-    const hace = (mins) => new Date(ahora.getTime() - mins * 60000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' });
+    const ahora2 = new Date();
+    const hace = (mins) => new Date(ahora2.getTime() - mins * 60000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' });
     
     const bitacora = [
       [hace(180), 'María Gómez', 'estudiante', 'Solicitud creada', 'BEC-2026-001'],
@@ -864,47 +1193,6 @@ async function initDatabase() {
     }
     console.log('✅ Bitácora insertada (' + bitacora.length + ' registros)');
 
-    // ---- 13. ALERTAS_SEGURIDAD ----
-    console.log('📌 Insertando alertas de seguridad...');
-    const alertas = [
-      [hace(24), 'Alta', 'Múltiples intentos fallidos de inicio de sesión (5) para estudiante@becas.com', 'Pendiente'],
-      [hace(48), 'Media', 'Acceso desde ubicación no reconocida para usuario social@becas.com (IP: 45.33.22.11)', 'Pendiente'],
-      [hace(72), 'Baja', 'Cambio de contraseña solicitado para usuario estudiante2@becas.com', 'Revisada'],
-      [hace(96), 'Crítica', 'Intento de acceso no autorizado detectado en el módulo de administración', 'Pendiente']
-    ];
-
-    for (const al of alertas) {
-      await pool.request()
-        .input('fecha', al[0])
-        .input('tipo', al[1])
-        .input('descripcion', al[2])
-        .input('estado', al[3])
-        .query(`
-          INSERT INTO alertas_seguridad (fecha, tipo, descripcion, estado)
-          VALUES (@fecha, @tipo, @descripcion, @estado)
-        `);
-    }
-    console.log('✅ Alertas de seguridad insertadas (' + alertas.length + ' registros)');
-
-    // ---- 14. BORRADOR_SOLICITUD ----
-    console.log('📌 Insertando borradores de solicitud...');
-    const borradores = [
-      ['estudiante@becas.com', '{"f-nombres":"María","f-apellidos":"Gómez","f-carrera":"Medicina","f-sede":"Central","f-tipo-beca":"Excelencia Académica","f-promedio":"92"}', new Date(ahora.getTime() - 3600000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' })],
-      ['estudiante5@becas.com', '{"f-nombres":"Laura","f-apellidos":"Fernández","f-carrera":"Arquitectura","f-sede":"Atlántica","f-tipo-beca":"Cultural","f-promedio":"89"}', new Date(ahora.getTime() - 10800000).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' })]
-    ];
-
-    for (const br of borradores) {
-      await pool.request()
-        .input('session_email', br[0])
-        .input('datos', br[1])
-        .input('updated_at', br[2])
-        .query(`
-          INSERT INTO borrador_solicitud (session_email, datos, updated_at)
-          VALUES (@session_email, @datos, @updated_at)
-        `);
-    }
-    console.log('✅ Borradores insertados (' + borradores.length + ' registros)');
-
     // =====================================================
     // RESUMEN FINAL
     // =====================================================
@@ -913,8 +1201,33 @@ async function initDatabase() {
     console.log('🎉 BASE DE DATOS INICIALIZADA CORRECTAMENTE');
     console.log('🎉 ============================================');
     console.log('');
-    console.log('📊 RESUMEN DE DATOS INSERTADOS:');
+    console.log('📊 TABLAS CREADAS:');
+    console.log('   1. usuarios');
+    console.log('   2. tipos_beca');
+    console.log('   3. solicitudes');
+    console.log('   4. documentos');
+    console.log('   5. integrantes_familia');
+    console.log('   6. visitas');
+    console.log('   7. suspensiones');
+    console.log('   8. apelaciones');
+    console.log('   9. justificaciones');
+    console.log('  10. convocatorias');
+    console.log('  11. noticias');
+    console.log('  12. notificaciones');
+    console.log('  13. bitacora');
+    console.log('  14. empleados');
+    console.log('  15. alertas_seguridad');
+    console.log('  16. config');
+    console.log('  17. borrador_solicitud');
+    console.log('  18. chatbot_preguntas');
+    console.log('  19. miembros_comite ⭐ NUEVA');
+    console.log('  20. votaciones ⭐ NUEVA');
+    console.log('  21. votos ⭐ NUEVA');
+    console.log('  22. votaciones_comite (deprecada)');
+    console.log('');
+    console.log('📊 DATOS INSERTADOS:');
     console.log('   👤 Usuarios: ' + usuarios.length);
+    console.log('   👥 Miembros Comité: ' + miembrosData.length);
     console.log('   📋 Tipos de beca: ' + tipos.length);
     console.log('   ⚙️ Configuración: ' + configs.length);
     console.log('   📅 Convocatorias: ' + convocatorias.length);
@@ -926,15 +1239,18 @@ async function initDatabase() {
     console.log('   ⚖️ Apelaciones: ' + apelaciones.length);
     console.log('   ⛔ Suspensiones: ' + suspensiones.length);
     console.log('   📋 Bitácora: ' + bitacora.length);
-    console.log('   🚨 Alertas: ' + alertas.length);
-    console.log('   💾 Borradores: ' + borradores.length);
+    console.log('   🗳️ Votaciones: ' + votaciones.length);
     console.log('');
     console.log('🔑 CREDENCIALES DE ACCESO:');
     console.log('   📧 estudiante@becas.com / 123456');
     console.log('   📧 estudiante2@becas.com / 123456');
     console.log('   📧 estudiante3@becas.com / 123456');
+    console.log('   📧 estudiante4@becas.com / 123456');
+    console.log('   📧 estudiante5@becas.com / 123456');
     console.log('   📧 social@becas.com / 123456 (Trabajador Social)');
-    console.log('   📧 comite@becas.com / 123456 (Comité)');
+    console.log('   📧 comite@becas.com / 123456 (Comité - Presidenta)');
+    console.log('   📧 carlos.montero@becas.com / 123456 (Comité - Vocal)');
+    console.log('   📧 laura.chaves@becas.com / 123456 (Comité - Vocal)');
     console.log('   📧 admin@becas.com / 123456 (Administrador)');
     console.log('   📧 auditor@becas.com / 123456 (Auditor)');
     console.log('');

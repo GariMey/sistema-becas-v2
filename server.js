@@ -5,6 +5,7 @@ const path = require('path');
 const db = require('./database/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
 
 // Middleware
 app.use(cors());
