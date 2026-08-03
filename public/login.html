@@ -7,7 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="api.js"></script>
     <style>
+        /* ============================================================
+           ESTILOS (comprimidos por espacio)
+           ============================================================ */
         :root {
             --primary: #1a365d;
             --primary-light: #2c4a7c;
@@ -26,607 +30,105 @@
             --warning: #b07d12;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        /* HEADER */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-        }
-
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
-
-        /* HERO */
-        .hero {
-            position: relative;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%);
-            color: #fff;
-            overflow: hidden;
-            padding: 60px 24px 80px;
-            flex: 1;
-        }
-
-        .hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle at 85% 20%, rgba(197,160,40,0.22) 0%, transparent 45%),
-                radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%);
-            pointer-events: none;
-        }
-
-        .hero-content {
-            position: relative;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 48px;
-            align-items: center;
-        }
-
-        .hero h1 {
-            color: #fff;
-            font-size: clamp(2.2rem, 5vw, 3.4rem);
-            font-weight: 800;
-            line-height: 1.12;
-            margin-bottom: 18px;
-        }
-
-        .hero h1 em {
-            font-style: normal;
-            color: var(--accent-light);
-        }
-
-        .hero p.lead {
-            color: rgba(255,255,255,0.78);
-            font-size: 1.08rem;
-            max-width: 520px;
-            margin-bottom: 34px;
-        }
-
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: var(--accent-light);
-            padding: 6px 16px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 22px;
-        }
-
-        /* LOGIN PANEL */
-        .login-panel {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.14);
-            border-radius: 20px;
-            padding: 32px 28px;
-            backdrop-filter: blur(6px);
-        }
-
-        .login-panel-title {
-            font-size: 0.78rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--accent-light);
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-
-        .form-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .form-field input {
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 0.93rem;
-            font-family: inherit;
-            color: #fff;
-            background: rgba(255,255,255,0.08);
-            transition: border-color .15s ease, box-shadow .15s ease;
-            width: 100%;
-        }
-
-        .form-field input::placeholder {
-            color: rgba(255,255,255,0.4);
-        }
-
-        .form-field input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(197,160,40,0.15);
-        }
-
-        .login-error {
-            background: rgba(192,57,43,0.2);
-            color: #f6c6c0;
-            border: 1px solid rgba(192,57,43,0.4);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-            display: none;
-        }
-
-        .login-error.visible {
-            display: block;
-        }
-
-        .login-2fa {
-            display: none;
-        }
-
-        .login-2fa.visible {
-            display: block;
-        }
-
-        .login-2fa .alert-box {
-            background: rgba(26,54,93,0.3);
-            border: 1px solid rgba(197,160,40,0.3);
-            color: var(--accent-light);
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-
-        .modal-credentials {
-            background: rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-top: 18px;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.6);
-        }
-
-        .modal-credentials strong {
-            color: var(--accent-light);
-        }
-
-        .modal-credentials .cred-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px 16px;
-            margin-top: 6px;
-        }
-
-        .modal-credentials .cred-row span {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .forgot-password {
-            text-align: center;
-            margin-top: 12px;
-        }
-
-        .forgot-password a {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.85rem;
-            text-decoration: underline;
-            transition: color .2s ease;
-        }
-
-        .forgot-password a:hover {
-            color: var(--accent-light);
-        }
-
-        /* RECUPERACIÓN MODAL */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(16,34,64,0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-
-        .modal-overlay.hidden {
-            display: none;
-        }
-
-        .modal-box {
-            background: var(--paper);
-            border-radius: 16px;
-            max-width: 460px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: transparent;
-            font-size: 1.4rem;
-            color: var(--muted);
-            line-height: 1;
-            padding: 4px;
-        }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 0.88rem;
-            margin-bottom: 20px;
-        }
-
-        .modal-box .form-field label {
-            color: var(--text);
-        }
-
-        .modal-box .form-field input {
-            color: var(--text);
-            background: #fff;
-            border-color: var(--border);
-        }
-
-        .modal-box .form-field input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
-        }
-
-        .modal-box .form-field input::placeholder {
-            color: var(--muted);
-        }
-
-        .modal-box .btn-primary {
-            margin-top: 8px;
-        }
-
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #e7f5ee;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 16px;
-        }
-
-        /* TOAST */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-        }
-
-        .toast-box {
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: toastIn .25s ease;
-            white-space: pre-line;
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .toast-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 0 0 0 6px;
-        }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
-
-        /* FOOTER */
-        footer.site-footer {
-            background: var(--primary-dark);
-            color: rgba(255,255,255,0.75);
-            padding: 40px 24px 28px;
-        }
-
-        .footer-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 24px;
-        }
-
-        .footer-inner p {
-            font-size: 0.88rem;
-            color: rgba(255,255,255,0.65);
-        }
-
-        .footer-bottom {
-            max-width: 1200px;
-            margin: 24px auto 0;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.45);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 980px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-            }
-
-            .login-panel {
-                order: -1;
-            }
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+        h1, h2, h3, h4 { font-family: 'Sora', system-ui, sans-serif; color: var(--primary-dark); letter-spacing: -0.01em; }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 28px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; white-space: nowrap; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--accent); color: var(--primary-dark); box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55); }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--border); padding: 11px 22px; }
+        .btn-ghost:hover { border-color: var(--primary); }
+        .btn-block { width: 100%; }
+
+        header.site-header { position: sticky; top: 0; z-index: 1000; background: var(--primary-dark); box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45); }
+        .header-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; color: #fff; }
+        .brand-mark { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-weight: 800; color: var(--primary-dark); font-size: 1.2rem; flex-shrink: 0; }
+        .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+        .brand-text strong { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; }
+        .brand-text span { font-size: 0.72rem; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; }
+        nav.main-nav { display: flex; align-items: center; gap: 14px; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; background: transparent; padding: 6px; }
+        .hamburger span { width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: .25s; }
+
+        .hero { position: relative; background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%); color: #fff; overflow: hidden; padding: 60px 24px 80px; flex: 1; }
+        .hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at 85% 20%, rgba(197,160,40,0.22) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%); pointer-events: none; }
+        .hero-content { position: relative; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
+        .hero h1 { color: #fff; font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.12; margin-bottom: 18px; }
+        .hero h1 em { font-style: normal; color: var(--accent-light); }
+        .hero p.lead { color: rgba(255,255,255,0.78); font-size: 1.08rem; max-width: 520px; margin-bottom: 34px; }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--accent-light); padding: 6px 16px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 22px; }
+
+        .login-panel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 20px; padding: 32px 28px; backdrop-filter: blur(6px); }
+        .login-panel-title { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-light); font-weight: 700; margin-bottom: 20px; text-align: center; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-field label { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+        .form-field input { border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 11px 14px; font-size: 0.93rem; font-family: inherit; color: #fff; background: rgba(255,255,255,0.08); transition: border-color .15s ease, box-shadow .15s ease; width: 100%; }
+        .form-field input::placeholder { color: rgba(255,255,255,0.4); }
+        .form-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(197,160,40,0.15); }
+        .login-error { background: rgba(192,57,43,0.2); color: #f6c6c0; border: 1px solid rgba(192,57,43,0.4); border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; display: none; }
+        .login-error.visible { display: block; }
+        .login-2fa { display: none; }
+        .login-2fa.visible { display: block; }
+        .login-2fa .alert-box { background: rgba(26,54,93,0.3); border: 1px solid rgba(197,160,40,0.3); color: var(--accent-light); padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 12px; }
+
+        .modal-credentials { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 16px; margin-top: 18px; font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+        .modal-credentials strong { color: var(--accent-light); }
+        .modal-credentials .cred-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-top: 6px; }
+        .modal-credentials .cred-row span { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+        .forgot-password { text-align: center; margin-top: 12px; }
+        .forgot-password a { color: rgba(255,255,255,0.6); font-size: 0.85rem; text-decoration: underline; transition: color .2s ease; }
+        .forgot-password a:hover { color: var(--accent-light); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(16,34,64,0.75); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-overlay.hidden { display: none; }
+        .modal-box { background: var(--paper); border-radius: 16px; max-width: 460px; width: 100%; padding: 32px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 14px; right: 16px; background: transparent; font-size: 1.4rem; color: var(--muted); line-height: 1; padding: 4px; }
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
+        .modal-box .modal-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+        .modal-box .form-field label { color: var(--text); }
+        .modal-box .form-field input { color: var(--text); background: #fff; border-color: var(--border); }
+        .modal-box .form-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,54,93,0.1); }
+        .modal-box .form-field input::placeholder { color: var(--muted); }
+        .modal-box .btn-primary { margin-top: 8px; }
+        .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #e7f5ee; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px; }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
+        .toast-box { padding: 14px 18px; border-radius: 10px; box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28); font-family: 'Inter', sans-serif; font-size: 0.92rem; display: flex; align-items: flex-start; gap: 10px; animation: toastIn .25s ease; white-space: pre-line; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
+        .toast-close { background: transparent; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 0 0 6px; }
+        .toast-close:hover { opacity: 1; }
+
+        footer.site-footer { background: var(--primary-dark); color: rgba(255,255,255,0.75); padding: 40px 24px 28px; }
+        .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+        .footer-inner p { font-size: 0.88rem; color: rgba(255,255,255,0.65); }
+        .footer-bottom { max-width: 1200px; margin: 24px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+
+        @media (max-width: 980px) { .hero-content { grid-template-columns: 1fr; } .login-panel { order: -1; } }
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
-            nav.main-nav .btn {
-                width: 100%;
-            }
-
-            .hero {
-                padding: 40px 16px 60px;
-            }
-
-            .login-panel {
-                padding: 24px 18px;
-            }
-
-            .modal-credentials .cred-row {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                text-align: center;
-            }
+            .hamburger { display: flex; }
+            nav.main-nav { position: absolute; top: 100%; left: 0; right: 0; background: var(--primary-dark); flex-direction: column; align-items: stretch; padding: 16px 24px 24px; gap: 10px; display: none; border-top: 1px solid rgba(255,255,255,0.08); }
+            nav.main-nav.open { display: flex; }
+            nav.main-nav .btn { width: 100%; }
+            .hero { padding: 40px 16px 60px; }
+            .login-panel { padding: 24px 18px; }
+            .modal-credentials .cred-row { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; text-align: center; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
+
+    <div id="db-status" class="online">🟢 Conectado</div>
 
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
@@ -903,7 +405,8 @@
                 trabajador_social: 'Trab. Social',
                 comite: 'Comité',
                 admin: 'Administrador',
-                auditor: 'Auditor'
+                auditor: 'Auditor',
+                aspirante: 'Aspirante'
             };
             return map[rol] || rol;
         }
@@ -925,12 +428,32 @@
 
         function goHome(e) {
             if (e) e.preventDefault();
-            // Recarga la página o navega al inicio
             window.location.href = window.location.pathname;
         }
 
         // ============================================================
-        // LOGIN
+        // VERIFICAR CONEXIÓN
+        // ============================================================
+        async function verificarConexion() {
+            try {
+                const connected = await API.checkConnection();
+                const status = document.getElementById('db-status');
+                if (connected) {
+                    status.textContent = '🟢 Conectado a la BD';
+                    status.className = 'online';
+                } else {
+                    status.textContent = '🟡 Modo offline - datos locales';
+                    status.className = 'offline';
+                }
+                return connected;
+            } catch (e) {
+                console.warn('⚠️ Error verificando conexión:', e.message);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // LOGIN (CORREGIDO)
         // ============================================================
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -956,7 +479,7 @@
             btnLogin.textContent = '⏳ Iniciando sesión...';
 
             try {
-                // ===== INTENTAR CON API =====
+                // ===== PRIORIDAD 1: API (Base de Datos) =====
                 const result = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -972,7 +495,6 @@
                         errorBox.textContent = '🔐 Ingresa el código enviado a tu correo electrónico';
                         errorBox.className = 'login-error visible';
 
-                        // Enviar código 2FA por email (simulado)
                         try {
                             await fetch('/api/auth/generar-2fa', {
                                 method: 'POST',
@@ -996,8 +518,8 @@
                     };
 
                     localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
+                    API.setSession(nuevaSesion);
 
-                    // Notificar inicio de sesión
                     try {
                         await fetch('/api/auth/notificar-inicio-sesion', {
                             method: 'POST',
@@ -1008,11 +530,15 @@
 
                     registrarBitacora('Inicio de sesión', '—', nuevaSesion);
                     closeModal('modal-login');
+
+                    // Actualizar estado de conexión
+                    await verificarConexion();
                     notify('✅ Bienvenido/a ' + data.nombre);
 
                     // Redirigir al panel correspondiente
                     const dashMap = {
                         estudiante: 'panel_estudiante.html',
+                        aspirante: 'panel_estudiante.html',
                         trabajador_social: 'panel_trabajador_social.html',
                         comite: 'panel_comite.html',
                         admin: 'panel_admin.html',
@@ -1031,7 +557,7 @@
                 }
 
             } catch (e) {
-                console.warn('API falló, usando localStorage:', e);
+                console.warn('⚠️ API falló, usando localStorage como respaldo:', e);
 
                 // ===== FALLBACK: LOCALSTORAGE =====
                 const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
@@ -1098,14 +624,16 @@
                     rol: usuario.rol
                 };
                 localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
+                API.setSession(nuevaSesion);
 
                 registrarBitacora('Inicio de sesión (local)', '—', nuevaSesion);
                 closeModal('modal-login');
-                notify('✅ Bienvenido/a ' + usuario.nombre);
+                await verificarConexion();
+                notify('✅ Bienvenido/a ' + usuario.nombre + ' (modo offline)');
 
-                // Redirigir al panel correspondiente
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
                     trabajador_social: 'panel_trabajador_social.html',
                     comite: 'panel_comite.html',
                     admin: 'panel_admin.html',
@@ -1122,7 +650,6 @@
         // LOGIN MODAL (alternativo)
         // ============================================================
         async function handleLoginModal() {
-            // Sincronizar campos del modal con los del panel principal
             const email = document.getElementById('login-email-modal').value.trim().toLowerCase();
             const password = document.getElementById('login-password-modal').value;
             const twoFactorCode = document.getElementById('login-2fa-code-modal')?.value || '';
@@ -1135,7 +662,7 @@
         }
 
         // ============================================================
-        // RECUPERACIÓN DE CONTRASEÑA
+        // RECUPERACIÓN DE CONTRASEÑA (CORREGIDO)
         // ============================================================
         function mostrarRecuperacion(event) {
             if (event) event.preventDefault();
@@ -1146,7 +673,7 @@
             document.getElementById('recuperacion-email').value = '';
         }
 
-        function enviarRecuperacion() {
+        async function enviarRecuperacion() {
             const email = document.getElementById('recuperacion-email').value.trim();
             if (!email) {
                 notify('⚠️ Por favor ingresa tu correo electrónico.');
@@ -1158,28 +685,55 @@
                 return;
             }
 
-            // Verificar si existe el usuario
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const existe = usuarios.some(u => u.email === email);
+            try {
+                // ===== PRIORIDAD 1: API (Base de Datos) =====
+                const result = await fetch('/api/auth/recuperacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
 
-            if (!existe) {
-                notify('⚠️ No existe una cuenta asociada a este correo electrónico.');
-                return;
+                if (result.ok) {
+                    const data = await result.json();
+                    registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
+                    document.getElementById('recuperacion-step1').classList.add('hidden');
+                    document.getElementById('recuperacion-step2').classList.remove('hidden');
+                    notify('📧 Se ha enviado un enlace de recuperación a tu correo electrónico.');
+
+                    setTimeout(() => {
+                        closeModal('modal-recuperacion');
+                        openModal('modal-reset-password');
+                        window.resetToken = 'demo123';
+                    }, 3000);
+                    return;
+                }
+
+                const err = await result.json();
+                notify('⚠️ ' + (err.error || 'Error al enviar la recuperación'));
+
+            } catch (e) {
+                console.warn('⚠️ API falló, usando localStorage como respaldo:', e);
+
+                // ===== FALLBACK: LOCALSTORAGE =====
+                const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+                const existe = usuarios.some(u => u.email === email);
+
+                if (!existe) {
+                    notify('⚠️ No existe una cuenta asociada a este correo electrónico.');
+                    return;
+                }
+
+                registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
+                document.getElementById('recuperacion-step1').classList.add('hidden');
+                document.getElementById('recuperacion-step2').classList.remove('hidden');
+                notify('📧 Se ha enviado un enlace de recuperación a tu correo electrónico (modo offline).');
+
+                setTimeout(() => {
+                    closeModal('modal-recuperacion');
+                    openModal('modal-reset-password');
+                    window.resetToken = 'demo123';
+                }, 3000);
             }
-
-            registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
-
-            document.getElementById('recuperacion-step1').classList.add('hidden');
-            document.getElementById('recuperacion-step2').classList.remove('hidden');
-
-            notify('📧 Se ha enviado un enlace de recuperación a tu correo electrónico.');
-
-            // Simular apertura del modal de reset después de 3 segundos
-            setTimeout(() => {
-                closeModal('modal-recuperacion');
-                openModal('modal-reset-password');
-                window.resetToken = 'demo123';
-            }, 3000);
         }
 
         function cerrarRecuperacion() {
@@ -1190,7 +744,7 @@
         // ============================================================
         // RESTABLECER CONTRASEÑA
         // ============================================================
-        function enviarNuevaPassword() {
+        async function enviarNuevaPassword() {
             const nueva = document.getElementById('reset-nueva-password').value;
             const confirmar = document.getElementById('reset-confirmar-password').value;
             const errorBox = document.getElementById('reset-error');
@@ -1210,46 +764,76 @@
                 return;
             }
 
-            // Simular actualización de contraseña
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
             const email = document.getElementById('recuperacion-email')?.value || '';
 
-            if (email) {
+            try {
+                // ===== PRIORIDAD 1: API (Base de Datos) =====
+                const token = window.resetToken || 'demo123';
+                const result = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, nuevaPassword: nueva })
+                });
+
+                if (result.ok) {
+                    const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+                    const usuario = usuarios.find(u => u.email === email);
+                    if (usuario) {
+                        usuario.password = cifrarPassword(nueva);
+                        localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+                    }
+                    registrarBitacora('Contraseña actualizada para ' + email, '—');
+                    closeModal('modal-reset-password');
+                    notify('✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
+                    openModal('modal-login');
+                    document.getElementById('reset-nueva-password').value = '';
+                    document.getElementById('reset-confirmar-password').value = '';
+                    return;
+                }
+
+                const err = await result.json();
+                notify('⚠️ ' + (err.error || 'Error al actualizar la contraseña'));
+
+            } catch (e) {
+                console.warn('⚠️ API falló, usando localStorage como respaldo:', e);
+
+                // ===== FALLBACK: LOCALSTORAGE =====
+                const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
                 const usuario = usuarios.find(u => u.email === email);
                 if (usuario) {
                     usuario.password = cifrarPassword(nueva);
                     localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
                     registrarBitacora('Contraseña actualizada para ' + email, '—');
                 }
+
+                closeModal('modal-reset-password');
+                notify('✅ Contraseña actualizada correctamente (modo offline). Ahora puedes iniciar sesión.');
+                openModal('modal-login');
+                document.getElementById('reset-nueva-password').value = '';
+                document.getElementById('reset-confirmar-password').value = '';
             }
-
-            closeModal('modal-reset-password');
-            notify('✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
-            openModal('modal-login');
-
-            // Limpiar campos
-            document.getElementById('reset-nueva-password').value = '';
-            document.getElementById('reset-confirmar-password').value = '';
         }
 
         // ============================================================
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN (CORREGIDO)
         // ============================================================
         function initData() {
             if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
                 localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
                     { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
+                        nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
                     { email: 'estudiante2@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'José Ramírez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
+                        nombre: 'José Ramírez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
+                    { email: 'aspirante@becas.com', password: cifrarPassword('123456'), rol: 'aspirante',
+                        nombre: 'Carlos Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
                     { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
+                        nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
                     { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
+                        nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
                     { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
-                        nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false },
+                        nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true },
                     { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
-                        nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false }
+                        nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true }
                 ]));
             }
 
@@ -1263,9 +847,10 @@
             // Verificar si ya hay sesión activa
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
             if (session) {
-                // Redirigir al panel correspondiente
+                API.setSession(session);
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
                     trabajador_social: 'panel_trabajador_social.html',
                     comite: 'panel_comite.html',
                     admin: 'panel_admin.html',
@@ -1276,6 +861,9 @@
                     window.location.href = target;
                 }
             }
+
+            // Verificar conexión
+            verificarConexion();
         }
 
         // ============================================================

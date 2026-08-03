@@ -8,9 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="api.js"></script>
     <style>
         /* ============================================================
-           ESTILOS GENERALES
+           ESTILOS (comprimidos por espacio)
            ============================================================ */
         :root {
             --primary: #1a365d;
@@ -34,1121 +35,178 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Sora', system-ui, sans-serif; color: var(--primary-dark); letter-spacing: -0.01em; }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 28px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; white-space: nowrap; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--accent); color: var(--primary-dark); box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55); }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.55); }
+        .btn-outline:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+        .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--border); padding: 11px 22px; }
+        .btn-ghost:hover { border-color: var(--primary); }
+        .btn-small { padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; background: var(--primary); color: #fff; }
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-block { width: 100%; }
+
+        header.site-header { position: sticky; top: 0; z-index: 1000; background: var(--primary-dark); box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45); }
+        .header-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; color: #fff; cursor: pointer; }
+        .brand-mark { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-weight: 800; color: var(--primary-dark); font-size: 1.2rem; flex-shrink: 0; }
+        .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+        .brand-text strong { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; }
+        .brand-text span { font-size: 0.72rem; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; }
+        nav.main-nav { display: flex; align-items: center; gap: 14px; }
+        .session-pill { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.88rem; }
+        .session-pill .role-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--accent-light); padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; background: transparent; padding: 6px; }
+        .hamburger span { width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: .25s; }
+
+        .hero { position: relative; background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%); color: #fff; overflow: hidden; padding: 100px 24px 130px; }
+        .hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at 85% 20%, rgba(197,160,40,0.22) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%); pointer-events: none; }
+        .hero-content { position: relative; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: var(--accent-light); padding: 6px 16px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 22px; }
+        .hero h1 { color: #fff; font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.12; margin-bottom: 18px; }
+        .hero h1 em { font-style: normal; color: var(--accent-light); }
+        .hero p.lead { color: rgba(255,255,255,0.78); font-size: 1.08rem; max-width: 520px; margin-bottom: 34px; }
+        .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+        .hero-panel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 20px; padding: 28px; backdrop-filter: blur(6px); }
+        .hero-panel-title { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-light); font-weight: 700; margin-bottom: 18px; }
+        .hero-steps { display: flex; flex-direction: column; gap: 14px; }
+        .hero-step { display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+        .hero-step-num { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--primary-dark); font-family: 'Sora', sans-serif; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+        .hero-step h4 { color: #fff; font-size: 0.95rem; margin-bottom: 3px; }
+        .hero-step p { color: rgba(255,255,255,0.65); font-size: 0.85rem; }
+
+        .convocatorias-section { max-width: 1200px; margin: -40px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; }
+        .convocatorias-header { text-align: center; margin-bottom: 40px; }
+        .convocatorias-header .badge { display: inline-block; background: var(--accent); color: var(--primary-dark); padding: 6px 20px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+        .convocatorias-header h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 8px; }
+        .convocatorias-header p { color: var(--muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto; }
+        .convocatorias-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
+        .convocatoria-card-destacada { background: var(--paper); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 28px 32px; box-shadow: var(--shadow-sm); transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .convocatoria-card-destacada:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+        .convocatoria-card-destacada .estado-badge { position: absolute; top: 16px; right: 16px; background: var(--success); color: #fff; padding: 4px 14px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .convocatoria-card-destacada .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+        .convocatoria-card-destacada .card-header .icon { font-size: 2.2rem; width: 56px; height: 56px; background: rgba(197,160,40,0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .convocatoria-card-destacada .card-header h3 { font-size: 1.15rem; margin: 0; }
+        .convocatoria-card-destacada .card-header .tipo-beca { font-size: 0.78rem; color: var(--muted); font-weight: 500; display: block; }
+        .convocatoria-card-destacada .detalles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0 20px; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .convocatoria-card-destacada .detalles .item { text-align: center; }
+        .convocatoria-card-destacada .detalles .item .numero { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+        .convocatoria-card-destacada .detalles .item .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+        .convocatoria-card-destacada .fechas { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; padding: 0 4px; }
+        .convocatoria-card-destacada .fechas span { display: flex; align-items: center; gap: 6px; }
+        .convocatoria-card-destacada .btn { width: 100%; justify-content: center; margin-top: 4px; }
+        .sin-convocatorias { grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--paper); border-radius: var(--radius-lg); border: 2px dashed var(--border); }
+        .sin-convocatorias .icon-grande { font-size: 3.5rem; margin-bottom: 16px; }
+        .sin-convocatorias h3 { font-size: 1.3rem; margin-bottom: 8px; }
+        .sin-convocatorias p { color: var(--muted); max-width: 400px; margin: 0 auto; }
+        .sin-convocatorias .btn { margin-top: 16px; display: inline-flex; }
+
+        .section { max-width: 1200px; margin: 0 auto; padding: 84px 24px; }
+        .section-head { text-align: center; max-width: 680px; margin: 0 auto 52px; }
+        .section-tag { display: inline-block; color: var(--accent); background: rgba(197,160,40,0.12); padding: 5px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+        .section-head h2 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); margin-bottom: 12px; }
+        .section-head p { color: var(--muted); font-size: 1rem; }
+
+        .becas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .beca-card { background: var(--paper); border-radius: var(--radius); border: 1px solid var(--border); padding: 28px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow-sm); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; cursor: pointer; }
+        .beca-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: rgba(197,160,40,0.4); }
+        .beca-icon { width: 54px; height: 54px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: var(--accent-light); }
+        .beca-card h3 { font-size: 1.15rem; }
+        .beca-card p.desc { color: var(--muted); font-size: 0.92rem; flex-grow: 1; }
+        .beca-coverage { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--primary); background: #eef2f8; padding: 8px 12px; border-radius: 8px; }
+
+        .requisitos-detalle-container { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border); display: none; animation: fadeSlideIn 0.3s ease; }
+        .requisitos-detalle-container.visible { display: block; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .requisitos-detalle { background: #f8f9fc; border-radius: var(--radius); padding: 20px 24px; border: 1px solid var(--border); box-shadow: inset 0 2px 8px rgba(0,0,0,0.04); }
+        .requisitos-detalle h4 { font-size: 0.95rem; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .requisitos-detalle h4::before { content: "📋"; font-size: 1.1rem; }
+        .requisitos-detalle ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .requisitos-detalle ul li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; background: var(--paper); border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; color: var(--text); }
+        .requisitos-detalle ul li::before { content: "✓"; color: var(--success); font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .btn-toggle-requisitos { background: transparent; color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; align-self: flex-start; margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-toggle-requisitos:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-toggle-requisitos .icon { transition: transform 0.3s ease; display: inline-block; }
+        .btn-toggle-requisitos .icon.rotated { transform: rotate(180deg); }
+
+        .requisitos-box { background: #eef2f8; border-radius: 24px; max-width: 1152px; margin: 0 auto; }
+        .requisitos-wrap { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: start; }
+        .requisitos-wrap .section-head { text-align: left; margin: 0; max-width: none; }
+        .req-list { background: var(--paper); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .req-item { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+        .req-item:last-child { border-bottom: none; }
+        .req-check { width: 26px; height: 26px; border-radius: 50%; background: rgba(26,54,93,0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; font-weight: 700; }
+        .req-item h4 { font-size: 0.98rem; margin-bottom: 2px; }
+        .req-item p { color: var(--muted); font-size: 0.85rem; }
+
+        .stats-section { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff; padding: 64px 24px; }
+        .stats-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; text-align: center; }
+        .stat-item { border-right: 1px solid rgba(255,255,255,0.1); padding: 0 12px; }
+        .stat-item:last-child { border-right: none; }
+        .stat-number { font-family: 'Sora', sans-serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; color: var(--accent-light); }
+        .stat-label { margin-top: 6px; font-size: 0.88rem; color: rgba(255,255,255,0.7); }
+
+        footer.site-footer { background: var(--primary-dark); color: rgba(255,255,255,0.75); padding: 60px 24px 28px; }
+        .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 36px; }
+        .footer-inner h4 { color: #fff; font-size: 0.95rem; margin-bottom: 14px; }
+        .footer-inner p, .footer-inner a { font-size: 0.88rem; color: rgba(255,255,255,0.65); }
+        .footer-inner ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .footer-inner a:hover { color: var(--accent-light); }
+        .footer-brand .brand { color: #fff; margin-bottom: 14px; }
+        .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
+        .toast-box { padding: 14px 18px; border-radius: 10px; box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28); font-family: 'Inter', sans-serif; font-size: 0.92rem; display: flex; align-items: flex-start; gap: 10px; animation: toastIn .25s ease; white-space: pre-line; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
+        .toast-close { background: transparent; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 0 0 6px; }
+        .toast-close:hover { opacity: 1; }
+
+        #db-status { position: fixed; bottom: 10px; left: 10px; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; z-index: 999; background: #eef2f8; color: #1a365d; border: 1px solid #d0d7e0; }
+        #db-status.online { background: #e7f5ee; color: #1e7e4f; border-color: #b9e3cb; }
+        #db-status.offline { background: #fdecea; color: #c0392b; border-color: #f6c6c0; }
 
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            border: 1.5px solid rgba(255,255,255,0.55);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: #fff;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        /* ============================================================
-           HEADER
-           ============================================================ */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .session-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 0.88rem;
-        }
-
-        .session-pill .role-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--accent-light);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
-
-        /* ============================================================
-           HERO
-           ============================================================ */
-        .hero {
-            position: relative;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%);
-            color: #fff;
-            overflow: hidden;
-            padding: 100px 24px 130px;
-        }
-
-        .hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle at 85% 20%, rgba(197,160,40,0.22) 0%, transparent 45%),
-                radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%);
-            pointer-events: none;
-        }
-
-        .hero-content {
-            position: relative;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 48px;
-            align-items: center;
-        }
-
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: var(--accent-light);
-            padding: 6px 16px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 22px;
-        }
-
-        .hero h1 {
-            color: #fff;
-            font-size: clamp(2.2rem, 5vw, 3.4rem);
-            font-weight: 800;
-            line-height: 1.12;
-            margin-bottom: 18px;
-        }
-
-        .hero h1 em {
-            font-style: normal;
-            color: var(--accent-light);
-        }
-
-        .hero p.lead {
-            color: rgba(255,255,255,0.78);
-            font-size: 1.08rem;
-            max-width: 520px;
-            margin-bottom: 34px;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .hero-panel {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.14);
-            border-radius: 20px;
-            padding: 28px;
-            backdrop-filter: blur(6px);
-        }
-
-        .hero-panel-title {
-            font-size: 0.78rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--accent-light);
-            font-weight: 700;
-            margin-bottom: 18px;
-        }
-
-        .hero-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .hero-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            padding: 14px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .hero-step-num {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .hero-step h4 {
-            color: #fff;
-            font-size: 0.95rem;
-            margin-bottom: 3px;
-        }
-
-        .hero-step p {
-            color: rgba(255,255,255,0.65);
-            font-size: 0.85rem;
-        }
-
-        /* ============================================================
-           SECCIÓN CONVOCATORIAS DESTACADAS
-           ============================================================ */
-        .convocatorias-section {
-            max-width: 1200px;
-            margin: -40px auto 0;
-            padding: 0 24px 60px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .convocatorias-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .convocatorias-header .badge {
-            display: inline-block;
-            background: var(--accent);
-            color: var(--primary-dark);
-            padding: 6px 20px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .convocatorias-header h2 {
-            font-size: clamp(1.8rem, 4vw, 2.6rem);
-            margin-bottom: 8px;
-        }
-
-        .convocatorias-header p {
-            color: var(--muted);
-            font-size: 1.05rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .convocatorias-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 28px;
-        }
-
-        .convocatoria-card-destacada {
-            background: var(--paper);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            padding: 28px 32px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .convocatoria-card-destacada:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--accent);
-        }
-
-        .convocatoria-card-destacada .estado-badge {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: var(--success);
-            color: #fff;
-            padding: 4px 14px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .convocatoria-card-destacada .card-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .convocatoria-card-destacada .card-header .icon {
-            font-size: 2.2rem;
-            width: 56px;
-            height: 56px;
-            background: rgba(197,160,40,0.12);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .convocatoria-card-destacada .card-header h3 {
-            font-size: 1.15rem;
-            margin: 0;
-        }
-
-        .convocatoria-card-destacada .card-header .tipo-beca {
-            font-size: 0.78rem;
-            color: var(--muted);
-            font-weight: 500;
-            display: block;
-        }
-
-        .convocatoria-card-destacada .detalles {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin: 16px 0 20px;
-            padding: 16px 0;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .convocatoria-card-destacada .detalles .item {
-            text-align: center;
-        }
-
-        .convocatoria-card-destacada .detalles .item .numero {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .convocatoria-card-destacada .detalles .item .label {
-            font-size: 0.72rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .convocatoria-card-destacada .fechas {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.82rem;
-            color: var(--muted);
-            margin-bottom: 16px;
-            padding: 0 4px;
-        }
-
-        .convocatoria-card-destacada .fechas span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .convocatoria-card-destacada .btn {
-            width: 100%;
-            justify-content: center;
-            margin-top: 4px;
-        }
-
-        .sin-convocatorias {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            background: var(--paper);
-            border-radius: var(--radius-lg);
-            border: 2px dashed var(--border);
-        }
-
-        .sin-convocatorias .icon-grande {
-            font-size: 3.5rem;
-            margin-bottom: 16px;
-        }
-
-        .sin-convocatorias h3 {
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-        }
-
-        .sin-convocatorias p {
-            color: var(--muted);
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .sin-convocatorias .btn {
-            margin-top: 16px;
-            display: inline-flex;
-        }
-
-        /* ============================================================
-           SECCIONES
-           ============================================================ */
-        .section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 84px 24px;
-        }
-
-        .section-head {
-            text-align: center;
-            max-width: 680px;
-            margin: 0 auto 52px;
-        }
-
-        .section-tag {
-            display: inline-block;
-            color: var(--accent);
-            background: rgba(197,160,40,0.12);
-            padding: 5px 14px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 14px;
-        }
-
-        .section-head h2 {
-            font-size: clamp(1.6rem, 3.5vw, 2.3rem);
-            margin-bottom: 12px;
-        }
-
-        .section-head p {
-            color: var(--muted);
-            font-size: 1rem;
-        }
-
-        /* BECAS GRID */
-        .becas-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        .beca-card {
-            background: var(--paper);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            box-shadow: var(--shadow-sm);
-            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-            cursor: pointer;
-        }
-
-        .beca-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow);
-            border-color: rgba(197,160,40,0.4);
-        }
-
-        .beca-icon {
-            width: 54px;
-            height: 54px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: var(--accent-light);
-        }
-
-        .beca-card h3 {
-            font-size: 1.15rem;
-        }
-
-        .beca-card p.desc {
-            color: var(--muted);
-            font-size: 0.92rem;
-            flex-grow: 1;
-        }
-
-        .beca-coverage {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary);
-            background: #eef2f8;
-            padding: 8px 12px;
-            border-radius: 8px;
-        }
-
-        /* REQUISITOS DETALLE */
-        .requisitos-detalle-container {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 2px solid var(--border);
-            display: none;
-            animation: fadeSlideIn 0.3s ease;
-        }
-
-        .requisitos-detalle-container.visible {
-            display: block;
-        }
-
-        @keyframes fadeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .requisitos-detalle {
-            background: #f8f9fc;
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            border: 1px solid var(--border);
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
-        }
-
-        .requisitos-detalle h4 {
-            font-size: 0.95rem;
-            color: var(--primary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .requisitos-detalle h4::before {
-            content: "📋";
-            font-size: 1.1rem;
-        }
-
-        .requisitos-detalle ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .requisitos-detalle ul li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px 12px;
-            background: var(--paper);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.9rem;
-            color: var(--text);
-        }
-
-        .requisitos-detalle ul li::before {
-            content: "✓";
-            color: var(--success);
-            font-weight: 700;
-            font-size: 1rem;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .btn-toggle-requisitos {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            align-self: flex-start;
-            margin-top: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-toggle-requisitos:hover {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
-        .btn-toggle-requisitos .icon {
-            transition: transform 0.3s ease;
-            display: inline-block;
-        }
-
-        .btn-toggle-requisitos .icon.rotated {
-            transform: rotate(180deg);
-        }
-
-        /* REQUISITOS GENERALES */
-        .requisitos-box {
-            background: #eef2f8;
-            border-radius: 24px;
-            max-width: 1152px;
-            margin: 0 auto;
-        }
-
-        .requisitos-wrap {
-            display: grid;
-            grid-template-columns: 0.9fr 1.1fr;
-            gap: 40px;
-            align-items: start;
-        }
-
-        .requisitos-wrap .section-head {
-            text-align: left;
-            margin: 0;
-            max-width: none;
-        }
-
-        .req-list {
-            background: var(--paper);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .req-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            padding: 18px 22px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .req-item:last-child {
-            border-bottom: none;
-        }
-
-        .req-check {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: rgba(26,54,93,0.08);
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-            margin-top: 2px;
-            font-weight: 700;
-        }
-
-        .req-item h4 {
-            font-size: 0.98rem;
-            margin-bottom: 2px;
-        }
-
-        .req-item p {
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        /* STATS */
-        .stats-section {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            color: #fff;
-            padding: 64px 24px;
-        }
-
-        .stats-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 28px;
-            text-align: center;
-        }
-
-        .stat-item {
-            border-right: 1px solid rgba(255,255,255,0.1);
-            padding: 0 12px;
-        }
-
-        .stat-item:last-child {
-            border-right: none;
-        }
-
-        .stat-number {
-            font-family: 'Sora', sans-serif;
-            font-size: clamp(2rem, 4vw, 2.8rem);
-            font-weight: 800;
-            color: var(--accent-light);
-        }
-
-        .stat-label {
-            margin-top: 6px;
-            font-size: 0.88rem;
-            color: rgba(255,255,255,0.7);
-        }
-
-        /* FOOTER */
-        footer.site-footer {
-            background: var(--primary-dark);
-            color: rgba(255,255,255,0.75);
-            padding: 60px 24px 28px;
-        }
-
-        .footer-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
-            gap: 36px;
-        }
-
-        .footer-inner h4 {
-            color: #fff;
-            font-size: 0.95rem;
-            margin-bottom: 14px;
-        }
-
-        .footer-inner p,
-        .footer-inner a {
-            font-size: 0.88rem;
-            color: rgba(255,255,255,0.65);
-        }
-
-        .footer-inner ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .footer-inner a:hover {
-            color: var(--accent-light);
-        }
-
-        .footer-brand .brand {
-            color: #fff;
-            margin-bottom: 14px;
-        }
-
-        .footer-bottom {
-            max-width: 1200px;
-            margin: 40px auto 0;
-            padding-top: 22px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.45);
-        }
-
-        /* ============================================================
-           TOAST
-           ============================================================ */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-        }
-
-        .toast-box {
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: toastIn .25s ease;
-            white-space: pre-line;
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .toast-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 0 0 0 6px;
-        }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
-
-        #db-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 999;
-            background: #eef2f8;
-            color: #1a365d;
-            border: 1px solid #d0d7e0;
-        }
-
-        #db-status.online {
-            background: #e7f5ee;
-            color: #1e7e4f;
-            border-color: #b9e3cb;
-        }
-
-        #db-status.offline {
-            background: #fdecea;
-            color: #c0392b;
-            border-color: #f6c6c0;
-        }
-
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
         @media (max-width: 980px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-panel {
-                order: -1;
-            }
-
-            .becas-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .convocatorias-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .requisitos-wrap {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 32px;
-            }
-
-            .stat-item {
-                border-right: none;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
-                padding-bottom: 20px;
-            }
-
-            .stat-item:nth-last-child(-n+2) {
-                border-bottom: none;
-                padding-bottom: 0;
-            }
-
-            .footer-inner {
-                grid-template-columns: 1fr 1fr;
-            }
+            .hero-content { grid-template-columns: 1fr; }
+            .hero-panel { order: -1; }
+            .becas-grid { grid-template-columns: repeat(2, 1fr); }
+            .convocatorias-grid { grid-template-columns: repeat(2, 1fr); }
+            .requisitos-wrap { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+            .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+            .stat-item:nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
+            .footer-inner { grid-template-columns: 1fr 1fr; }
         }
-
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
-            nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
-            nav.main-nav .session-pill {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-
-            .hero {
-                padding: 60px 20px 90px;
-            }
-
-            .convocatorias-section {
-                margin-top: -20px;
-                padding: 0 16px 40px;
-            }
-
-            .convocatorias-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .convocatoria-card-destacada .detalles {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .convocatoria-card-destacada .fechas {
-                flex-direction: column;
-                gap: 6px;
-                align-items: flex-start;
-            }
-
-            .becas-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .footer-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .section {
-                padding: 60px 20px;
-            }
+            .hamburger { display: flex; }
+            nav.main-nav { position: absolute; top: 100%; left: 0; right: 0; background: var(--primary-dark); flex-direction: column; align-items: stretch; padding: 16px 24px 24px; gap: 10px; display: none; border-top: 1px solid rgba(255,255,255,0.08); }
+            nav.main-nav.open { display: flex; }
+            nav.main-nav .btn, nav.main-nav .session-pill { width: 100%; }
+            nav.main-nav .session-pill { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .hero { padding: 60px 20px 90px; }
+            .convocatorias-section { margin-top: -20px; padding: 0 16px 40px; }
+            .convocatorias-grid { grid-template-columns: 1fr; }
+            .convocatoria-card-destacada .detalles { grid-template-columns: 1fr 1fr; }
+            .convocatoria-card-destacada .fechas { flex-direction: column; gap: 6px; align-items: flex-start; }
+            .becas-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .section { padding: 60px 20px; }
         }
-
         @media (max-width: 480px) {
-            .convocatoria-card-destacada {
-                padding: 20px;
-            }
-
-            .convocatoria-card-destacada .card-header .icon {
-                width: 44px;
-                height: 44px;
-                font-size: 1.6rem;
-            }
-
-            .convocatoria-card-destacada .card-header h3 {
-                font-size: 1rem;
-            }
-
-            .convocatoria-card-destacada .detalles .item .numero {
-                font-size: 1.1rem;
-            }
+            .convocatoria-card-destacada { padding: 20px; }
+            .convocatoria-card-destacada .card-header .icon { width: 44px; height: 44px; font-size: 1.6rem; }
+            .convocatoria-card-destacada .card-header h3 { font-size: 1rem; }
+            .convocatoria-card-destacada .detalles .item .numero { font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -1199,33 +257,22 @@
                     <div class="hero-steps">
                         <div class="hero-step">
                             <div class="hero-step-num">1</div>
-                            <div>
-                                <h4>Regístrate en el sistema</h4>
-                                <p>Crea tu cuenta como aspirante, estudiante o empleado.</p>
-                            </div>
+                            <div><h4>Regístrate en el sistema</h4><p>Crea tu cuenta como aspirante, estudiante o empleado.</p></div>
                         </div>
                         <div class="hero-step">
                             <div class="hero-step-num">2</div>
-                            <div>
-                                <h4>Completa tu solicitud</h4>
-                                <p>Datos personales, académicos y socioeconómicos en 5 pasos.</p>
-                            </div>
+                            <div><h4>Completa tu solicitud</h4><p>Datos personales, académicos y socioeconómicos en 5 pasos.</p></div>
                         </div>
                         <div class="hero-step">
                             <div class="hero-step-num">3</div>
-                            <div>
-                                <h4>Resultado y activación</h4>
-                                <p>El comité asigna el beneficio y se activa en tu matrícula.</p>
-                            </div>
+                            <div><h4>Resultado y activación</h4><p>El comité asigna el beneficio y se activa en tu matrícula.</p></div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ============================================================
-             SECCIÓN CONVOCATORIAS DESTACADAS
-             ============================================================ -->
+        <!-- CONVOCATORIAS DESTACADAS -->
         <section class="convocatorias-section" id="convocatorias">
             <div class="convocatorias-header">
                 <span class="badge">📢 Convocatorias Activas</span>
@@ -1237,9 +284,7 @@
             </div>
         </section>
 
-        <!-- ============================================================
-             TIPOS DE BECA
-             ============================================================ -->
+        <!-- TIPOS DE BECA -->
         <section class="section" id="tipos-beca">
             <div class="section-head">
                 <span class="section-tag">Tipos de beca</span>
@@ -1249,9 +294,7 @@
             <div class="becas-grid" id="becas-grid"></div>
         </section>
 
-        <!-- ============================================================
-             REQUISITOS GENERALES
-             ============================================================ -->
+        <!-- REQUISITOS GENERALES -->
         <section class="section requisitos-box">
             <div class="requisitos-wrap">
                 <div class="section-head">
@@ -1263,27 +306,13 @@
             </div>
         </section>
 
-        <!-- ============================================================
-             STATS
-             ============================================================ -->
+        <!-- STATS -->
         <section class="stats-section">
             <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" data-target="500" data-suffix="+">0</div>
-                    <div class="stat-label">Becas otorgadas este año</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="12" data-suffix="">0</div>
-                    <div class="stat-label">Tipos de beca disponibles</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="95" data-suffix="%">0</div>
-                    <div class="stat-label">Tasa de permanencia</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="8" data-suffix="">0</div>
-                    <div class="stat-label">Facultades participantes</div>
-                </div>
+                <div class="stat-item"><div class="stat-number" data-target="500" data-suffix="+">0</div><div class="stat-label">Becas otorgadas este año</div></div>
+                <div class="stat-item"><div class="stat-number" data-target="12" data-suffix="">0</div><div class="stat-label">Tipos de beca disponibles</div></div>
+                <div class="stat-item"><div class="stat-number" data-target="95" data-suffix="%">0</div><div class="stat-label">Tasa de permanencia</div></div>
+                <div class="stat-item"><div class="stat-number" data-target="8" data-suffix="">0</div><div class="stat-label">Facultades participantes</div></div>
             </div>
         </section>
 
@@ -1349,37 +378,16 @@
         };
 
         const TIPOS_BECA_DEFAULT = [
-            { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos',
-                    'Constancia de ingresos', 'Recibo de servicios públicos'
-                ], activo: true },
-            { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias', 'Carga mínima 12 créditos',
-                    'Carta de recomendación'
-                ], activo: true },
-            { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                min: 25, max: 75, rubros: ['Matrícula'],
-                requisitos: ['Promedio mínimo 80', 'Representación universitaria', 'Carta de la coordinación deportiva',
-                    'Participación activa'
-                ], activo: true },
-            { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                min: 25, max: 75, rubros: ['Matrícula'],
-                requisitos: ['Promedio mínimo 80', 'Portafolio artístico', 'Carta de la coordinación cultural',
-                    'Participación en actividades'
-                ], activo: true },
-            { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo', 'Carta del director del proyecto',
-                    'Disponibilidad horaria'
-                ], activo: true }
+            { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados', min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'], requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos', 'Constancia de ingresos', 'Recibo de servicios públicos'], activo: true },
+            { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado', min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'], requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias', 'Carga mínima 12 créditos', 'Carta de recomendación'], activo: true },
+            { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo', min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80', 'Representación universitaria', 'Carta de la coordinación deportiva', 'Participación activa'], activo: true },
+            { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro', min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80', 'Portafolio artístico', 'Carta de la coordinación cultural', 'Participación en actividades'], activo: true },
+            { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación', min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'], requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo', 'Carta del director del proyecto', 'Disponibilidad horaria'], activo: true }
         ];
 
         const REQUISITOS_GENERALES = [
             { icon: '📊', texto: 'Promedio mínimo general: 80', detalle: 'Calculado sobre el historial académico acumulado' },
-            { icon: '💰', texto: 'Ingreso familiar máximo: 2 salarios mínimos',
-                detalle: 'Constancia de ingresos de todos los miembros del hogar' },
+            { icon: '💰', texto: 'Ingreso familiar máximo: 2 salarios mínimos', detalle: 'Constancia de ingresos de todos los miembros del hogar' },
             { icon: '📚', texto: 'Carga académica mínima: 12 créditos', detalle: 'Matrícula activa del período vigente' },
             { icon: '✅', texto: 'Sin sanciones disciplinarias', detalle: 'Constancia de Contraloría Estudiantil' },
             { icon: '🪪', texto: 'Documentación completa', detalle: 'Cédula, constancias e historial académico' }
@@ -1402,14 +410,7 @@
         }
 
         function rolLabel(rol) {
-            const map = {
-                estudiante: 'Estudiante',
-                aspirante: 'Aspirante',
-                trabajador_social: 'Trab. Social',
-                comite: 'Comité',
-                admin: 'Administrador',
-                auditor: 'Auditor'
-            };
+            const map = { estudiante: 'Estudiante', aspirante: 'Aspirante', trabajador_social: 'Trab. Social', comite: 'Comité', admin: 'Administrador', auditor: 'Auditor' };
             return map[rol] || rol;
         }
 
@@ -1433,9 +434,7 @@
             toast.style.background = c.bg;
             toast.style.border = '1px solid ' + c.border;
             toast.style.color = c.color;
-            toast.innerHTML = '<span class="toast-icon">' + c.icon +
-                '</span><span style="flex:1;">' + message +
-                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
+            toast.innerHTML = '<span class="toast-icon">' + c.icon + '</span><span style="flex:1;">' + message + '</span><button class="toast-close" aria-label="Cerrar">×</button>';
             container.appendChild(toast);
 
             const remove = () => {
@@ -1451,48 +450,35 @@
 
         function notify(message) {
             let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message)) type = 'success';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message)) type = 'warning';
             showToast(message, type);
         }
 
         function registrarBitacora(accion, expediente, sessionOverride) {
             const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
+            const entrada = { fecha: new Date().toLocaleString(), usuario: session ? session.nombre : 'Visitante', rol: session ? session.rol : 'visitante', accion: accion, expediente: expediente || '—' };
             const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
             bitacora.unshift(entrada);
             localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
             return entrada;
         }
 
-        function goHome(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
+        function goHome(e) { if (e) e.preventDefault(); window.location.href = 'index.html'; }
 
         // ============================================================
-        // FUNCIÓN IR A SOLICITUD - Verifica login y convocatorias
+        // FUNCIÓN IR A SOLICITUD (CORREGIDO - Verifica convocatorias activas)
         // ============================================================
         function irASolicitud() {
-            // Verificar si hay sesión activa
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
 
             if (!session) {
                 notify('⚠️ Debes iniciar sesión para solicitar una beca.');
-                // Redirigir a login.html
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Verificar si hay convocatorias activas
+            // Obtener convocatorias activas
             const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
             const activas = convocatorias.filter(c =>
                 c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
@@ -1503,7 +489,6 @@
                 return;
             }
 
-            // Verificar si el usuario puede solicitar becas
             const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
             const usuarioCompleto = usuarios.find(u => u.email === session.email);
 
@@ -1512,7 +497,6 @@
                 return;
             }
 
-            // Redirigir al formulario de solicitud
             window.location.href = 'formulario_solicitud.html';
         }
 
@@ -1537,9 +521,7 @@
                     auditor: 'panel_auditor.html'
                 };
                 const target = dashMap[session.rol];
-                if (target) {
-                    window.location.href = target;
-                }
+                if (target) window.location.href = target;
             } else {
                 window.location.href = 'login.html';
             }
@@ -1549,6 +531,7 @@
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
             if (session) registrarBitacora('Cierre de sesión', '—', session);
             localStorage.removeItem(STORAGE_KEYS.session);
+            if (typeof API !== 'undefined') API.setSession(null);
             renderHeaderNav();
             showView('view-public');
             notify('👋 Sesión cerrada correctamente.');
@@ -1559,34 +542,43 @@
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
 
             if (session) {
-                nav.innerHTML =
-                    '<a href="#" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<div class="session-pill"><span>' + session.nombre +
-                    '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
+                nav.innerHTML = '<a href="#" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
+                    '<div class="session-pill"><span>' + session.nombre + '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
                     '<button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button>' +
                     '<button class="btn btn-primary" onclick="irASolicitud()">Solicitar</button>' +
                     '<button class="btn btn-outline" onclick="logout()" style="color:#f6c6c0;border-color:rgba(255,255,255,0.2);">Salir</button>';
             } else {
-                nav.innerHTML =
-                    '<a href="#tipos-beca" class="btn btn-outline">Ver becas</a>' +
+                nav.innerHTML = '<a href="#tipos-beca" class="btn btn-outline">Ver becas</a>' +
                     '<a href="login.html" class="btn btn-outline">Ingresar</a>' +
                     '<a href="registro.html" class="btn btn-primary">Registrarse</a>';
             }
         }
 
         // ============================================================
-        // VISTA PÚBLICA
+        // VISTA PÚBLICA (CORREGIDO - Prioriza BD)
         // ============================================================
-        function renderPublica() {
+        async function renderPublica() {
 
             // ==========================================================
-            // 1. CONVOCATORIAS DESTACADAS
+            // 1. CONVOCATORIAS DESTACADAS - Priorizar BD
             // ==========================================================
             const convGrid = document.getElementById('convocatorias-grid-destacadas');
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const activas = convocatorias.filter(c =>
-                c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
-            );
+            let convocatorias = [];
+            let activas = [];
+
+            try {
+                convocatorias = await API.getConvocatorias();
+                localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify(convocatorias));
+                activas = convocatorias.filter(c =>
+                    c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
+                );
+            } catch (e) {
+                console.warn('⚠️ Error obteniendo convocatorias de BD, usando backup:', e);
+                convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
+                activas = convocatorias.filter(c =>
+                    c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
+                );
+            }
 
             if (convGrid) {
                 if (activas.length > 0) {
@@ -1600,57 +592,50 @@
                         const votos = Math.floor(Math.random() * 30) + 40;
                         const diasRestantes = Math.floor(Math.random() * 20) + 1;
 
-                        return `
-                            <div class="convocatoria-card-destacada">
-                                <span class="estado-badge">● Activa</span>
-                                <div class="card-header">
-                                    <div class="icon">${tipoIcon}</div>
-                                    <div>
-                                        <h3>${c.nombre}</h3>
-                                        <span class="tipo-beca">${c.tipo}</span>
-                                    </div>
+                        return `<div class="convocatoria-card-destacada">
+                            <span class="estado-badge">● Activa</span>
+                            <div class="card-header">
+                                <div class="icon">${tipoIcon}</div>
+                                <div>
+                                    <h3>${c.nombre}</h3>
+                                    <span class="tipo-beca">${c.tipo}</span>
                                 </div>
-                                <div class="detalles">
-                                    <div class="item">
-                                        <div class="numero">${c.cupos}</div>
-                                        <div class="label">Cupos</div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="numero">${votos}</div>
-                                        <div class="label">Postulantes</div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="numero">${diasRestantes}</div>
-                                        <div class="label">Días restantes</div>
-                                    </div>
-                                </div>
-                                <div class="fechas">
-                                    <span>📅 Apertura: ${c.fechaApertura}</span>
-                                    <span>🔒 Cierre: ${c.fechaCierre}</span>
-                                </div>
-                                <button class="btn btn-primary" onclick="irASolicitud()">
-                                    📝 Solicitar ahora
-                                </button>
                             </div>
-                        `;
+                            <div class="detalles">
+                                <div class="item"><div class="numero">${c.cupos}</div><div class="label">Cupos</div></div>
+                                <div class="item"><div class="numero">${votos}</div><div class="label">Postulantes</div></div>
+                                <div class="item"><div class="numero">${diasRestantes}</div><div class="label">Días restantes</div></div>
+                            </div>
+                            <div class="fechas">
+                                <span>📅 Apertura: ${c.fechaApertura}</span>
+                                <span>🔒 Cierre: ${c.fechaCierre}</span>
+                            </div>
+                            <button class="btn btn-primary" onclick="irASolicitud()">📝 Solicitar ahora</button>
+                        </div>`;
                     }).join('');
                 } else {
-                    convGrid.innerHTML = `
-                        <div class="sin-convocatorias">
-                            <div class="icon-grande">📅</div>
-                            <h3>No hay convocatorias activas</h3>
-                            <p>En este momento no hay convocatorias disponibles. Te invitamos a revisar los tipos de beca y estar atento a las próximas aperturas.</p>
-                            <a href="#tipos-beca" class="btn btn-primary">Ver tipos de beca</a>
-                        </div>
-                    `;
+                    convGrid.innerHTML = `<div class="sin-convocatorias">
+                        <div class="icon-grande">📅</div>
+                        <h3>No hay convocatorias activas</h3>
+                        <p>En este momento no hay convocatorias disponibles. Te invitamos a revisar los tipos de beca y estar atento a las próximas aperturas.</p>
+                        <a href="#tipos-beca" class="btn btn-primary">Ver tipos de beca</a>
+                    </div>`;
                 }
             }
 
             // ==========================================================
-            // 2. TIPOS DE BECA CON REQUISITOS VISIBLES
+            // 2. TIPOS DE BECA - Priorizar BD
             // ==========================================================
             const grid = document.getElementById('becas-grid');
-            const tipos = getTiposBecaActivosLocal();
+            let tipos = [];
+
+            try {
+                tipos = await API.getTiposBeca(true);
+                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
+            } catch (e) {
+                console.warn('⚠️ Error obteniendo tipos de beca de BD, usando backup:', e);
+                tipos = getTiposBecaActivosLocal();
+            }
 
             if (grid) {
                 grid.innerHTML = tipos.map((b, index) => {
@@ -1659,23 +644,21 @@
                         b.requisitos.map(r => `<li>${r}</li>`).join('') :
                         '<li style="color:var(--muted);">No hay requisitos específicos</li>';
 
-                    return `
-                        <div class="beca-card" id="${cardId}">
-                            <div class="beca-icon">${b.icon}</div>
-                            <h3>${b.nombre}</h3>
-                            <p class="desc">${b.desc}</p>
-                            <div class="beca-coverage">📊 Cobertura: ${b.min}% - ${b.max}%</div>
-                            <button class="btn-toggle-requisitos" onclick="toggleRequisitos('${cardId}')">
-                                <span class="icon">▼</span> Ver requisitos
-                            </button>
-                            <div class="requisitos-detalle-container" id="${cardId}-requisitos">
-                                <div class="requisitos-detalle">
-                                    <h4>Requisitos para ${b.nombre}</h4>
-                                    <ul>${requisitosHtml}</ul>
-                                </div>
+                    return `<div class="beca-card" id="${cardId}">
+                        <div class="beca-icon">${b.icon || '🎓'}</div>
+                        <h3>${b.nombre}</h3>
+                        <p class="desc">${b.desc || ''}</p>
+                        <div class="beca-coverage">📊 Cobertura: ${b.min || 25}% - ${b.max || 100}%</div>
+                        <button class="btn-toggle-requisitos" onclick="toggleRequisitos('${cardId}')">
+                            <span class="icon">▼</span> Ver requisitos
+                        </button>
+                        <div class="requisitos-detalle-container" id="${cardId}-requisitos">
+                            <div class="requisitos-detalle">
+                                <h4>Requisitos para ${b.nombre}</h4>
+                                <ul>${requisitosHtml}</ul>
                             </div>
                         </div>
-                    `;
+                    </div>`;
                 }).join('');
             }
 
@@ -1701,17 +684,20 @@
             animateStats();
 
             // ==========================================================
-            // 5. BOTÓN SOLICITAR (hero) - Actualizar estado
+            // 5. VERIFICAR CONEXIÓN
             // ==========================================================
-            const btnSolicitar = document.querySelector('.hero-actions .btn-outline:last-child');
-            if (btnSolicitar) {
-                if (activas.length > 0) {
-                    btnSolicitar.disabled = false;
-                    btnSolicitar.textContent = 'Solicitar ahora';
+            try {
+                const connected = await API.checkConnection();
+                const status = document.getElementById('db-status');
+                if (connected) {
+                    status.textContent = '🟢 Conectado a la BD';
+                    status.className = 'online';
                 } else {
-                    btnSolicitar.disabled = true;
-                    btnSolicitar.textContent = '⛔ No hay convocatorias';
+                    status.textContent = '🟡 Modo offline - datos locales';
+                    status.className = 'offline';
                 }
+            } catch (e) {
+                console.warn('⚠️ Error verificando conexión:', e);
             }
         }
 
@@ -1776,24 +762,12 @@
         function initData() {
             if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
                 localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
-                        nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante',
-                        nombre: 'Carlos Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
-                        nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
-                        nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false }
+                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante', nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: true },
+                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante', nombre: 'Carlos Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: true },
+                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social', nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: false },
+                    { email: 'comite@becas.com', password: '123456', rol: 'comite', nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: false },
+                    { email: 'admin@becas.com', password: '123456', rol: 'admin', nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: false },
+                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor', nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false, aprobado: true, puedeSolicitar: false }
                 ]));
             }
 
@@ -1807,28 +781,21 @@
                 const apertura = new Date(hoy.getTime() - 10 * 86400000);
                 const cierre = new Date(hoy.getTime() + 20 * 86400000);
                 localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify([
-                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica',
-                        cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 3, nombre: 'Beca Deportiva II-2026', tipo: 'Deportiva', cupos: 8,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' }
+                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
+                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica', cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
+                    { id: 3, nombre: 'Beca Deportiva II-2026', tipo: 'Deportiva', cupos: 8, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' }
                 ]));
             }
 
             if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
                 localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([
-                    { expediente: 'BEC-2026-001', fecha: '2026-01-15',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María', apellidos: 'Gómez',
-                        tipoBeca: 'Excelencia Académica', estado: 'Beneficio Activo', puntaje: 95,
-                        promedio: 92, aceptado: true, porcentajeCobertura: '75%' }
+                    { expediente: 'BEC-2026-001', fecha: '2026-01-15', estudianteEmail: 'estudiante@becas.com', nombres: 'María', apellidos: 'Gómez', tipoBeca: 'Excelencia Académica', estado: 'Beneficio Activo', puntaje: 95, promedio: 92, aceptado: true, porcentajeCobertura: '75%' }
                 ]));
             }
 
             if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
                 localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
-                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system',
-                        accion: 'Sistema iniciado', expediente: '—' }
+                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system', accion: 'Sistema iniciado', expediente: '—' }
                 ]));
             }
         }
@@ -1836,23 +803,23 @@
         // ============================================================
         // EVENTOS
         // ============================================================
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             initData();
-            renderHeaderNav();
-            renderPublica();
+
+            // Verificar sesión
+            const storedSession = localStorage.getItem(STORAGE_KEYS.session);
+            if (storedSession) {
+                const session = JSON.parse(storedSession);
+                if (typeof API !== 'undefined') API.setSession(session);
+                renderHeaderNav();
+            }
+
+            // Renderizar vista pública con datos de BD
+            await renderPublica();
 
             document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
                 document.getElementById('mainNav').classList.toggle('open');
             });
-
-            document.getElementById('db-status').textContent = '🟢 Conectado';
-            document.getElementById('db-status').className = 'online';
-
-            // Verificar si hay sesión activa
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            if (session) {
-                renderHeaderNav();
-            }
         });
     </script>
 

@@ -7,7 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="api.js"></script>
+    
     <style>
         :root {
             --primary: #1a365d;
@@ -29,919 +30,150 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Sora', system-ui, sans-serif; color: var(--primary-dark); letter-spacing: -0.01em; }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 28px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; white-space: nowrap; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--accent); color: var(--primary-dark); box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55); }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65); }
+        .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.55); }
+        .btn-outline:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+        .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--border); padding: 11px 22px; }
+        .btn-ghost:hover { border-color: var(--primary); }
+        .btn-danger { background: #fdecea; color: var(--danger); border: 1.5px solid #f6c6c0; padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; }
+        .btn-danger:hover { background: #f6c6c0; }
+        .btn-success { background: #e7f5ee; color: var(--success); border: 1.5px solid #b9e3cb; padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; }
+        .btn-success:hover { background: #b9e3cb; }
+        .btn-warning { background: #fff3cd; color: var(--warning); border: 1.5px solid #ffeaa7; padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; }
+        .btn-warning:hover { background: #ffeaa7; }
+        .btn-small { padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; background: var(--primary); color: #fff; }
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-small.active-filter { background: var(--accent); color: var(--primary-dark); }
+        .btn-block { width: 100%; }
+
+        header.site-header { position: sticky; top: 0; z-index: 1000; background: var(--primary-dark); box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45); }
+        .header-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; color: #fff; cursor: pointer; }
+        .brand-mark { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-weight: 800; color: var(--primary-dark); font-size: 1.2rem; flex-shrink: 0; }
+        .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+        .brand-text strong { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; }
+        .brand-text span { font-size: 0.72rem; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; }
+        nav.main-nav { display: flex; align-items: center; gap: 14px; }
+        .session-pill { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.88rem; }
+        .session-pill .role-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--accent-light); padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; background: transparent; padding: 6px; }
+        .hamburger span { width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: .25s; }
+
+        .dash-shell { display: flex; min-height: calc(100vh - 75px); }
+        .dash-sidebar { width: 250px; background: var(--primary-dark); color: #fff; flex-shrink: 0; padding: 28px 16px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 75px; height: calc(100vh - 75px); overflow-y: auto; }
+        .dash-sidebar .dash-user { padding: 0 8px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 14px; }
+        .dash-sidebar .dash-user strong { display: block; font-size: 0.98rem; }
+        .dash-sidebar .dash-user span { font-size: 0.78rem; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.05em; }
+        .dash-nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 8px; color: rgba(255,255,255,0.78); font-size: 0.92rem; font-weight: 500; background: transparent; text-align: left; width: 100%; }
+        .dash-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .dash-nav-item.active { background: var(--accent); color: var(--primary-dark); font-weight: 700; }
+        .dash-nav-item.logout { margin-top: auto; color: #f6c6c0; }
+        .dash-nav-item.logout:hover { background: rgba(192,57,43,0.18); }
+        .dash-main { flex: 1; padding: 32px; max-width: 1100px; }
+        .dash-main h2 { margin-bottom: 4px; }
+        .dash-main .dash-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; }
+        .dash-tab { display: none; }
+        .dash-tab.active { display: block; }
+
+        .card-box { background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+        .card-box h3 { margin-bottom: 14px; font-size: 1.1rem; }
+        .alert-box { display: flex; align-items: flex-start; gap: 10px; background: #fff8e6; border: 1px solid #f0dba3; color: var(--warning); padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 10px; }
+        .alert-box.info { background: #e6effa; border-color: #b8d0e8; color: var(--info); }
+        .alert-box.success { background: #e7f5ee; border-color: #b9e3cb; color: var(--success); }
+        .alert-box.danger { background: #fdecea; border-color: #f6c6c0; color: var(--danger); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); word-break: break-word; overflow-wrap: anywhere; }
+        .data-table th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+        .data-table tbody tr:hover { background: #f9fafc; }
+
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+        .badge-info { background: #e6effa; color: var(--info); }
+        .badge-warning { background: #fff3cd; color: var(--warning); }
+        .badge-success { background: #e7f5ee; color: var(--success); }
+        .badge-danger { background: #fdecea; color: var(--danger); }
+        .badge-neutral { background: #eceff3; color: var(--muted); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; }
+        .form-field.full { grid-column: 1/-1; }
+        .form-field label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+        .form-field label .required { color: var(--danger); margin-left: 2px; }
+        .form-field input, .form-field select, .form-field textarea { border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 0.93rem; font-family: inherit; color: var(--text); background: #fff; transition: border-color .15s ease, box-shadow .15s ease; width: 100%; }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,54,93,0.1); }
+        .form-field .hint { font-size: 0.75rem; color: var(--muted); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .padron-status { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; padding: 4px 0; min-height: 24px; flex-wrap: wrap; }
+        .padron-status .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(26,54,93,0.1); border-radius: 50%; border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .padron-status .success { color: var(--success); }
+        .padron-status .error { color: var(--danger); }
+        .padron-status .info { color: var(--info); }
+        .padron-status .warning { color: var(--warning); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(16,34,64,0.55); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: var(--paper); border-radius: 16px; max-width: 520px; width: 100%; padding: 32px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-box.wide { max-width: 680px; }
+        .modal-close { position: absolute; top: 14px; right: 16px; background: transparent; font-size: 1.4rem; color: var(--muted); line-height: 1; padding: 4px; }
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
+        .modal-box .modal-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; }
+        .login-error { background: #fdecea; color: var(--danger); border: 1px solid #f6c6c0; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; }
+        .login-error.visible { display: block; }
+        .success-icon { width: 64px; height: 64px; border-radius: 50%; background: #e7f5ee; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px; }
+        .modal-credentials { background: #eef2f8; border-radius: 10px; padding: 14px 16px; margin-top: 18px; font-size: 0.8rem; color: var(--muted); }
+        .modal-credentials strong { color: var(--primary); }
+
+        /* Tarjetas de miembros del comité */
+        .miembro-card { background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm); transition: box-shadow .2s ease; }
+        .miembro-card:hover { box-shadow: var(--shadow); }
+        .miembro-info { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px; }
+        .miembro-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; flex-shrink: 0; }
+        .miembro-detalles h4 { font-size: 1rem; margin: 0; }
+        .miembro-detalles p { color: var(--muted); font-size: 0.85rem; margin: 2px 0; }
+        .miembro-detalles .rol-label { font-size: 0.72rem; color: var(--muted); background: var(--bg); padding: 2px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; }
+        .miembro-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .view-public { padding: 60px 24px; max-width: 800px; margin: 0 auto; text-align: center; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .view-public h1 { font-size: 2.4rem; margin-bottom: 16px; }
+        .view-public .hero-sub { color: var(--muted); font-size: 1.15rem; margin-bottom: 32px; max-width: 600px; }
+        .view-public .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            border: 1.5px solid rgba(255,255,255,0.55);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: #fff;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
-        .btn-danger {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1.5px solid #f6c6c0;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-
-        .btn-danger:hover {
-            background: #f6c6c0;
-        }
-
-        .btn-success {
-            background: #e7f5ee;
-            color: var(--success);
-            border: 1.5px solid #b9e3cb;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
-        .btn-warning {
-            background: #fff3cd;
-            color: var(--warning);
-            border: 1.5px solid #ffeaa7;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-
-        .btn-warning:hover {
-            background: #ffeaa7;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-small.active-filter {
-            background: var(--accent);
-            color: var(--primary-dark);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        /* HEADER */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .session-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 0.88rem;
-        }
-
-        .session-pill .role-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--accent-light);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
-
-        /* DASHBOARD */
-        .dash-shell {
-            display: flex;
-            min-height: calc(100vh - 75px);
-        }
-
-        .dash-sidebar {
-            width: 250px;
-            background: var(--primary-dark);
-            color: #fff;
-            flex-shrink: 0;
-            padding: 28px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: sticky;
-            top: 75px;
-            height: calc(100vh - 75px);
-            overflow-y: auto;
-        }
-
-        .dash-sidebar .dash-user {
-            padding: 0 8px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 14px;
-        }
-
-        .dash-sidebar .dash-user strong {
-            display: block;
-            font-size: 0.98rem;
-        }
-
-        .dash-sidebar .dash-user span {
-            font-size: 0.78rem;
-            color: var(--accent-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .dash-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.78);
-            font-size: 0.92rem;
-            font-weight: 500;
-            background: transparent;
-            text-align: left;
-            width: 100%;
-        }
-
-        .dash-nav-item:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-
-        .dash-nav-item.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: 700;
-        }
-
-        .dash-nav-item.logout {
-            margin-top: auto;
-            color: #f6c6c0;
-        }
-
-        .dash-nav-item.logout:hover {
-            background: rgba(192,57,43,0.18);
-        }
-
-        .dash-main {
-            flex: 1;
-            padding: 32px;
-            max-width: 1100px;
-        }
-
-        .dash-main h2 {
-            margin-bottom: 4px;
-        }
-
-        .dash-main .dash-sub {
-            color: var(--muted);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-
-        .dash-tab {
-            display: none;
-        }
-
-        .dash-tab.active {
-            display: block;
-        }
-
-        .card-box {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-        }
-
-        .card-box h3 {
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-        }
-
-        .alert-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: #fff8e6;
-            border: 1px solid #f0dba3;
-            color: var(--warning);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
-
-        .alert-box.info {
-            background: #e6effa;
-            border-color: #b8d0e8;
-            color: var(--info);
-        }
-
-        .alert-box.success {
-            background: #e7f5ee;
-            border-color: #b9e3cb;
-            color: var(--success);
-        }
-
-        .alert-box.danger {
-            background: #fdecea;
-            border-color: #f6c6c0;
-            color: var(--danger);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        .data-table th {
-            color: var(--muted);
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-weight: 700;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f9fafc;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .badge-info {
-            background: #e6effa;
-            color: var(--info);
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-
-        .badge-success {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-
-        .badge-danger {
-            background: #fdecea;
-            color: var(--danger);
-        }
-
-        .badge-neutral {
-            background: #eceff3;
-            color: var(--muted);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
-        .form-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .form-field label .required {
-            color: var(--danger);
-            margin-left: 2px;
-        }
-
-        .form-field input,
-        .form-field select,
-        .form-field textarea {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 0.93rem;
-            font-family: inherit;
-            color: var(--text);
-            background: #fff;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            width: 100%;
-        }
-
-        .form-field input:focus,
-        .form-field select:focus,
-        .form-field textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
-        }
-
-        .form-field .hint {
-            font-size: 0.75rem;
-            color: var(--muted);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .padron-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.78rem;
-            padding: 4px 0;
-            min-height: 24px;
-            flex-wrap: wrap;
-        }
-
-        .padron-status .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(26,54,93,0.1);
-            border-radius: 50%;
-            border-top-color: var(--accent);
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .padron-status .success {
-            color: var(--success);
-        }
-
-        .padron-status .error {
-            color: var(--danger);
-        }
-
-        .padron-status .info {
-            color: var(--info);
-        }
-
-        .padron-status .warning {
-            color: var(--warning);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(16,34,64,0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-
-        .modal-box {
-            background: var(--paper);
-            border-radius: 16px;
-            max-width: 520px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: transparent;
-            font-size: 1.4rem;
-            color: var(--muted);
-            line-height: 1;
-            padding: 4px;
-        }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 0.88rem;
-            margin-bottom: 20px;
-        }
-
-        .login-error {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1px solid #f6c6c0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-        }
-
-        .login-error.visible {
-            display: block;
-        }
-
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #e7f5ee;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 16px;
-        }
-
-        .modal-credentials {
-            background: #eef2f8;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-top: 18px;
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        .modal-credentials strong {
-            color: var(--primary);
-        }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-        }
-
-        .toast-box {
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: toastIn .25s ease;
-            white-space: pre-line;
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .toast-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 0 0 0 6px;
-        }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
-
-        #db-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 999;
-            background: #eef2f8;
-            color: #1a365d;
-            border: 1px solid #d0d7e0;
-        }
-
-        #db-status.online {
-            background: #e7f5ee;
-            color: #1e7e4f;
-            border-color: #b9e3cb;
-        }
-
-        #db-status.offline {
-            background: #fdecea;
-            color: #c0392b;
-            border-color: #f6c6c0;
-        }
-
-        .campos-empleado {
-            display: none;
-        }
-
-        .campos-empleado.visible {
-            display: block;
-        }
-
-        .campos-estudiante {
-            display: none;
-        }
-
-        .campos-estudiante.visible {
-            display: block;
-        }
-
-        .campos-aspirante {
-            display: none;
-        }
-
-        .campos-aspirante.visible {
-            display: block;
-        }
-
-        .empleado-notificacion {
-            background: rgba(176,125,18,0.12);
-            border: 1px solid rgba(176,125,18,0.25);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .empleado-notificacion .icono {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .empleado-notificacion .contenido h4 {
-            color: var(--warning);
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-        }
-
-        .empleado-notificacion .contenido p {
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .filter-bar .btn-small {
-            font-size: 0.78rem;
-        }
-
-        /* VISTA PÚBLICA */
-        .view-public {
-            padding: 60px 24px;
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .view-public h1 {
-            font-size: 2.4rem;
-            margin-bottom: 16px;
-        }
-
-        .view-public .hero-sub {
-            color: var(--muted);
-            font-size: 1.15rem;
-            margin-bottom: 32px;
-            max-width: 600px;
-        }
-
-        .view-public .btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Responsive */
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
-            nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
-            nav.main-nav .session-pill {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-
-            .dash-shell {
-                flex-direction: column;
-            }
-
-            .dash-sidebar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 16px;
-                position: relative;
-                top: 0;
-                height: auto;
-            }
-
-            .dash-sidebar .dash-user {
-                width: 100%;
-                border-bottom: none;
-                margin-bottom: 6px;
-            }
-
-            .dash-nav-item {
-                width: auto;
-                flex: 1;
-                justify-content: center;
-            }
-
-            .dash-nav-item.logout {
-                margin-top: 0;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .data-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-
-            .filter-bar {
-                justify-content: center;
-            }
-
-            .view-public h1 {
-                font-size: 1.8rem;
-            }
-
-            .view-public .hero-sub {
-                font-size: 1rem;
-            }
+            .hamburger { display: flex; }
+            nav.main-nav { position: absolute; top: 100%; left: 0; right: 0; background: var(--primary-dark); flex-direction: column; align-items: stretch; padding: 16px 24px 24px; gap: 10px; display: none; border-top: 1px solid rgba(255,255,255,0.08); }
+            nav.main-nav.open { display: flex; }
+            nav.main-nav .btn, nav.main-nav .session-pill { width: 100%; }
+            nav.main-nav .session-pill { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .dash-shell { flex-direction: column; }
+            .dash-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 16px; position: relative; top: 0; height: auto; }
+            .dash-sidebar .dash-user { width: 100%; border-bottom: none; margin-bottom: 6px; }
+            .dash-nav-item { width: auto; flex: 1; justify-content: center; }
+            .dash-nav-item.logout { margin-top: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .data-table { display: block; overflow-x: auto; white-space: nowrap; }
+            .view-public h1 { font-size: 1.8rem; }
+            .view-public .hero-sub { font-size: 1rem; }
+            .miembro-card { flex-direction: column; align-items: stretch; }
+            .miembro-acciones { justify-content: flex-end; }
         }
     </style>
 </head>
 <body>
 
-    <div id="db-status" class="online">Conectado</div>
+    <div id="db-status" class="online">🟢 Conectado</div>
 
     <!-- HEADER -->
     <header class="site-header">
@@ -960,7 +192,7 @@
         </div>
     </header>
 
-    <!-- VISTA PÚBLICA (INDEX) -->
+    <!-- VISTA PÚBLICA -->
     <div id="view-public" class="view view-public">
         <h1>Sistema de Becas Universitarias</h1>
         <p class="hero-sub">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
@@ -984,15 +216,16 @@
                     <strong id="adm-nombre">—</strong>
                     <span>Administrador</span>
                 </div>
-                <button class="dash-nav-item active" onclick="showDashTab('adm','adm-usuarios',this)">Usuarios</button>
-                <button class="dash-nav-item" onclick="showDashTab('adm','adm-tipos',this)">Tipos de beca</button>
-                <button class="dash-nav-item" onclick="showDashTab('adm','adm-config',this)">Configuración</button>
+                <button class="dash-nav-item active" onclick="showDashTab('adm','adm-usuarios',this)">📋 Usuarios</button>
+                <button class="dash-nav-item" onclick="showDashTab('adm','adm-miembros',this)">👥 Miembros del Comité</button>
+                <button class="dash-nav-item" onclick="showDashTab('adm','adm-tipos',this)">🏷️ Tipos de beca</button>
+                <button class="dash-nav-item" onclick="showDashTab('adm','adm-config',this)">⚙️ Configuración</button>
                 <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
             </aside>
 
             <main class="dash-main">
                 <h2>Administrador del Sistema</h2>
-                <p class="dash-sub">Gestiona usuarios, tipos de beca y configuración del sistema.</p>
+                <p class="dash-sub">Gestiona usuarios, miembros del comité, tipos de beca y configuración del sistema.</p>
 
                 <!-- TAB: Usuarios -->
                 <div class="dash-tab active" id="adm-usuarios">
@@ -1002,7 +235,6 @@
                             <button class="btn btn-small" onclick="nuevoUsuario()">+ Nuevo usuario</button>
                         </div>
 
-                        <!-- Filtros -->
                         <div class="filter-bar">
                             <button class="btn btn-small active-filter" onclick="filtrarUsuarios('todos',this)">Todos</button>
                             <button class="btn btn-small" onclick="filtrarUsuarios('aprobados',this)">Aprobados</button>
@@ -1013,17 +245,24 @@
                         </div>
 
                         <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
                             <tbody id="adm-tabla-usuarios"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- TAB: Miembros del Comité (SOLO rol comite) -->
+                <div class="dash-tab" id="adm-miembros">
+                    <div class="card-box">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+                            <h3 style="margin:0;">👥 Miembros del Comité de Becas</h3>
+                            <button class="btn btn-small" onclick="nuevoMiembroComite()">+ Agregar miembro</button>
+                        </div>
+                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
+                            Gestiona los miembros del comité de becas. Los miembros del comité tienen derecho a voto en las solicitudes.
+                            <span class="badge badge-info">Total: <span id="miembros-comite-total">0</span></span>
+                        </p>
+                        <div id="miembros-comite-lista"></div>
                     </div>
                 </div>
 
@@ -1035,17 +274,7 @@
                             <button class="btn btn-small" onclick="abrirModalTipoBeca()">+ Nuevo tipo</button>
                         </div>
                         <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Icono</th>
-                                    <th>Nombre</th>
-                                    <th>% Mín</th>
-                                    <th>% Máx</th>
-                                    <th>Rubros</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Icono</th><th>Nombre</th><th>% Mín</th><th>% Máx</th><th>Rubros</th><th>Estado</th><th>Acciones</th></tr></thead>
                             <tbody id="adm-tabla-tipos"></tbody>
                         </table>
                     </div>
@@ -1057,22 +286,10 @@
                         <h3>Ponderaciones de evaluación</h3>
                         <p style="color:var(--muted);font-size:0.85rem;">La suma de las 4 ponderaciones debe ser exactamente 100%.</p>
                         <div class="form-grid">
-                            <div class="form-field">
-                                <label>Pond. Socioeconómico (%)</label>
-                                <input type="number" id="cfg-socio" value="40" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Académico (%)</label>
-                                <input type="number" id="cfg-acad" value="35" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Vulnerabilidad (%)</label>
-                                <input type="number" id="cfg-vuln" value="15" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Méritos (%)</label>
-                                <input type="number" id="cfg-mer" value="10" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
+                            <div class="form-field"><label>Pond. Socioeconómico (%)</label><input type="number" id="cfg-socio" value="40" oninput="validarPonderaciones()" min="0" max="100"></div>
+                            <div class="form-field"><label>Pond. Académico (%)</label><input type="number" id="cfg-acad" value="35" oninput="validarPonderaciones()" min="0" max="100"></div>
+                            <div class="form-field"><label>Pond. Vulnerabilidad (%)</label><input type="number" id="cfg-vuln" value="15" oninput="validarPonderaciones()" min="0" max="100"></div>
+                            <div class="form-field"><label>Pond. Méritos (%)</label><input type="number" id="cfg-mer" value="10" oninput="validarPonderaciones()" min="0" max="100"></div>
                         </div>
                         <div id="pond-suma-msg" style="margin:10px 0;font-weight:700;color:var(--success);">✅ Suma total: 100%</div>
                     </div>
@@ -1080,49 +297,25 @@
                     <div class="card-box">
                         <h3>Umbrales de elegibilidad</h3>
                         <div class="form-grid">
-                            <div class="form-field">
-                                <label>Promedio mínimo requerido</label>
-                                <input type="number" id="cfg-promedio-min" value="80" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Ingreso máximo familiar (₡)</label>
-                                <input type="number" id="cfg-ingreso-max" value="500000" min="0">
-                            </div>
+                            <div class="form-field"><label>Promedio mínimo requerido</label><input type="number" id="cfg-promedio-min" value="80" min="0" max="100"></div>
+                            <div class="form-field"><label>Ingreso máximo familiar (₡)</label><input type="number" id="cfg-ingreso-max" value="500000" min="0"></div>
                         </div>
                     </div>
 
                     <div class="card-box">
                         <h3>Plazos del proceso (en días)</h3>
                         <div class="form-grid">
-                            <div class="form-field">
-                                <label>Plazo de subsanación</label>
-                                <input type="number" id="cfg-plazo-subsanacion" value="5" min="1">
-                            </div>
-                            <div class="form-field">
-                                <label>Plazo de apelación</label>
-                                <input type="number" id="cfg-plazo-apelacion" value="10" min="1">
-                            </div>
-                            <div class="form-field">
-                                <label>Plazo de renovación</label>
-                                <input type="number" id="cfg-plazo-renovacion" value="15" min="1">
-                            </div>
+                            <div class="form-field"><label>Plazo de subsanación</label><input type="number" id="cfg-plazo-subsanacion" value="5" min="1"></div>
+                            <div class="form-field"><label>Plazo de apelación</label><input type="number" id="cfg-plazo-apelacion" value="10" min="1"></div>
+                            <div class="form-field"><label>Plazo de renovación</label><input type="number" id="cfg-plazo-renovacion" value="15" min="1"></div>
                         </div>
                     </div>
 
                     <div class="card-box">
                         <h3>Mensajes de notificación por correo</h3>
-                        <div class="form-field full" style="margin-bottom:14px;">
-                            <label>Mensaje de aprobación</label>
-                            <textarea id="cfg-msg-aprobacion" class="form-control" rows="2">Felicidades, tu solicitud de beca ha sido APROBADA.</textarea>
-                        </div>
-                        <div class="form-field full" style="margin-bottom:14px;">
-                            <label>Mensaje de rechazo</label>
-                            <textarea id="cfg-msg-rechazo" class="form-control" rows="2">Lamentamos informarte que tu solicitud ha sido RECHAZADA.</textarea>
-                        </div>
-                        <div class="form-field full">
-                            <label>Mensaje de subsanación</label>
-                            <textarea id="cfg-msg-subsanacion" class="form-control" rows="2">Tu solicitud requiere correcciones. Revisa los documentos pendientes.</textarea>
-                        </div>
+                        <div class="form-field full" style="margin-bottom:14px;"><label>Mensaje de aprobación</label><textarea id="cfg-msg-aprobacion" class="form-control" rows="2">Felicidades, tu solicitud de beca ha sido APROBADA.</textarea></div>
+                        <div class="form-field full" style="margin-bottom:14px;"><label>Mensaje de rechazo</label><textarea id="cfg-msg-rechazo" class="form-control" rows="2">Lamentamos informarte que tu solicitud ha sido RECHAZADA.</textarea></div>
+                        <div class="form-field full"><label>Mensaje de subsanación</label><textarea id="cfg-msg-subsanacion" class="form-control" rows="2">Tu solicitud requiere correcciones. Revisa los documentos pendientes.</textarea></div>
                     </div>
 
                     <button class="btn btn-primary" onclick="guardarConfig()">Guardar configuración</button>
@@ -1132,30 +325,18 @@
     </div>
 
     <!-- MODALES -->
-
-    <!-- MODAL LOGIN -->
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-login')">×</button>
             <h3>Iniciar sesión</h3>
             <div id="login-error" class="login-error hidden"></div>
-            <div class="form-field">
-                <label>Correo</label>
-                <input type="email" id="login-email" class="form-control" value="admin@becas.com">
-            </div>
-            <div class="form-field">
-                <label>Contraseña</label>
-                <input type="password" id="login-password" class="form-control" value="123456">
-            </div>
+            <div class="form-field"><label>Correo</label><input type="email" id="login-email" class="form-control" value="admin@becas.com"></div>
+            <div class="form-field"><label>Contraseña</label><input type="password" id="login-password" class="form-control" value="123456"></div>
             <button class="btn btn-primary btn-block" onclick="handleLogin()">Ingresar</button>
-            <div class="modal-credentials">
-                <strong>Credenciales</strong><br>
-                Administrador: admin@becas.com / 123456
-            </div>
+            <div class="modal-credentials"><strong>Credenciales</strong><br>Administrador: admin@becas.com / 123456</div>
         </div>
     </div>
 
-    <!-- MODAL USUARIO -->
     <div id="modal-usuario" class="modal-overlay hidden">
         <div class="modal-box wide">
             <button class="modal-close" onclick="closeModal('modal-usuario')">×</button>
@@ -1163,7 +344,6 @@
             <p class="modal-sub" id="usuario-modal-sub">Completa todos los datos del usuario.</p>
             <input type="hidden" id="usuario-edit-id">
 
-            <!-- Tipo de usuario -->
             <div class="form-field">
                 <label>Tipo de usuario <span class="required">*</span></label>
                 <select id="usuario-tipo" class="form-control" onchange="toggleCamposUsuarioAdmin()">
@@ -1173,158 +353,59 @@
                 </select>
             </div>
 
-            <!-- Campos para Aspirante -->
             <div class="campos-aspirante visible" id="usuario-campos-aspirante">
-                <div class="alert-box info">
-                    ℹ️ Los aspirantes pueden enviar solicitudes de beca sin ser estudiantes.
-                </div>
+                <div class="alert-box info">ℹ️ Los aspirantes pueden enviar solicitudes de beca sin ser estudiantes.</div>
             </div>
 
-            <!-- Campos para Estudiante -->
             <div class="campos-estudiante" id="usuario-campos-estudiante">
-                <div class="alert-box success">
-                    ✅ Los estudiantes pueden solicitar becas y acceder a todos los beneficios.
+                <div class="alert-box success">✅ Los estudiantes pueden solicitar becas y acceder a todos los beneficios.</div>
+                <div class="form-row">
+                    <div class="form-field"><label>Carrera <span class="required">*</span></label><select id="usuario-carrera" class="form-control"><option value="">Seleccionar</option><option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option><option value="Medicina">Medicina</option><option value="Derecho">Derecho</option><option value="Administración">Administración</option><option value="Arquitectura">Arquitectura</option><option value="Psicología">Psicología</option><option value="Enfermería">Enfermería</option><option value="Educación">Educación</option><option value="Ingeniería Civil">Ingeniería Civil</option><option value="Ingeniería Industrial">Ingeniería Industrial</option><option value="Comunicación">Comunicación</option><option value="Diseño Gráfico">Diseño Gráfico</option><option value="Otra">Otra</option></select></div>
+                    <div class="form-field"><label>Facultad <span class="required">*</span></label><select id="usuario-facultad" class="form-control"><option value="">Seleccionar</option><option value="Ingeniería">Ingeniería</option><option value="Ciencias de la Salud">Ciencias de la Salud</option><option value="Ciencias Sociales">Ciencias Sociales</option><option value="Arquitectura y Diseño">Arquitectura y Diseño</option><option value="Artes">Artes</option><option value="Educación">Educación</option><option value="Ciencias Básicas">Ciencias Básicas</option><option value="Agronomía">Agronomía</option></select></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-field">
-                        <label>Carrera <span class="required">*</span></label>
-                        <select id="usuario-carrera" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
-                            <option value="Medicina">Medicina</option>
-                            <option value="Derecho">Derecho</option>
-                            <option value="Administración">Administración</option>
-                            <option value="Arquitectura">Arquitectura</option>
-                            <option value="Psicología">Psicología</option>
-                            <option value="Enfermería">Enfermería</option>
-                            <option value="Educación">Educación</option>
-                            <option value="Ingeniería Civil">Ingeniería Civil</option>
-                            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                            <option value="Comunicación">Comunicación</option>
-                            <option value="Diseño Gráfico">Diseño Gráfico</option>
-                            <option value="Otra">Otra</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Facultad <span class="required">*</span></label>
-                        <select id="usuario-facultad" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Ingeniería">Ingeniería</option>
-                            <option value="Ciencias de la Salud">Ciencias de la Salud</option>
-                            <option value="Ciencias Sociales">Ciencias Sociales</option>
-                            <option value="Arquitectura y Diseño">Arquitectura y Diseño</option>
-                            <option value="Artes">Artes</option>
-                            <option value="Educación">Educación</option>
-                            <option value="Ciencias Básicas">Ciencias Básicas</option>
-                            <option value="Agronomía">Agronomía</option>
-                        </select>
-                    </div>
+                    <div class="form-field"><label>Fecha de ingreso <span class="required">*</span></label><input type="date" id="usuario-fecha-ingreso" class="form-control"></div>
+                    <div class="form-field"><label>Sede <span class="required">*</span></label><select id="usuario-sede" class="form-control"><option value="">Seleccionar</option><option value="Central">Central</option><option value="Occidente">Occidente</option><option value="Atlántica">Atlántica</option><option value="Brunca">Brunca</option><option value="Chorotega">Chorotega</option></select></div>
                 </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Fecha de ingreso <span class="required">*</span></label>
-                        <input type="date" id="usuario-fecha-ingreso" class="form-control">
-                    </div>
-                    <div class="form-field">
-                        <label>Sede <span class="required">*</span></label>
-                        <select id="usuario-sede" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Central">Central</option>
-                            <option value="Occidente">Occidente</option>
-                            <option value="Atlántica">Atlántica</option>
-                            <option value="Brunca">Brunca</option>
-                            <option value="Chorotega">Chorotega</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label>Año de ingreso</label>
-                    <select id="usuario-anio-ingreso" class="form-control">
-                        <option value="">Seleccionar</option>
-                        <option value="2026">2026</option>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
-                        <option value="2020">2020</option>
-                        <option value="2019">2019</option>
-                        <option value="2018">2018</option>
-                    </select>
-                </div>
+                <div class="form-field"><label>Año de ingreso</label><select id="usuario-anio-ingreso" class="form-control"><option value="">Seleccionar</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option></select></div>
             </div>
 
-            <!-- Campos para Empleado -->
             <div class="campos-empleado" id="usuario-campos-empleado">
-                <div class="empleado-notificacion">
-                    <div class="icono">⏳</div>
-                    <div class="contenido">
-                        <h4>Requiere aprobación del administrador</h4>
-                        <p>Los empleados necesitan aprobación para acceder a su panel de trabajo.</p>
-                    </div>
-                </div>
+                <div class="alert-box warning">⏳ Los empleados requieren aprobación del administrador para acceder a su panel.</div>
                 <div class="form-row">
-                    <div class="form-field">
-                        <label>Cargo <span class="required">*</span></label>
-                        <select id="usuario-cargo" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Trabajador Social">Trabajador Social</option>
-                            <option value="Miembro del Comité">Miembro del Comité</option>
-                            <option value="Auditor">Auditor</option>
-                            <option value="Administrador">Administrador</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Departamento <span class="required">*</span></label>
-                        <select id="usuario-departamento" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Oficina de Becas">Oficina de Becas</option>
-                            <option value="Comité de Becas">Comité de Becas</option>
-                            <option value="Auditoría">Auditoría</option>
-                            <option value="Administración">Administración</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
+                    <div class="form-field"><label>Cargo <span class="required">*</span></label><select id="usuario-cargo" class="form-control"><option value="">Seleccionar</option><option value="Trabajador Social">Trabajador Social</option><option value="Miembro del Comité">Miembro del Comité</option><option value="Auditor">Auditor</option><option value="Administrador">Administrador</option><option value="Otro">Otro</option></select></div>
+                    <div class="form-field"><label>Departamento <span class="required">*</span></label><select id="usuario-departamento" class="form-control"><option value="">Seleccionar</option><option value="Oficina de Becas">Oficina de Becas</option><option value="Comité de Becas">Comité de Becas</option><option value="Auditoría">Auditoría</option><option value="Administración">Administración</option><option value="Otro">Otro</option></select></div>
                 </div>
             </div>
 
-            <!-- Cédula con consulta al padrón -->
             <div class="form-field">
                 <label>Cédula <span class="required">*</span></label>
                 <input type="text" id="usuario-cedula" class="form-control" placeholder="1-2345-6789" oninput="consultarPadronAdmin()">
-                <div class="padron-status" id="usuario-padron-status">
-                    <span class="info">🔍 Ingresa la cédula para verificar datos</span>
-                </div>
+                <div class="padron-status" id="usuario-padron-status"><span class="info">🔍 Ingresa la cédula para verificar datos</span></div>
             </div>
 
-            <!-- Nombre completo (se carga desde el padrón) -->
             <div class="form-field">
                 <label>Nombre completo <span class="required">*</span></label>
                 <input type="text" id="usuario-nombre" class="form-control" placeholder="María José González Mora">
                 <span class="hint">Se cargará automáticamente desde el padrón.</span>
             </div>
 
-            <!-- Dirección (se carga desde el padrón) -->
             <div class="form-field">
                 <label>Dirección</label>
                 <input type="text" id="usuario-direccion" class="form-control" placeholder="Provincia, Cantón, Distrito">
                 <span class="hint">Se cargará automáticamente desde el padrón.</span>
             </div>
 
-            <!-- Correo electrónico -->
             <div class="form-field">
                 <label>Correo electrónico <span class="required">*</span></label>
                 <input type="email" id="usuario-email" class="form-control" placeholder="correo@ejemplo.com">
             </div>
 
-            <!-- Teléfono -->
             <div class="form-field">
                 <label>Teléfono</label>
                 <input type="text" id="usuario-telefono" class="form-control" placeholder="8888-9999">
             </div>
 
-            <!-- Rol y Contraseña -->
             <div class="form-row">
                 <div class="form-field">
                     <label>Rol <span class="required">*</span></label>
@@ -1344,11 +425,8 @@
                 </div>
             </div>
 
-            <!-- Usuario aprobado -->
             <div class="form-field">
-                <label>
-                    <input type="checkbox" id="usuario-aprobado" checked> Usuario aprobado
-                </label>
+                <label><input type="checkbox" id="usuario-aprobado" checked> Usuario aprobado</label>
                 <span class="hint">Los empleados requieren aprobación para acceder a sus paneles.</span>
             </div>
 
@@ -1357,50 +435,25 @@
         </div>
     </div>
 
-    <!-- MODAL TIPO BECA -->
     <div id="modal-tipo-beca" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-tipo-beca')">×</button>
             <h3 id="tipo-beca-titulo">Nuevo tipo de beca</h3>
             <input type="hidden" id="tb-id-edicion">
             <div class="form-grid">
-                <div class="form-field">
-                    <label>Ícono (emoji)</label>
-                    <input type="text" id="tb-icon" class="form-control" placeholder="💰" maxlength="4">
-                </div>
-                <div class="form-field">
-                    <label>Nombre *</label>
-                    <input type="text" id="tb-nombre" class="form-control" placeholder="Ej: Socioeconómica">
-                </div>
-                <div class="form-field full">
-                    <label>Descripción</label>
-                    <input type="text" id="tb-desc" class="form-control" placeholder="Breve descripción de la beca">
-                </div>
-                <div class="form-field">
-                    <label>% Cobertura mínima</label>
-                    <input type="number" id="tb-min" class="form-control" min="0" max="100" value="25">
-                </div>
-                <div class="form-field">
-                    <label>% Cobertura máxima</label>
-                    <input type="number" id="tb-max" class="form-control" min="0" max="100" value="100">
-                </div>
-                <div class="form-field full">
-                    <label>Rubros cubiertos (separados por coma)</label>
-                    <input type="text" id="tb-rubros" class="form-control" placeholder="Matrícula, Aranceles, Materiales">
-                </div>
-                <div class="form-field full">
-                    <label>Requisitos (uno por línea)</label>
-                    <textarea id="tb-requisitos" class="form-control" rows="3" placeholder="Promedio mínimo 80&#10;Ingreso familiar máximo 2 salarios mínimos"></textarea>
-                </div>
-                <div class="form-field full">
-                    <label><input type="checkbox" id="tb-activo" checked> Tipo de beca activo</label>
-                </div>
+                <div class="form-field"><label>Ícono (emoji)</label><input type="text" id="tb-icon" class="form-control" placeholder="💰" maxlength="4"></div>
+                <div class="form-field"><label>Nombre *</label><input type="text" id="tb-nombre" class="form-control" placeholder="Ej: Socioeconómica"></div>
+                <div class="form-field full"><label>Descripción</label><input type="text" id="tb-desc" class="form-control" placeholder="Breve descripción de la beca"></div>
+                <div class="form-field"><label>% Cobertura mínima</label><input type="number" id="tb-min" class="form-control" min="0" max="100" value="25"></div>
+                <div class="form-field"><label>% Cobertura máxima</label><input type="number" id="tb-max" class="form-control" min="0" max="100" value="100"></div>
+                <div class="form-field full"><label>Rubros cubiertos (separados por coma)</label><input type="text" id="tb-rubros" class="form-control" placeholder="Matrícula, Aranceles, Materiales"></div>
+                <div class="form-field full"><label>Requisitos (uno por línea)</label><textarea id="tb-requisitos" class="form-control" rows="3" placeholder="Promedio mínimo 80&#10;Ingreso familiar máximo 2 salarios mínimos"></textarea></div>
+                <div class="form-field full"><label><input type="checkbox" id="tb-activo" checked> Tipo de beca activo</label></div>
             </div>
             <button class="btn btn-primary btn-block" onclick="guardarTipoBeca()">Guardar tipo de beca</button>
         </div>
     </div>
 
-    <!-- MODAL NOTIFICACIÓN -->
     <div id="modal-notificacion" class="modal-overlay hidden">
         <div class="modal-box">
             <div class="success-icon">📧</div>
@@ -1410,7 +463,6 @@
         </div>
     </div>
 
-    <!-- MODAL CONFIRMAR -->
     <div id="modal-custom-confirm" class="modal-overlay hidden">
         <div class="modal-box">
             <h3 style="margin-bottom:14px;">Confirmar acción</h3>
@@ -1430,15 +482,11 @@
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
         const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            justificaciones: 'becas_justificaciones',
-            suspensiones: 'becas_suspensiones',
-            config: 'becas_config',
             session: 'becas_session',
             bitacora: 'becas_bitacora',
+            config: 'becas_config',
+            noticias: 'becas_noticias',
+            tipos: 'becas_tipos'
         };
 
         const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
@@ -1451,67 +499,35 @@
         // UTILIDADES
         // ============================================================
         function rolLabel(rol) {
-            const map = {
-                estudiante: 'Estudiante',
-                trabajador_social: 'Trab. Social',
-                comite: 'Comité',
-                admin: 'Administrador',
-                auditor: 'Auditor',
-                aspirante: 'Aspirante'
-            };
+            const map = { estudiante: 'Estudiante', trabajador_social: 'Trab. Social', comite: 'Comité', admin: 'Administrador', auditor: 'Auditor', aspirante: 'Aspirante' };
             return map[rol] || rol;
         }
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         function showToast(message, type) {
             type = type || 'info';
             let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-            const colors = {
-                success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
-                error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
-                warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
-                info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
-            };
+            if (!container) { container = document.createElement('div'); container.id = 'toast-container'; document.body.appendChild(container); }
+            const colors = { success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' }, error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' }, warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' }, info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' } };
             const c = colors[type] || colors.info;
             const toast = document.createElement('div');
             toast.className = 'toast-box';
             toast.style.background = c.bg;
             toast.style.border = '1px solid ' + c.border;
             toast.style.color = c.color;
-            toast.innerHTML = '<span class="toast-icon">' + c.icon +
-                '</span><span style="flex:1;">' + message +
-                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
+            toast.innerHTML = '<span class="toast-icon">' + c.icon + '</span><span style="flex:1;">' + message + '</span><button class="toast-close" aria-label="Cerrar">×</button>';
             container.appendChild(toast);
-
-            const remove = () => {
-                toast.style.transition = 'opacity .3s ease, transform .3s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(24px)';
-                setTimeout(() => toast.remove(), 300);
-            };
-
+            const remove = () => { toast.style.transition = 'opacity .3s ease, transform .3s ease'; toast.style.opacity = '0'; toast.style.transform = 'translateX(24px)'; setTimeout(() => toast.remove(), 300); };
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
 
         function notify(message) {
             let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message)) type = 'success';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message)) type = 'warning';
             showToast(message, type);
         }
 
@@ -1522,12 +538,7 @@
                 modal.classList.remove('hidden');
                 const okBtn = document.getElementById('custom-confirm-ok');
                 const cancelBtn = document.getElementById('custom-confirm-cancel');
-                const cleanup = (result) => {
-                    modal.classList.add('hidden');
-                    okBtn.removeEventListener('click', onOk);
-                    cancelBtn.removeEventListener('click', onCancel);
-                    resolve(result);
-                };
+                const cleanup = (result) => { modal.classList.add('hidden'); okBtn.removeEventListener('click', onOk); cancelBtn.removeEventListener('click', onCancel); resolve(result); };
                 const onOk = () => cleanup(true);
                 const onCancel = () => cleanup(false);
                 okBtn.addEventListener('click', onOk);
@@ -1540,109 +551,44 @@
         }
 
         function descifrarPassword(encrypted) {
-            try {
-                return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(CryptoJS.enc.Utf8);
-            } catch (e) {
-                return null;
-            }
+            try { return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
         }
 
         function registrarBitacora(accion, expediente, sessionOverride) {
             const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
+            const entrada = { fecha: new Date().toLocaleString(), usuario: session ? session.nombre : 'Visitante', rol: session ? session.rol : 'visitante', accion: accion, expediente: expediente || '—' };
             const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
             bitacora.unshift(entrada);
             localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
             return entrada;
         }
 
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = [
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ];
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
-        }
-
-        function guardarTiposBecaLocal(tipos) {
-            localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-        }
-
         // ============================================================
-        // NAVEGACIÓN - CORREGIDA
+        // NAVEGACIÓN
         // ============================================================
         function showView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             const target = document.getElementById(viewId);
             if (target) target.classList.remove('hidden');
-            // Si es la vista pública, cargar noticias
-            if (viewId === 'view-public') {
-                renderPublicNoticias();
-            }
+            if (viewId === 'view-public') renderPublicNoticias();
             if (viewId.includes('dash')) renderDashboards();
         }
 
-        function irInicio(e) {
-            if (e) e.preventDefault();
-            // Redirigir al index (vista pública)
-            window.location.href = 'index.html';
-        }
-
-        function goHome(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function abrirLogin() {
-            openModal('modal-login');
-        }
+        function irInicio(e) { if (e) e.preventDefault(); window.location.href = 'index.html'; }
+        function goHome(e) { if (e) e.preventDefault(); window.location.href = 'index.html'; }
+        function abrirLogin() { openModal('modal-login'); }
 
         function goToDashboard() {
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
             if (session) {
-                const dashMap = {
-                    estudiante: 'view-dash-estudiante',
-                    aspirante: 'view-dash-estudiante',
-                    trabajador_social: 'view-dash-social',
-                    comite: 'view-dash-comite',
-                    admin: 'view-dash-admin',
-                    auditor: 'view-dash-auditor'
-                };
+                const dashMap = { estudiante: 'view-dash-estudiante', aspirante: 'view-dash-estudiante', trabajador_social: 'view-dash-social', comite: 'view-dash-comite', admin: 'view-dash-admin', auditor: 'view-dash-auditor' };
                 showView(dashMap[session.rol] || 'view-public');
-            } else {
-                showView('view-public');
-            }
+            } else { showView('view-public'); }
         }
 
         function cerrarSesion() {
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            if (session) {
-                registrarBitacora('Cierre de sesión', '—', session);
-            }
+            if (session) registrarBitacora('Cierre de sesión', '—', session);
             localStorage.removeItem(STORAGE_KEYS.session);
             notify('Sesión cerrada correctamente.');
             window.location.href = 'index.html';
@@ -1652,17 +598,9 @@
             const nav = document.getElementById('mainNav');
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
             if (session) {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<div class="session-pill"><span>' + session.nombre +
-                    '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
-                    '<button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button>' +
-                    '<button class="btn btn-primary" onclick="cerrarSesion()">Salir</button>';
+                nav.innerHTML = '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a><div class="session-pill"><span>' + session.nombre + '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div><button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button><button class="btn btn-primary" onclick="cerrarSesion()">Salir</button>';
             } else {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<button class="btn btn-outline" onclick="abrirLogin()">Ingresar</button>' +
-                    '<a href="registro.html" class="btn btn-primary">Registrarse</a>';
+                nav.innerHTML = '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a><button class="btn btn-outline" onclick="abrirLogin()">Ingresar</button><a href="registro.html" class="btn btn-primary">Registrarse</a>';
             }
         }
 
@@ -1672,36 +610,16 @@
         function renderPublicNoticias() {
             const container = document.getElementById('public-noticias');
             if (!container) return;
-
             const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
-
-            const activas = noticias
-                .filter(n => {
-                    const fechaPub = new Date(n.fechaPublicacion);
-                    fechaPub.setHours(0, 0, 0, 0);
-                    return fechaPub <= hoy;
-                })
-                .slice(0, 3);
-
-            if (activas.length === 0) {
-                container.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay noticias disponibles en este momento.</p>';
-                return;
-            }
-
-            container.innerHTML = activas.map(n =>
-                '<div style="padding:10px 0; border-bottom:1px solid var(--border);">' +
-                '<strong>' + n.titulo + '</strong>' +
-                '<span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion +
-                '</span>' +
-                '<p style="font-size:0.9rem;margin-top:4px;">' + n.contenido + '</p>' +
-                '</div>'
-            ).join('');
+            const activas = noticias.filter(n => { const fechaPub = new Date(n.fechaPublicacion); fechaPub.setHours(0, 0, 0, 0); return fechaPub <= hoy; }).slice(0, 3);
+            if (activas.length === 0) { container.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay noticias disponibles en este momento.</p>'; return; }
+            container.innerHTML = activas.map(n => '<div style="padding:10px 0; border-bottom:1px solid var(--border);"><strong>' + n.titulo + '</strong><span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion + '</span><p style="font-size:0.9rem;margin-top:4px;">' + n.contenido + '</p></div>').join('');
         }
 
         // ============================================================
-        // LOGIN
+        // LOGIN (LocalStorage) - PARA DEMO
         // ============================================================
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -1748,24 +666,13 @@
             usuario.intentos = 0;
             localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
 
-            const nuevaSesion = {
-                email,
-                nombre: usuario.nombre,
-                rol: usuario.rol
-            };
+            const nuevaSesion = { email, nombre: usuario.nombre, rol: usuario.rol };
             localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
             registrarBitacora('Inicio de sesión', '—', nuevaSesion);
             closeModal('modal-login');
             renderHeaderNav();
 
-            const dashMap = {
-                estudiante: 'view-dash-estudiante',
-                aspirante: 'view-dash-estudiante',
-                trabajador_social: 'view-dash-social',
-                comite: 'view-dash-comite',
-                admin: 'view-dash-admin',
-                auditor: 'view-dash-auditor'
-            };
+            const dashMap = { estudiante: 'view-dash-estudiante', aspirante: 'view-dash-estudiante', trabajador_social: 'view-dash-social', comite: 'view-dash-comite', admin: 'view-dash-admin', auditor: 'view-dash-auditor' };
             showView(dashMap[usuario.rol] || 'view-public');
             notify('Bienvenido/a ' + usuario.nombre);
         }
@@ -1790,10 +697,7 @@
                 return;
             }
 
-            statusEl.innerHTML = `
-                <span class="spinner"></span>
-                <span class="info">Consultando padrón electoral...</span>
-            `;
+            statusEl.innerHTML = `<span class="spinner"></span><span class="info">Consultando padrón electoral...</span>`;
             consultaEnProcesoAdmin = true;
 
             timeoutConsultaPadronAdmin = setTimeout(async () => {
@@ -1888,20 +792,17 @@
                     consultaEnProcesoAdmin = false;
 
                     if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>`;
+                        statusEl.innerHTML = `<span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>`;
                         return;
                     }
 
                     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>`;
+                        statusEl.innerHTML = `<span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>`;
                         return;
                     }
 
                     if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>`;
+                        statusEl.innerHTML = `<span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>`;
                         return;
                     }
 
@@ -1931,17 +832,13 @@
             camposAspirante.classList.remove('visible');
             camposEmpleado.classList.remove('visible');
 
-            if (tipo === 'estudiante') {
-                camposEstudiante.classList.add('visible');
-            } else if (tipo === 'aspirante') {
-                camposAspirante.classList.add('visible');
-            } else if (tipo === 'empleado') {
-                camposEmpleado.classList.add('visible');
-            }
+            if (tipo === 'estudiante') camposEstudiante.classList.add('visible');
+            else if (tipo === 'aspirante') camposAspirante.classList.add('visible');
+            else if (tipo === 'empleado') camposEmpleado.classList.add('visible');
         }
 
         // ============================================================
-        // DASHBOARD ADMIN
+        // DASHBOARD ADMIN (Solo API, sin localStorage de datos)
         // ============================================================
         function renderDashboards() {
             const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
@@ -1949,11 +846,25 @@
             if (session.rol === 'admin') renderAdminDashboard(session);
         }
 
-        function renderAdminDashboard(session) {
+        async function renderAdminDashboard(session) {
             document.getElementById('adm-nombre').textContent = session.nombre;
 
-            renderTablaUsuarios();
-            renderTablaTiposBeca();
+            try {
+                const connected = await API.checkConnection();
+                if (connected) {
+                    document.getElementById('db-status').textContent = '🟢 Conectado a la BD';
+                    document.getElementById('db-status').className = 'online';
+                } else {
+                    document.getElementById('db-status').textContent = '🟡 Modo offline';
+                    document.getElementById('db-status').className = 'offline';
+                }
+            } catch (e) {
+                console.warn('⚠️ Error de conexión:', e.message);
+            }
+
+            await renderTablaUsuarios();
+            await renderMiembrosComite();
+            await renderTablaTiposBeca();
             cargarConfigEnFormulario();
 
             registrarBitacora('Consulta Admin', '—', session);
@@ -1964,94 +875,79 @@
         // ============================================================
         function filtrarUsuarios(filtro, btn) {
             filtroUsuariosActual = filtro;
-
             document.querySelectorAll('.filter-bar .btn-small').forEach(b => b.classList.remove('active-filter'));
             if (btn) btn.classList.add('active-filter');
-
             renderTablaUsuarios();
         }
 
         // ============================================================
-        // TABLA USUARIOS CON FILTROS
+        // TABLA USUARIOS (SOLO DATOS DE LA API)
         // ============================================================
-        function renderTablaUsuarios() {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+        async function renderTablaUsuarios() {
             const tbody = document.getElementById('adm-tabla-usuarios');
             if (!tbody) return;
 
-            let usuariosFiltrados = usuarios;
+            try {
+                // Obtenemos los datos de la API SOLAMENTE
+                const usuarios = await API.getUsuarios();
 
-            switch (filtroUsuariosActual) {
-                case 'aprobados':
-                    usuariosFiltrados = usuarios.filter(u => u.aprobado !== false);
-                    break;
-                case 'pendientes':
-                    usuariosFiltrados = usuarios.filter(u => u.aprobado === false);
-                    break;
-                case 'aspirante':
-                    usuariosFiltrados = usuarios.filter(u => u.rol === 'aspirante');
-                    break;
-                case 'estudiante':
-                    usuariosFiltrados = usuarios.filter(u => u.rol === 'estudiante');
-                    break;
-                case 'empleados':
-                    usuariosFiltrados = usuarios.filter(u =>
-                        ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol)
-                    );
-                    break;
-                case 'todos':
-                default:
-                    break;
-            }
+                let usuariosFiltrados = usuarios;
 
-            if (usuariosFiltrados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios que coincidan con el filtro.</td></tr>';
-                return;
-            }
+                switch (filtroUsuariosActual) {
+                    case 'aprobados': usuariosFiltrados = usuarios.filter(u => u.aprobado !== false); break;
+                    case 'pendientes': usuariosFiltrados = usuarios.filter(u => u.aprobado === false); break;
+                    case 'aspirante': usuariosFiltrados = usuarios.filter(u => u.rol === 'aspirante'); break;
+                    case 'estudiante': usuariosFiltrados = usuarios.filter(u => u.rol === 'estudiante'); break;
+                    case 'empleados': usuariosFiltrados = usuarios.filter(u => ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol)); break;
+                    case 'todos': default: break;
+                }
 
-            tbody.innerHTML = usuariosFiltrados.map((u, i) => {
-                const idx = usuarios.indexOf(u);
-                const aprobado = u.aprobado !== false;
-                const estadoColor = aprobado ? 'badge-success' : 'badge-warning';
-                const estadoTexto = aprobado ? 'Aprobado' : 'Pendiente';
+                if (usuariosFiltrados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios que coincidan con el filtro.</td></tr>';
+                    return;
+                }
 
-                return '<tr>' +
-                    '<td><strong>' + u.nombre + '</strong></td>' +
-                    '<td>' + u.email + '</td>' +
-                    '<td><span class="badge badge-info">' + rolLabel(u.rol) + '</span></td>' +
-                    '<td><span class="badge ' + estadoColor + '">' + estadoTexto + '</span></td>' +
-                    '<td style="display:flex;gap:5px;flex-wrap:wrap;">' +
-                    '<button class="btn btn-small" onclick="editarUsuario(' + idx + ')">✏️</button>' +
-                    (u.bloqueado ?
-                        '<button class="btn btn-small btn-success" onclick="desbloquearUsuario(' + idx + ')">🔓</button>' :
-                        '') +
-                    (u.aprobado === false ?
-                        '<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(' + idx +
-                        ')">✅ Aprobar</button>' :
-                        '') +
-                    '<button class="btn btn-danger" onclick="eliminarUsuario(' + idx + ')">🗑️</button>' +
-                    '</td>' +
-                    '</tr>';
-            }).join('');
-        }
+                tbody.innerHTML = usuariosFiltrados.map(u => {
+                    const aprobado = u.aprobado !== false;
+                    const estadoColor = aprobado ? 'badge-success' : 'badge-warning';
+                    const estadoTexto = aprobado ? 'Aprobado' : 'Pendiente';
 
-        // ============================================================
-        // APROBAR USUARIO DESDE LA TABLA
-        // ============================================================
-        function aprobarUsuarioDirecto(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            if (usuarios[index]) {
-                usuarios[index].aprobado = true;
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario aprobado: ' + usuarios[index].nombre, '—');
-                renderTablaUsuarios();
-                notify('✅ Usuario ' + usuarios[index].nombre + ' aprobado correctamente.');
+                    return '<tr><td><strong>' + u.nombre + '</strong></td><td>' + u.email + '</td><td><span class="badge badge-info">' + rolLabel(u.rol) + '</span></td><td><span class="badge ' + estadoColor + '">' + estadoTexto + '</span></td><td style="display:flex;gap:5px;flex-wrap:wrap;">' +
+                        '<button class="btn btn-small" onclick="editarUsuario(' + u.id + ')">✏️</button>' +
+                        (u.bloqueado ? '<button class="btn btn-small btn-success" onclick="desbloquearUsuario(' + u.id + ')">🔓</button>' : '') +
+                        (u.aprobado === false ? '<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(' + u.id + ')">✅ Aprobar</button>' : '') +
+                        '<button class="btn btn-danger" onclick="eliminarUsuario(' + u.id + ')">🗑️</button>' +
+                        '</td></tr>';
+                }).join('');
+            } catch (error) {
+                console.error('❌ Error cargando usuarios:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Error al cargar usuarios</td></tr>';
             }
         }
 
         // ============================================================
-        // USUARIOS - CRUD
+        // CRUD DE USUARIOS 100% BASADO EN API
         // ============================================================
+        async function aprobarUsuarioDirecto(id) {
+            if (!id) return;
+            try {
+                // Traemos los datos actuales de la API
+                const usuarios = await API.getUsuarios();
+                const u = usuarios.find(user => user.id === id);
+                if (u) {
+                    u.aprobado = true; // Modificamos localmente
+                    // Enviamos el PUT con el objeto completo a la BD
+                    await API.editarUsuario(id, u);
+                    registrarBitacora('Usuario aprobado: ' + u.nombre, '—');
+                    await renderTablaUsuarios();
+                    notify('✅ Usuario ' + u.nombre + ' aprobado correctamente.');
+                }
+            } catch (error) {
+                console.error('❌ Error aprobando usuario:', error);
+                notify('⚠️ Error al aprobar el usuario');
+            }
+        }
+
         function nuevoUsuario() {
             document.getElementById('usuario-modal-titulo').textContent = 'Nuevo usuario';
             document.getElementById('usuario-modal-sub').textContent = 'Completa todos los datos del usuario.';
@@ -2079,51 +975,53 @@
             openModal('modal-usuario');
         }
 
-        function editarUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const u = usuarios[index];
-            if (!u) return;
+        function editarUsuario(id) {
+            if (!id) return;
+            // Obtenemos los datos directamente de la API, no de localStorage
+            API.getUsuarios().then(usuarios => {
+                const u = usuarios.find(user => user.id === id);
+                if (!u) return;
 
-            document.getElementById('usuario-modal-titulo').textContent = 'Editar usuario';
-            document.getElementById('usuario-modal-sub').textContent = 'Modifica los datos del usuario.';
-            document.getElementById('usuario-edit-id').value = index;
-            document.getElementById('usuario-nombre').value = u.nombre || '';
-            document.getElementById('usuario-email').value = u.email || '';
-            document.getElementById('usuario-cedula').value = u.cedula || '';
-            document.getElementById('usuario-telefono').value = u.telefono || '';
-            document.getElementById('usuario-direccion').value = u.direccion || '';
-            document.getElementById('usuario-rol').value = u.rol || 'aspirante';
-            document.getElementById('usuario-password').value = '';
-            document.getElementById('usuario-password-field').style.display = 'none';
-            document.getElementById('usuario-aprobado').checked = u.aprobado !== false;
+                document.getElementById('usuario-modal-titulo').textContent = 'Editar usuario';
+                document.getElementById('usuario-modal-sub').textContent = 'Modifica los datos del usuario.';
+                document.getElementById('usuario-edit-id').value = u.id;
+                document.getElementById('usuario-nombre').value = u.nombre || '';
+                document.getElementById('usuario-email').value = u.email || '';
+                document.getElementById('usuario-cedula').value = u.cedula || '';
+                document.getElementById('usuario-telefono').value = u.telefono || '';
+                document.getElementById('usuario-direccion').value = u.direccion || '';
+                document.getElementById('usuario-rol').value = u.rol || 'aspirante';
+                document.getElementById('usuario-password').value = '';
+                document.getElementById('usuario-password-field').style.display = 'none';
+                document.getElementById('usuario-aprobado').checked = u.aprobado !== false;
 
-            const esEmpleado = ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol);
-            const esEstudiante = u.rol === 'estudiante';
-            const esAspirante = u.rol === 'aspirante' || (!esEmpleado && !esEstudiante);
+                const esEmpleado = ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol);
+                const esEstudiante = u.rol === 'estudiante';
+                const esAspirante = u.rol === 'aspirante' || (!esEmpleado && !esEstudiante);
 
-            if (esEmpleado) {
-                document.getElementById('usuario-tipo').value = 'empleado';
-                document.getElementById('usuario-cargo').value = u.cargo || u.datosAcademicos?.cargo || '';
-                document.getElementById('usuario-departamento').value = u.departamento || u.datosAcademicos?.departamento ||
-                '';
-            } else if (esEstudiante) {
-                document.getElementById('usuario-tipo').value = 'estudiante';
-                const da = u.datosAcademicos || {};
-                document.getElementById('usuario-carrera').value = da.carrera || '';
-                document.getElementById('usuario-facultad').value = da.facultad || '';
-                document.getElementById('usuario-fecha-ingreso').value = da.fechaIngreso || '';
-                document.getElementById('usuario-sede').value = da.sede || '';
-                document.getElementById('usuario-anio-ingreso').value = da.anioIngreso || '';
-            } else {
-                document.getElementById('usuario-tipo').value = 'aspirante';
-            }
+                if (esEmpleado) {
+                    document.getElementById('usuario-tipo').value = 'empleado';
+                    document.getElementById('usuario-cargo').value = u.cargo || u.datosAcademicos?.cargo || '';
+                    document.getElementById('usuario-departamento').value = u.departamento || u.datosAcademicos?.departamento || '';
+                } else if (esEstudiante) {
+                    document.getElementById('usuario-tipo').value = 'estudiante';
+                    const da = u.datosAcademicos || {};
+                    document.getElementById('usuario-carrera').value = da.carrera || '';
+                    document.getElementById('usuario-facultad').value = da.facultad || '';
+                    document.getElementById('usuario-fecha-ingreso').value = da.fechaIngreso || '';
+                    document.getElementById('usuario-sede').value = da.sede || '';
+                    document.getElementById('usuario-anio-ingreso').value = da.anioIngreso || '';
+                } else {
+                    document.getElementById('usuario-tipo').value = 'aspirante';
+                }
 
-            document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Cédula: ${u.cedula || 'No registrada'}</span>`;
-            toggleCamposUsuarioAdmin();
-            openModal('modal-usuario');
+                document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Cédula: ${u.cedula || 'No registrada'}</span>`;
+                toggleCamposUsuarioAdmin();
+                openModal('modal-usuario');
+            });
         }
 
-        function guardarUsuario() {
+        async function guardarUsuario() {
             const editId = document.getElementById('usuario-edit-id').value;
             const tipo = document.getElementById('usuario-tipo').value;
             const nombre = document.getElementById('usuario-nombre').value.trim();
@@ -2172,20 +1070,6 @@
                 return;
             }
 
-            if (!email.includes('@') || !email.includes('.')) {
-                errorBox.textContent = '⚠️ Ingresa un correo electrónico válido.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-
-            if (!editId && usuarios.some(u => u.email === email)) {
-                errorBox.textContent = '⚠️ Ya existe un usuario con ese correo.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
             let rolFinal = rol;
             let datosAcademicos = {};
 
@@ -2215,110 +1099,176 @@
                 datosAcademicos = { esAspirante: true };
             }
 
-            if (editId) {
-                const index = parseInt(editId);
-                if (usuarios[index]) {
-                    usuarios[index].nombre = nombre;
-                    usuarios[index].email = email;
-                    usuarios[index].cedula = cedula;
-                    usuarios[index].telefono = telefono || '';
-                    usuarios[index].direccion = direccion || '';
-                    usuarios[index].rol = rolFinal;
-                    usuarios[index].datosAcademicos = datosAcademicos;
-                    usuarios[index].aprobado = aprobado;
-                    if (password) usuarios[index].password = cifrarPassword(password);
-                    localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                    registrarBitacora('Usuario editado: ' + nombre, '—');
-                    notify('✅ Usuario actualizado correctamente.');
-                }
-            } else {
-                const nuevoUsuario = {
-                    email,
-                    password: cifrarPassword(password),
-                    rol: rolFinal,
-                    nombre,
-                    cedula,
+            try {
+                const usuarioData = {
+                    nombre: nombre,
+                    email: email,
+                    cedula: cedula,
                     telefono: telefono || '',
                     direccion: direccion || '',
-                    intentos: 0,
-                    bloqueado: false,
-                    twoFactorEnabled: false,
-                    fechaRegistro: new Date().toISOString(),
-                    datosAcademicos,
+                    rol: rolFinal,
+                    datosAcademicos: datosAcademicos,
                     aprobado: aprobado,
-                    puedeSolicitar: tipo === 'estudiante' || tipo === 'aspirante'
+                    cargo: (tipo === 'empleado') ? cargo : null,
+                    departamento: (tipo === 'empleado') ? departamento : null
                 };
 
-                if (tipo === 'empleado') {
-                    nuevoUsuario.cargo = cargo;
-                    nuevoUsuario.departamento = departamento;
+                if (editId) {
+                    // Editar: Si se cambia la contraseña, la incluimos
+                    if (password) usuarioData.password = cifrarPassword(password);
+                    await API.editarUsuario(editId, usuarioData);
+                } else {
+                    // Crear nuevo usuario (solo se puede hacer desde el Admin aquí)
+                    usuarioData.password = cifrarPassword(password);
+                    await API.crearUsuario(usuarioData);
                 }
 
-                usuarios.push(nuevoUsuario);
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario creado: ' + nombre + ' (Rol: ' + rolFinal + ')', '—');
-                notify('✅ Usuario ' + nombre + ' creado correctamente.');
+                registrarBitacora(editId ? 'Usuario editado: ' + nombre : 'Usuario creado: ' + nombre + ' (Rol: ' + rolFinal + ')', '—');
+                notify(editId ? '✅ Usuario actualizado correctamente.' : '✅ Usuario creado correctamente.');
+            } catch (error) {
+                console.error('❌ Error guardando usuario:', error);
+                notify('⚠️ Error al guardar el usuario');
+                return;
             }
 
             closeModal('modal-usuario');
-            renderTablaUsuarios();
+            await renderTablaUsuarios();
         }
 
-        async function eliminarUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const u = usuarios[index];
+        async function eliminarUsuario(id) {
+            if (!id) return;
+            // Obtenemos el nombre del usuario solo para el mensaje de confirmación
+            const usuarios = await API.getUsuarios();
+            const u = usuarios.find(user => user.id === id);
             if (!u) return;
 
             if (!(await customConfirm('¿Eliminar al usuario ' + u.nombre + '? Esta acción no se puede deshacer.'))) return;
 
-            usuarios.splice(index, 1);
-            localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-            registrarBitacora('Usuario eliminado: ' + u.nombre, '—');
-            renderTablaUsuarios();
-            notify('✅ Usuario eliminado.');
+            try {
+                await API.eliminarUsuario(id);
+                registrarBitacora('Usuario eliminado: ' + u.nombre, '—');
+                await renderTablaUsuarios();
+                notify('✅ Usuario eliminado.');
+            } catch (error) {
+                console.error('❌ Error eliminando usuario:', error);
+                notify('⚠️ Error al eliminar el usuario');
+            }
         }
 
-        function desbloquearUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            if (usuarios[index]) {
-                usuarios[index].bloqueado = false;
-                usuarios[index].intentos = 0;
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario desbloqueado: ' + usuarios[index].nombre, '—');
-                renderTablaUsuarios();
-                notify('✅ Usuario desbloqueado.');
+        async function desbloquearUsuario(id) {
+            if (!id) return;
+            try {
+                // Traemos el usuario de la BD, lo actualizamos y lo enviamos de vuelta
+                const usuarios = await API.getUsuarios();
+                const u = usuarios.find(user => user.id === id);
+                if (u) {
+                    u.bloqueado = false;
+                    u.intentos = 0;
+                    await API.editarUsuario(id, u);
+                    registrarBitacora('Usuario desbloqueado: ' + u.nombre, '—');
+                    await renderTablaUsuarios();
+                    notify('✅ Usuario desbloqueado.');
+                }
+            } catch (error) {
+                console.error('❌ Error desbloqueando usuario:', error);
+                notify('⚠️ Error al desbloquear el usuario');
             }
+        }
+
+        // ============================================================
+        // MIEMBROS DEL COMITÉ (SOLO ROL "comite")
+        // ============================================================
+        async function renderMiembrosComite() {
+            const container = document.getElementById('miembros-comite-lista');
+            if (!container) return;
+
+            try {
+                const usuarios = await API.getUsuarios();
+                const miembros = usuarios.filter(u => u.rol === 'comite');
+
+                document.getElementById('miembros-comite-total').textContent = miembros.length;
+
+                if (miembros.length === 0) {
+                    container.innerHTML = `<div class="alert-box info"><span>ℹ️ No hay miembros del comité registrados. Haz clic en "Agregar miembro" para crear uno.</span></div>`;
+                    return;
+                }
+
+                miembros.sort((a, b) => {
+                    const aEsPresidente = (a.cargo || a.datosAcademicos?.cargo || '').toLowerCase().includes('presidente');
+                    const bEsPresidente = (b.cargo || b.datosAcademicos?.cargo || '').toLowerCase().includes('presidente');
+                    if (aEsPresidente && !bEsPresidente) return -1;
+                    if (!aEsPresidente && bEsPresidente) return 1;
+                    return 0;
+                });
+
+                container.innerHTML = miembros.map(u => {
+                    const iniciales = u.nombre.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
+                    const estaActivo = u.aprobado !== false;
+                    const cargo = u.cargo || u.datosAcademicos?.cargo || 'Miembro del Comité';
+                    const esPresidente = cargo.toLowerCase().includes('presidente');
+
+                    return `
+                        <div class="miembro-card">
+                            <div class="miembro-info">
+                                <div class="miembro-avatar" style="background: #27ae60">${iniciales}</div>
+                                <div class="miembro-detalles">
+                                    <h4>${u.nombre}</h4>
+                                    <p>${u.email}</p>
+                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px;">
+                                        <span class="rol-label">${esPresidente ? '👨‍⚖️ Presidente' : '👤 Miembro'}</span>
+                                        <span class="badge ${estaActivo ? 'badge-success' : 'badge-warning'}">${estaActivo ? 'Activo' : 'Inactivo'}</span>
+                                        <span class="badge badge-info">🗳️ Con derecho a voto</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="miembro-acciones">
+                                <button class="btn btn-small" onclick="editarUsuario(${u.id})">✏️ Editar</button>
+                                ${!estaActivo ? `<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(${u.id})">✅ Activar</button>` : ''}
+                                <button class="btn btn-danger" onclick="eliminarUsuario(${u.id})">🗑️ Eliminar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('❌ Error cargando miembros del comité:', error);
+                container.innerHTML = `<div class="alert-box danger"><span>❌ Error al cargar los miembros del comité.</span></div>`;
+            }
+        }
+
+        function nuevoMiembroComite() {
+            nuevoUsuario();
+            document.getElementById('usuario-tipo').value = 'empleado';
+            toggleCamposUsuarioAdmin();
+            document.getElementById('usuario-modal-titulo').textContent = 'Nuevo miembro del Comité de Becas';
+            document.getElementById('usuario-modal-sub').textContent = 'Completa los datos del nuevo miembro del comité.';
+            document.getElementById('usuario-rol').value = 'comite';
+            document.getElementById('usuario-cargo').value = 'Miembro del Comité';
         }
 
         // ============================================================
         // TIPOS DE BECA
         // ============================================================
-        function renderTablaTiposBeca() {
-            const tipos = getTiposBecaLocal();
+        async function renderTablaTiposBeca() {
             const tbody = document.getElementById('adm-tabla-tipos');
             if (!tbody) return;
 
-            tbody.innerHTML = tipos.map(t =>
-                '<tr>' +
-                '<td style="font-size:1.3rem;">' + (t.icon || '🎓') + '</td>' +
-                '<td><strong>' + t.nombre + '</strong></td>' +
-                '<td>' + t.min + '%</td>' +
-                '<td>' + t.max + '%</td>' +
-                '<td>' + (t.rubros || []).join(', ') + '</td>' +
-                '<td>' +
-                (t.activo ?
-                    '<span class="badge badge-success">Activo</span>' :
-                    '<span class="badge badge-warning">Inactivo</span>') +
-                '</td>' +
-                '<td style="display:flex;gap:5px;flex-wrap:wrap;">' +
-                '<button class="btn btn-small" onclick="abrirModalTipoBeca(' + t.id + ')">✏️</button>' +
-                '<button class="btn btn-small" onclick="toggleActivoTipoBeca(' + t.id + ')">' +
-                (t.activo ? '⏸️ Desactivar' : '▶️ Activar') +
-                '</button>' +
-                '<button class="btn btn-danger" onclick="eliminarTipoBeca(' + t.id + ')">🗑️</button>' +
-                '</td>' +
-                '</tr>'
-            ).join('');
+            try {
+                const tipos = await API.getTiposBeca();
+                // Guardamos en localStorage solo como backup visual, pero el render viene de la API
+                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
+
+                tbody.innerHTML = tipos.map(t =>
+                    '<tr><td style="font-size:1.3rem;">' + (t.icon || '🎓') + '</td><td><strong>' + t.nombre + '</strong></td><td>' + t.min + '%</td><td>' + t.max + '%</td><td>' + (t.rubros || []).join(', ') + '</td><td>' + (t.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-warning">Inactivo</span>') + '</td><td style="display:flex;gap:5px;flex-wrap:wrap;">' +
+                        '<button class="btn btn-small" onclick="abrirModalTipoBeca(' + t.id + ')">✏️</button>' +
+                        '<button class="btn btn-small" onclick="toggleActivoTipoBeca(' + t.id + ')">' + (t.activo ? '⏸️ Desactivar' : '▶️ Activar') + '</button>' +
+                        '<button class="btn btn-danger" onclick="eliminarTipoBeca(' + t.id + ')">🗑️</button>' +
+                        '</td></tr>'
+                ).join('');
+            } catch (error) {
+                console.error('❌ Error cargando tipos de beca:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Error al cargar tipos de beca</td></tr>';
+            }
         }
 
         function abrirModalTipoBeca(id) {
@@ -2326,7 +1276,8 @@
             document.getElementById('tb-id-edicion').value = id || '';
 
             if (id) {
-                const tipo = getTiposBecaLocal().find(t => t.id === id);
+                const tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || '[]');
+                const tipo = tipos.find(t => t.id === id);
                 if (tipo) {
                     document.getElementById('tb-icon').value = tipo.icon || '🎓';
                     document.getElementById('tb-nombre').value = tipo.nombre;
@@ -2350,7 +1301,7 @@
             openModal('modal-tipo-beca');
         }
 
-        function guardarTipoBeca() {
+        async function guardarTipoBeca() {
             const id = document.getElementById('tb-id-edicion').value;
             const nombre = document.getElementById('tb-nombre').value.trim();
             const icon = document.getElementById('tb-icon').value.trim() || '🎓';
@@ -2358,54 +1309,56 @@
             const min = parseInt(document.getElementById('tb-min').value) || 0;
             const max = parseInt(document.getElementById('tb-max').value) || 0;
             const rubros = document.getElementById('tb-rubros').value.split(',').map(s => s.trim()).filter(Boolean);
-            const requisitos = document.getElementById('tb-requisitos').value.split('\n').map(s => s.trim()).filter(
-            Boolean);
+            const requisitos = document.getElementById('tb-requisitos').value.split('\n').map(s => s.trim()).filter(Boolean);
             const activo = document.getElementById('tb-activo').checked;
 
             if (!nombre) { notify('⚠️ El nombre es obligatorio.'); return; }
             if (min > max) { notify('⚠️ El porcentaje mínimo no puede ser mayor que el máximo.'); return; }
 
-            const tipos = getTiposBecaLocal();
-
-            if (id) {
-                const index = tipos.findIndex(t => t.id === parseInt(id));
-                if (index !== -1) {
-                    tipos[index] = { ...tipos[index], nombre, icon, desc, min, max, rubros, requisitos, activo };
+            try {
+                if (id) {
+                    await API.editarTipoBeca(parseInt(id), { nombre, icon, desc, min, max, rubros, requisitos, activo });
+                } else {
+                    await API.crearTipoBeca({ nombre, icon, desc, min, max, rubros, requisitos, activo });
                 }
-            } else {
-                const nuevoId = tipos.length ? Math.max(...tipos.map(t => t.id)) + 1 : 1;
-                tipos.push({ id: nuevoId, nombre, icon, desc, min, max, rubros, requisitos, activo });
+                registrarBitacora(id ? 'Tipo de beca actualizado: ' + nombre : 'Tipo de beca creado: ' + nombre, '—');
+                closeModal('modal-tipo-beca');
+                await renderTablaTiposBeca();
+                notify('✅ Tipo de beca guardado correctamente.');
+            } catch (error) {
+                console.error('❌ Error guardando tipo de beca:', error);
+                notify('⚠️ Error al guardar el tipo de beca');
             }
-
-            guardarTiposBecaLocal(tipos);
-            registrarBitacora(id ? 'Tipo de beca actualizado: ' + nombre : 'Tipo de beca creado: ' + nombre, '—');
-            closeModal('modal-tipo-beca');
-            renderTablaTiposBeca();
-            notify('✅ Tipo de beca guardado correctamente.');
         }
 
         async function toggleActivoTipoBeca(id) {
-            const tipos = getTiposBecaLocal();
-            const tipo = tipos.find(t => t.id === id);
-            if (tipo) {
-                tipo.activo = !tipo.activo;
-                guardarTiposBecaLocal(tipos);
-                registrarBitacora('Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + ': ' + tipo.nombre, '—');
-                renderTablaTiposBeca();
-                notify('✅ Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + '.');
+            try {
+                const tipos = await API.getTiposBeca();
+                const tipo = tipos.find(t => t.id === id);
+                if (tipo) {
+                    await API.toggleTipoBeca(id);
+                    registrarBitacora('Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + ': ' + tipo.nombre, '—');
+                    await renderTablaTiposBeca();
+                    notify('✅ Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + '.');
+                }
+            } catch (error) {
+                console.error('❌ Error toggling tipo de beca:', error);
+                notify('⚠️ Error al cambiar el estado del tipo de beca');
             }
         }
 
         async function eliminarTipoBeca(id) {
             if (!(await customConfirm('¿Eliminar este tipo de beca?'))) return;
 
-            let tipos = getTiposBecaLocal();
-            const tipo = tipos.find(t => t.id === id);
-            tipos = tipos.filter(t => t.id !== id);
-            guardarTiposBecaLocal(tipos);
-            registrarBitacora('Tipo de beca eliminado: ' + (tipo ? tipo.nombre : id), '—');
-            renderTablaTiposBeca();
-            notify('✅ Tipo de beca eliminado.');
+            try {
+                await API.eliminarTipoBeca(id);
+                registrarBitacora('Tipo de beca eliminado: ' + id, '—');
+                await renderTablaTiposBeca();
+                notify('✅ Tipo de beca eliminado.');
+            } catch (error) {
+                console.error('❌ Error eliminando tipo de beca:', error);
+                notify('⚠️ Error al eliminar el tipo de beca');
+            }
         }
 
         // ============================================================
@@ -2423,12 +1376,9 @@
             document.getElementById('cfg-plazo-subsanacion').value = config.plazoSubsanacion || 5;
             document.getElementById('cfg-plazo-apelacion').value = config.plazoApelacion || 10;
             document.getElementById('cfg-plazo-renovacion').value = config.plazoRenovacion || 15;
-            document.getElementById('cfg-msg-aprobacion').value = config.msgAprobacion ||
-                'Felicidades, tu solicitud de beca ha sido APROBADA.';
-            document.getElementById('cfg-msg-rechazo').value = config.msgRechazo ||
-                'Lamentamos informarte que tu solicitud ha sido RECHAZADA.';
-            document.getElementById('cfg-msg-subsanacion').value = config.msgSubsanacion ||
-                'Tu solicitud requiere correcciones. Revisa los documentos pendientes.';
+            document.getElementById('cfg-msg-aprobacion').value = config.msgAprobacion || 'Felicidades, tu solicitud de beca ha sido APROBADA.';
+            document.getElementById('cfg-msg-rechazo').value = config.msgRechazo || 'Lamentamos informarte que tu solicitud ha sido RECHAZADA.';
+            document.getElementById('cfg-msg-subsanacion').value = config.msgSubsanacion || 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.';
 
             validarPonderaciones();
         }
@@ -2453,7 +1403,7 @@
             return total === 100;
         }
 
-        function guardarConfig() {
+        async function guardarConfig() {
             if (!validarPonderaciones()) {
                 notify('⚠️ La suma de las ponderaciones debe ser exactamente 100%.');
                 return;
@@ -2474,9 +1424,15 @@
                 msgSubsanacion: document.getElementById('cfg-msg-subsanacion').value || ''
             };
 
-            localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(config));
-            registrarBitacora('Configuración guardada', '—');
-            notify('✅ Configuración guardada exitosamente.');
+            try {
+                await API.guardarConfig(config);
+                localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(config));
+                registrarBitacora('Configuración guardada', '—');
+                notify('✅ Configuración guardada exitosamente.');
+            } catch (error) {
+                console.error('❌ Error guardando configuración:', error);
+                notify('⚠️ Error al guardar la configuración');
+            }
         }
 
         // ============================================================
@@ -2497,113 +1453,32 @@
             }
 
             if (tabId === 'adm-usuarios') renderTablaUsuarios();
+            if (tabId === 'adm-miembros') renderMiembrosComite();
             if (tabId === 'adm-tipos') renderTablaTiposBeca();
         }
 
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
-                        direccion: 'San José, Montes de Oca, Sabanilla',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: {
-                            carrera: 'Ingeniería en Sistemas',
-                            facultad: 'Ingeniería',
-                            sede: 'Central',
-                            fechaIngreso: '2022-01-10',
-                            anioIngreso: '2022'
-                        },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: cifrarPassword('123456'), rol: 'aspirante',
-                        nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
-                        direccion: 'Alajuela, San Ramón',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: { esAspirante: true },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
-                        direccion: 'Heredia, San Pablo',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
-                        direccion: 'Cartago, Paraíso',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
-                        nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
-                        direccion: 'San José, Centro',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
-                        nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
-                        direccion: 'Puntarenas, Esparza',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.tipos)) {
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify([
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.config)) {
-                localStorage.setItem(STORAGE_KEYS.config, JSON.stringify({
-                    socio: 40,
-                    academico: 35,
-                    vulnerabilidad: 15,
-                    meritos: 10,
-                    promedioMin: 80,
-                    ingresoMax: 500000,
-                    plazoSubsanacion: 5,
-                    plazoApelacion: 10,
-                    plazoRenovacion: 15,
-                    msgAprobacion: 'Felicidades, tu solicitud de beca ha sido APROBADA.',
-                    msgRechazo: 'Lamentamos informarte que tu solicitud ha sido RECHAZADA.',
-                    msgSubsanacion: 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.'
-                }));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.noticias)) {
-                const hoy = new Date();
-                const fechaHoy = hoy.toISOString().slice(0, 10);
-                localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify([
-                    { id: 1, titulo: '📢 Convocatoria 2026 abierta',
-                        contenido: 'Ya están disponibles las becas para el período 2026. Revisa los requisitos en el portal.',
-                        fechaPublicacion: fechaHoy, fecha: hoy.toLocaleDateString() }
-                ]));
-            }
-        }
-
         (function init() {
-            initData();
+            console.log('🔧 Panel Admin - Inicializando...');
+            const saved = localStorage.getItem('becas_session');
+            
+            if (saved) {
+                try {
+                    const session = JSON.parse(saved);
+                    console.log('✅ Sesión recuperada:', session);
+                    API.setSession(session);
+                } catch(e) {
+                    console.error('❌ Error procesando sesión:', e);
+                }
+            } else {
+                console.warn('⚠️ No hay sesión guardada');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+
             renderHeaderNav();
 
             const storedSession = localStorage.getItem(STORAGE_KEYS.session);
@@ -2625,7 +1500,7 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            document.getElementById('db-status').textContent = 'Conectado';
+            document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
         })();
     </script>

@@ -14,8 +14,8 @@ router.get('/', async (req, res) => {
     res.json(tipos.map(t => ({
       ...t,
       rubros: JSON.parse(t.rubros || '[]'),
-      requisitos: JSON.parse(t.requisitos || '[]'),
-      camposPersonalizados: JSON.parse(t.campos_personalizados || '[]')
+      requisitos: JSON.parse(t.requisitos || '[]')
+      // ✅ ELIMINADO: camposPersonalizados: JSON.parse(t.campos_personalizados || '[]')
     })));
   } catch (error) {
     console.error('Error obteniendo tipos de beca:', error);
@@ -31,8 +31,8 @@ router.get('/:id', async (req, res) => {
     res.json({
       ...tipo,
       rubros: JSON.parse(tipo.rubros || '[]'),
-      requisitos: JSON.parse(tipo.requisitos || '[]'),
-      camposPersonalizados: JSON.parse(tipo.campos_personalizados || '[]')
+      requisitos: JSON.parse(tipo.requisitos || '[]')
+      // ✅ ELIMINADO: camposPersonalizados: JSON.parse(tipo.campos_personalizados || '[]')
     });
   } catch (error) {
     console.error('Error obteniendo tipo de beca:', error);
@@ -42,15 +42,17 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', authMiddleware, requireRole('admin'), async (req, res) => {
   try {
-    const { nombre, icon, description, min, max, rubros, requisitos, activo, camposPersonalizados } = req.body;
+    const { nombre, icon, description, min, max, rubros, requisitos, activo } = req.body;
+    // ✅ ELIMINADO: camposPersonalizados del destructuring
     if (!nombre) return res.status(400).json({ error: 'El nombre es requerido' });
 
     const result = await db.queryRun(
-      `INSERT INTO tipos_beca (nombre, icon, description, min_pct, max_pct, rubros, requisitos, activo, campos_personalizados) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO tipos_beca (nombre, icon, description, min_pct, max_pct, rubros, requisitos, activo) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      // ✅ ELIMINADO: campos_personalizados de VALUES y del array de parámetros
       [nombre, icon || '🎓', description || '', min || 25, max || 100,
        JSON.stringify(rubros || []), JSON.stringify(requisitos || []),
-       activo !== false ? 1 : 0, JSON.stringify(camposPersonalizados || [])]
+       activo !== false ? 1 : 0]
     );
 
     const fecha = new Date().toLocaleString();
@@ -69,13 +71,15 @@ router.post('/', authMiddleware, requireRole('admin'), async (req, res) => {
 router.put('/:id', authMiddleware, requireRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, icon, description, min, max, rubros, requisitos, activo, camposPersonalizados } = req.body;
+    const { nombre, icon, description, min, max, rubros, requisitos, activo } = req.body;
+    // ✅ ELIMINADO: camposPersonalizados del destructuring
 
     await db.queryRun(
-      `UPDATE tipos_beca SET nombre=?, icon=?, description=?, min_pct=?, max_pct=?, rubros=?, requisitos=?, activo=?, campos_personalizados=?, updated_at=GETDATE() WHERE id=?`,
+      `UPDATE tipos_beca SET nombre=?, icon=?, description=?, min_pct=?, max_pct=?, rubros=?, requisitos=?, activo=?, updated_at=GETDATE() WHERE id=?`,
+      // ✅ ELIMINADO: campos_personalizados de la consulta y del array de parámetros
       [nombre, icon, description, min, max,
        JSON.stringify(rubros || []), JSON.stringify(requisitos || []),
-       activo ? 1 : 0, JSON.stringify(camposPersonalizados || []), id]
+       activo ? 1 : 0, id]
     );
 
     const fecha = new Date().toLocaleString();
