@@ -1,7 +1,7 @@
 // routes/auth.js
 const express = require('express');
 const router = express.Router();
-const { enviarNotificacionEmail } = require('./emailService');
+const { enviarNotificacionEmail } = require('../services/emailService');
 const crypto = require('crypto');
 
 // ===== USUARIOS SIMULADOS (para desarrollo) =====

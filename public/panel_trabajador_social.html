@@ -1606,9 +1606,6 @@
         // ============================================================
         let previewDocumentoData = null;
 
-        /**
-         * Abre el documento en un modal para previsualización
-         */
         function previsualizarDocumento(expediente, docKey) {
             const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
             if (!solicitud) {
@@ -1675,7 +1672,6 @@
 
             modal.classList.remove('hidden');
 
-            // Registrar en bitácora
             const session = StorageManager.session.get();
             StorageManager.bitacora.save({
                 fecha: new Date().toLocaleString(),
@@ -1686,26 +1682,17 @@
             });
         }
 
-        /**
-         * Cierra el modal de previsualización
-         */
         function cerrarPrevisualizacion() {
             document.getElementById('modal-preview').classList.add('hidden');
             previewDocumentoData = null;
         }
 
-        /**
-         * Descarga el documento desde el modal de previsualización
-         */
         function descargarDocumentoDesdePreview() {
             if (!previewDocumentoData) return;
             const { expediente, docKey } = previewDocumentoData;
             descargarDocumento(expediente, docKey);
         }
 
-        /**
-         * Descarga el documento
-         */
         function descargarDocumento(expediente, docKey) {
             const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
             if (!solicitud) {
@@ -1742,47 +1729,6 @@
             } catch (error) {
                 console.error('❌ Error al descargar el documento:', error);
                 notify('❌ Error al descargar el documento.');
-            }
-        }
-
-        /**
-         * Abre el documento en una nueva ventana o pestaña
-         */
-        function verDocumento(expediente, docKey) {
-            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-            if (!solicitud) {
-                notify('⚠️ No se encontró la solicitud.');
-                return;
-            }
-
-            const documentos = solicitud.documentos || {};
-            const doc = documentos[docKey];
-
-            if (!doc || !doc.datos) {
-                notify('⚠️ El documento no tiene datos para mostrar.');
-                return;
-            }
-
-            try {
-                const link = document.createElement('a');
-                link.href = doc.datos;
-                link.target = '_blank';
-                link.download = doc.nombre || 'documento';
-                link.click();
-
-                const session = StorageManager.session.get();
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session ? session.nombre : 'Trabajador Social',
-                    rol: session ? session.rol : 'trabajador_social',
-                    accion: `Documento "${doc.nombre || docKey}" visualizado en nueva pestaña`,
-                    expediente: expediente
-                });
-
-                notify('📄 Abriendo documento...');
-            } catch (error) {
-                console.error('❌ Error al abrir el documento:', error);
-                notify('❌ Error al abrir el documento. Intenta descargarlo.');
             }
         }
 
@@ -1961,7 +1907,6 @@
 
         function renderSocialDashboard(session) {
             document.getElementById('soc-nombre').textContent = session.nombre;
-
             renderSolicitudes();
 
             const tiposSelect = document.getElementById('conv-tipo');
@@ -2626,12 +2571,12 @@
                             `;
                         }
 
-                        // Botones de previsualización y descarga
                         let accionesVisualizacion = '';
                         if (doc.datos) {
                             accionesVisualizacion = `
                                 <button class="btn btn-small" onclick="previsualizarDocumento('${solicitud.expediente}','${key}')" style="background:var(--info);color:#fff;padding:4px 10px;font-size:0.7rem;">👁️</button>
                                 <button class="btn btn-small" onclick="descargarDocumento('${solicitud.expediente}','${key}')" style="padding:4px 10px;font-size:0.7rem;">📥</button>
+                                <button class="btn btn-small" onclick="analizarDocumentoIA('${solicitud.expediente}','${key}')" style="background:#6f42c1;color:#fff;padding:4px 10px;font-size:0.7rem;">🤖</button>
                             `;
                         }
 
@@ -2644,6 +2589,11 @@
                             (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
                             '</div>' +
                             (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
+                            (doc.analisisIA ? `
+                                <div style="margin-top:4px;font-size:0.7rem;color:#6f42c1;">
+                                    🤖 IA: ${doc.analisisIA.estado} (${doc.analisisIA.puntaje}/100)
+                                </div>
+                            ` : '') +
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
@@ -3760,11 +3710,8 @@
         // CLIENTE PARA ENVÍO DE CORREOS
         // ============================================================
 
-        const API_URL = window.location.origin; // Usa la misma URL del servidor
+        const API_URL = window.location.origin;
 
-        /**
-         * Envía una notificación de estado de solicitud por correo
-         */
         async function notificarEstadoPorCorreo(expediente, estado, observaciones = '') {
             try {
                 const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
@@ -3782,7 +3729,6 @@
 
                 const nombre = solicitud.nombres;
 
-                // Mensajes predefinidos
                 const mensajes = {
                     'enviada': `Tu solicitud de beca ha sido recibida correctamente. El expediente ${expediente} está en proceso de revisión. Te notificaremos sobre cualquier actualización.`,
                     'aprobada': `¡Felicidades! Tu solicitud de beca ha sido aprobada. El expediente ${expediente} ha sido aceptado. Pronto recibirás más información sobre el beneficio.`,
@@ -3814,9 +3760,8 @@
                 });
 
                 const resultado = await response.json();
-                
+
                 if (resultado.success) {
-                    // Registrar en bitácora
                     const session = StorageManager.session.get();
                     StorageManager.bitacora.save({
                         fecha: new Date().toLocaleString(),
@@ -3838,58 +3783,174 @@
             }
         }
 
-        /**
-         * Envía un correo simple
-         */
-        async function enviarCorreoSimple(para, asunto, mensaje, html = null) {
+        // ============================================================
+        // INTEGRACIÓN CON IA
+        // ============================================================
+
+        async function verificarIA() {
             try {
-                const response = await fetch(`${API_URL}/api/email/enviar`, {
+                const response = await fetch('/api/ia/health');
+                const resultado = await response.json();
+
+                if (resultado.success) {
+                    showToast('✅ Servicio de IA conectado: ' + resultado.data.version, 'success');
+                    console.log('🟢 IA Service:', resultado.data);
+                } else {
+                    showToast('⚠️ Servicio de IA no disponible: ' + (resultado.error || 'Error desconocido'), 'warning');
+                }
+                return resultado;
+            } catch (error) {
+                console.error('❌ Error verificando IA:', error);
+                showToast('❌ Error de conexión con el servicio de IA', 'error');
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function consultarIA(mensaje) {
+            if (!mensaje || mensaje.trim() === '') {
+                showToast('⚠️ Por favor escribe una pregunta', 'warning');
+                return;
+            }
+
+            const respuestaDiv = document.getElementById('ia-respuesta');
+            if (respuestaDiv) {
+                respuestaDiv.style.display = 'block';
+                respuestaDiv.innerHTML = '🤔 Pensando...';
+            }
+
+            try {
+                const response = await fetch('/api/ia/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        para,
-                        asunto,
-                        mensaje,
-                        html
+                        mensaje: mensaje,
+                        contexto: {
+                            usuario: 'trabajador_social',
+                            expediente: expedienteActual || 'N/A',
+                            timestamp: new Date().toISOString()
+                        }
                     })
                 });
 
                 const resultado = await response.json();
-                
-                if (resultado.success) {
-                    showToast('📧 Correo enviado correctamente', 'success');
-                } else {
-                    showToast(`⚠️ Error al enviar correo: ${resultado.error}`, 'warning');
-                }
 
-                return resultado;
+                if (respuestaDiv) {
+                    if (resultado.success) {
+                        const texto = resultado.data?.respuesta ||
+                            resultado.data?.mensaje ||
+                            resultado.data?.message ||
+                            'Sin respuesta del asistente';
+
+                        const warning = resultado.warning ? `<br><span style="color: #b07d12; font-size: 0.8rem;">⚠️ ${resultado.warning}</span>` : '';
+
+                        respuestaDiv.innerHTML = `
+                            <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; border-left: 4px solid #1a365d;">
+                                <strong>🤖 Asistente IA:</strong><br>
+                                ${texto.replace(/\n/g, '<br>')}
+                                ${warning}
+                            </div>
+                        `;
+                    } else {
+                        respuestaDiv.innerHTML = `
+                            <div style="background: #fdecea; padding: 15px; border-radius: 8px; border-left: 4px solid #c0392b;">
+                                ❌ Error: ${resultado.error || 'Error desconocido'}
+                            </div>
+                        `;
+                    }
+                }
             } catch (error) {
-                console.error('❌ Error al enviar correo:', error);
-                showToast('⚠️ Error de conexión al enviar correo', 'warning');
-                return { success: false, error: error.message };
+                console.error('❌ Error consultando IA:', error);
+                if (respuestaDiv) {
+                    respuestaDiv.innerHTML = `
+                        <div style="background: #fdecea; padding: 15px; border-radius: 8px; border-left: 4px solid #c0392b;">
+                            ❌ Error de conexión: ${error.message}
+                        </div>
+                    `;
+                }
             }
         }
 
-        /**
-         * Verifica la configuración del correo
-         */
-        async function verificarConfiguracionCorreo() {
+        // ============================================================
+        // ANÁLISIS DE DOCUMENTOS CON IA
+        // ============================================================
+
+        async function analizarDocumentoIA(expediente, docKey) {
             try {
-                const response = await fetch(`${API_URL}/api/email/verificar`);
-                const resultado = await response.json();
-                
-                if (resultado.success) {
-                    showToast(`✅ Configuración de correo verificada: ${resultado.email}`, 'success');
-                    console.log('✅ Configuración de correo:', resultado);
-                } else {
-                    showToast(`⚠️ Error en configuración de correo: ${resultado.error}`, 'warning');
+                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+                if (!solicitud) {
+                    showToast('⚠️ No se encontró la solicitud', 'warning');
+                    return;
                 }
+
+                const documentos = solicitud.documentos || {};
+                const doc = documentos[docKey];
+
+                if (!doc || !doc.datos) {
+                    showToast('⚠️ El documento no tiene datos para analizar', 'warning');
+                    return;
+                }
+
+                showToast('🔍 Analizando documento con IA...', 'info');
+
+                const response = await fetch('/api/documentos-analisis/analizar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        documento: doc.datos,
+                        nombre: doc.nombre || docKey,
+                        tipoMime: doc.tipo || 'application/octet-stream',
+                        expediente: expediente,
+                        tipoEsperado: doc.label || 'Documento'
+                    })
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.success) {
+                    const analisis = resultado.data;
+
+                    // Guardar análisis en el documento
+                    doc.analisisIA = {
+                        fecha: new Date().toISOString(),
+                        puntaje: analisis.puntaje,
+                        estado: analisis.estado,
+                        errores: analisis.errores || [],
+                        advertencias: analisis.advertencias || [],
+                        observaciones: analisis.observaciones || [],
+                        tipoDetectado: analisis.tipoDetectado,
+                        confianza: analisis.confianza
+                    };
+
+                    // Actualizar estado del documento según análisis
+                    if (analisis.estado === 'Aprobado') {
+                        doc.estado = 'Aprobado';
+                    } else if (analisis.estado === 'Rechazado') {
+                        doc.estado = 'Rechazado';
+                    } else {
+                        doc.estado = 'Revisión requerida';
+                    }
+
+                    StorageManager.solicitudes.save(solicitud);
+
+                    showToast(`✅ Análisis completado: ${analisis.estado} (${analisis.puntaje}/100)`, 'success');
+
+                    // Actualizar vista del expediente
+                    if (expedienteActual === expediente) {
+                        document.getElementById('expediente-contenido').innerHTML =
+                            renderExpedienteCompleto(solicitud, { permitirRevision: true });
+                    }
+                } else {
+                    showToast('⚠️ Error al analizar: ' + (resultado.error || 'Error desconocido'), 'warning');
+                }
+
                 return resultado;
             } catch (error) {
-                console.error('❌ Error al verificar correo:', error);
-                showToast('⚠️ Error de conexión al verificar correo', 'warning');
+                console.error('❌ Error analizando documento:', error);
+                showToast('❌ Error de conexión con el servicio de IA', 'error');
                 return { success: false, error: error.message };
             }
         }
@@ -3898,10 +3959,8 @@
         // MODIFICAR ejecutarAccionSolicitud para enviar correos
         // ============================================================
 
-        // Guardar referencia a la función original
         const ejecutarAccionSolicitudOriginal = ejecutarAccionSolicitud;
 
-        // Sobrescribir la función
         ejecutarAccionSolicitud = async function() {
             const expediente = accionSolicitudExpediente;
             const tipo = accionSolicitudTipo;
@@ -4023,10 +4082,8 @@
                 }
             }
 
-            // Guardar la solicitud
             StorageManager.solicitudes.save(sol);
 
-            // Registrar en bitácora
             const session = StorageManager.session.get();
             StorageManager.bitacora.save({
                 fecha: new Date().toLocaleString(),
@@ -4036,7 +4093,6 @@
                 expediente: expediente
             });
 
-            // Enviar correo de notificación (si corresponde)
             if (estadoCorreo) {
                 await notificarEstadoPorCorreo(expediente, estadoCorreo, mensajeAdicional);
             }
@@ -4049,6 +4105,7 @@
                 renderHistorial();
             }
         };
+
         // ============================================================
         // SHOW DASH TAB
         // ============================================================

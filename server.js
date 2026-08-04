@@ -6,6 +6,7 @@ const db = require('./database/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
+IA_API_URL='https://becas-ia-service.onrender.com';
 
 // Middleware
 app.use(cors());
@@ -34,6 +35,10 @@ app.use('/api/estadisticas', require('./routes/estadisticas'));
 app.use('/api/alertas', require('./routes/alertas'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/email', require('./routes/email')); 
+// En tu server.js, agrega:
+app.use('/api/ia', require('./routes/ia'));
+// En server.js, busca la sección de rutas y agrega:
+app.use('/api/documentos-analisis', require('./routes/documentosAnalisis'));
 
 // =====================================================
 // Rutas del módulo Agustín (Avance 2 — Alumno 3)

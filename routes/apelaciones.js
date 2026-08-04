@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
-const { enviarNotificacionEmail } = require('./emailService');
+const { enviarNotificacionEmail } = require('../services/emailService');
 
 // GET - Obtener suspensiones
 router.get('/', authMiddleware, async (req, res) => {
