@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -29,11 +30,7 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -48,20 +45,9 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
         .btn {
             display: inline-flex;
@@ -75,44 +61,32 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
             box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
         .btn-outline {
             background: transparent;
             color: #fff;
             border: 1.5px solid rgba(255,255,255,0.55);
         }
-
         .btn-outline:hover {
             background: rgba(255,255,255,0.12);
             border-color: #fff;
         }
-
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
+        .btn-ghost:hover { border-color: var(--primary); }
         .btn-danger {
             background: #fdecea;
             color: var(--danger);
@@ -121,11 +95,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-danger:hover {
-            background: #f6c6c0;
-        }
-
+        .btn-danger:hover { background: #f6c6c0; }
         .btn-success {
             background: #e7f5ee;
             color: var(--success);
@@ -134,11 +104,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-success:hover { background: #b9e3cb; }
         .btn-warning {
             background: #fff3cd;
             color: var(--warning);
@@ -147,11 +113,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-warning:hover {
-            background: #ffeaa7;
-        }
-
+        .btn-warning:hover { background: #ffeaa7; }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.85rem;
@@ -159,19 +121,12 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
+        .btn-small:hover { background: var(--primary-light); }
         .btn-small.active-filter {
             background: var(--accent);
             color: var(--primary-dark);
         }
-
-        .btn-block {
-            width: 100%;
-        }
+        .btn-block { width: 100%; }
 
         /* HEADER */
         header.site-header {
@@ -181,7 +136,6 @@
             background: var(--primary-dark);
             box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -190,7 +144,6 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
@@ -198,7 +151,6 @@
             color: #fff;
             cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -213,32 +165,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .session-pill {
             display: flex;
             align-items: center;
@@ -246,7 +193,6 @@
             color: #fff;
             font-size: 0.88rem;
         }
-
         .session-pill .role-badge {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -258,7 +204,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -266,7 +211,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -280,7 +224,6 @@
             display: flex;
             min-height: calc(100vh - 75px);
         }
-
         .dash-sidebar {
             width: 250px;
             background: var(--primary-dark);
@@ -295,25 +238,21 @@
             height: calc(100vh - 75px);
             overflow-y: auto;
         }
-
         .dash-sidebar .dash-user {
             padding: 0 8px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 14px;
         }
-
         .dash-sidebar .dash-user strong {
             display: block;
             font-size: 0.98rem;
         }
-
         .dash-sidebar .dash-user span {
             font-size: 0.78rem;
             color: var(--accent-light);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .dash-nav-item {
             display: flex;
             align-items: center;
@@ -327,50 +266,37 @@
             text-align: left;
             width: 100%;
         }
-
         .dash-nav-item:hover {
             background: rgba(255,255,255,0.06);
             color: #fff;
         }
-
         .dash-nav-item.active {
             background: var(--accent);
             color: var(--primary-dark);
             font-weight: 700;
         }
-
         .dash-nav-item.logout {
             margin-top: auto;
             color: #f6c6c0;
         }
-
         .dash-nav-item.logout:hover {
             background: rgba(192,57,43,0.18);
         }
-
         .dash-main {
             flex: 1;
             padding: 32px;
             max-width: 1100px;
         }
-
         .dash-main h2 {
             margin-bottom: 4px;
         }
-
         .dash-main .dash-sub {
             color: var(--muted);
             font-size: 0.95rem;
             margin-bottom: 24px;
         }
-
-        .dash-tab {
-            display: none;
-        }
-
-        .dash-tab.active {
-            display: block;
-        }
+        .dash-tab { display: none; }
+        .dash-tab.active { display: block; }
 
         .card-box {
             background: var(--paper);
@@ -380,7 +306,6 @@
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
-
         .card-box h3 {
             margin-bottom: 14px;
             font-size: 1.1rem;
@@ -398,19 +323,16 @@
             font-size: 0.88rem;
             margin-bottom: 10px;
         }
-
         .alert-box.info {
             background: #e6effa;
             border-color: #b8d0e8;
             color: var(--info);
         }
-
         .alert-box.success {
             background: #e7f5ee;
             border-color: #b9e3cb;
             color: var(--success);
         }
-
         .alert-box.danger {
             background: #fdecea;
             border-color: #f6c6c0;
@@ -422,7 +344,6 @@
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-
         .data-table th,
         .data-table td {
             padding: 12px 14px;
@@ -431,7 +352,6 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         .data-table th {
             color: var(--muted);
             font-size: 0.78rem;
@@ -439,7 +359,6 @@
             letter-spacing: 0.04em;
             font-weight: 700;
         }
-
         .data-table tbody tr:hover {
             background: #f9fafc;
         }
@@ -453,59 +372,32 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
-
-        .badge-info {
-            background: #e6effa;
-            color: var(--info);
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-
-        .badge-success {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-
-        .badge-danger {
-            background: #fdecea;
-            color: var(--danger);
-        }
-
-        .badge-neutral {
-            background: #eceff3;
-            color: var(--muted);
-        }
+        .badge-info { background: #e6effa; color: var(--info); }
+        .badge-warning { background: #fff3cd; color: var(--warning); }
+        .badge-success { background: #e7f5ee; color: var(--success); }
+        .badge-danger { background: #fdecea; color: var(--danger); }
+        .badge-neutral { background: #eceff3; color: var(--muted); }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 18px;
         }
-
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
+        .form-field.full { grid-column: 1/-1; }
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
         }
-
         .form-field label .required {
             color: var(--danger);
             margin-left: 2px;
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -519,7 +411,6 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
@@ -527,12 +418,10 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
         }
-
         .form-field .hint {
             font-size: 0.75rem;
             color: var(--muted);
         }
-
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -548,7 +437,6 @@
             min-height: 24px;
             flex-wrap: wrap;
         }
-
         .padron-status .spinner {
             display: inline-block;
             width: 16px;
@@ -558,26 +446,11 @@
             border-top-color: var(--accent);
             animation: spin 0.8s linear infinite;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .padron-status .success {
-            color: var(--success);
-        }
-
-        .padron-status .error {
-            color: var(--danger);
-        }
-
-        .padron-status .info {
-            color: var(--info);
-        }
-
-        .padron-status .warning {
-            color: var(--warning);
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .padron-status .success { color: var(--success); }
+        .padron-status .error { color: var(--danger); }
+        .padron-status .info { color: var(--info); }
+        .padron-status .warning { color: var(--warning); }
 
         .modal-overlay {
             position: fixed;
@@ -589,7 +462,6 @@
             z-index: 2000;
             padding: 20px;
         }
-
         .modal-box {
             background: var(--paper);
             border-radius: 16px;
@@ -601,11 +473,7 @@
             overflow-y: auto;
             position: relative;
         }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
+        .modal-box.wide { max-width: 680px; }
         .modal-close {
             position: absolute;
             top: 14px;
@@ -616,15 +484,8 @@
             line-height: 1;
             padding: 4px;
         }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
         .modal-box .modal-sub {
             color: var(--muted);
             font-size: 0.88rem;
@@ -640,10 +501,7 @@
             font-size: 0.85rem;
             margin-bottom: 14px;
         }
-
-        .login-error.visible {
-            display: block;
-        }
+        .login-error.visible { display: block; }
 
         .success-icon {
             width: 64px;
@@ -666,10 +524,7 @@
             font-size: 0.8rem;
             color: var(--muted);
         }
-
-        .modal-credentials strong {
-            color: var(--primary);
-        }
+        .modal-credentials strong { color: var(--primary); }
 
         #toast-container {
             position: fixed;
@@ -681,7 +536,6 @@
             gap: 10px;
             max-width: 380px;
         }
-
         .toast-box {
             padding: 14px 18px;
             border-radius: 10px;
@@ -694,23 +548,11 @@
             animation: toastIn .25s ease;
             white-space: pre-line;
         }
-
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(24px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
         .toast-close {
             background: transparent;
             border: none;
@@ -721,10 +563,7 @@
             line-height: 1;
             padding: 0 0 0 6px;
         }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
+        .toast-close:hover { opacity: 1; }
 
         #db-status {
             position: fixed;
@@ -739,42 +578,23 @@
             color: #1a365d;
             border: 1px solid #d0d7e0;
         }
-
         #db-status.online {
             background: #e7f5ee;
             color: #1e7e4f;
             border-color: #b9e3cb;
         }
-
         #db-status.offline {
             background: #fdecea;
             color: #c0392b;
             border-color: #f6c6c0;
         }
 
-        .campos-empleado {
-            display: none;
-        }
-
-        .campos-empleado.visible {
-            display: block;
-        }
-
-        .campos-estudiante {
-            display: none;
-        }
-
-        .campos-estudiante.visible {
-            display: block;
-        }
-
-        .campos-aspirante {
-            display: none;
-        }
-
-        .campos-aspirante.visible {
-            display: block;
-        }
+        .campos-empleado { display: none; }
+        .campos-empleado.visible { display: block; }
+        .campos-estudiante { display: none; }
+        .campos-estudiante.visible { display: block; }
+        .campos-aspirante { display: none; }
+        .campos-aspirante.visible { display: block; }
 
         .empleado-notificacion {
             background: rgba(176,125,18,0.12);
@@ -786,18 +606,12 @@
             align-items: flex-start;
             gap: 12px;
         }
-
-        .empleado-notificacion .icono {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
+        .empleado-notificacion .icono { font-size: 1.5rem; flex-shrink: 0; }
         .empleado-notificacion .contenido h4 {
             color: var(--warning);
             font-size: 0.95rem;
             margin-bottom: 4px;
         }
-
         .empleado-notificacion .contenido p {
             color: var(--muted);
             font-size: 0.85rem;
@@ -809,12 +623,8 @@
             flex-wrap: wrap;
             margin-bottom: 16px;
         }
+        .filter-bar .btn-small { font-size: 0.78rem; }
 
-        .filter-bar .btn-small {
-            font-size: 0.78rem;
-        }
-
-        /* VISTA PÚBLICA */
         .view-public {
             padding: 60px 24px;
             max-width: 800px;
@@ -826,19 +636,13 @@
             justify-content: center;
             align-items: center;
         }
-
-        .view-public h1 {
-            font-size: 2.4rem;
-            margin-bottom: 16px;
-        }
-
+        .view-public h1 { font-size: 2.4rem; margin-bottom: 16px; }
         .view-public .hero-sub {
             color: var(--muted);
             font-size: 1.15rem;
             margin-bottom: 32px;
             max-width: 600px;
         }
-
         .view-public .btn-group {
             display: flex;
             gap: 12px;
@@ -846,12 +650,8 @@
             flex-wrap: wrap;
         }
 
-        /* Responsive */
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -865,26 +665,15 @@
                 display: none;
                 border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
+            nav.main-nav.open { display: flex; }
             nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
+            nav.main-nav .session-pill { width: 100%; }
             nav.main-nav .session-pill {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
             }
-
-            .dash-shell {
-                flex-direction: column;
-            }
-
+            .dash-shell { flex-direction: column; }
             .dash-sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -894,48 +683,27 @@
                 top: 0;
                 height: auto;
             }
-
             .dash-sidebar .dash-user {
                 width: 100%;
                 border-bottom: none;
                 margin-bottom: 6px;
             }
-
             .dash-nav-item {
                 width: auto;
                 flex: 1;
                 justify-content: center;
             }
-
-            .dash-nav-item.logout {
-                margin-top: 0;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
+            .dash-nav-item.logout { margin-top: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
             }
-
-            .filter-bar {
-                justify-content: center;
-            }
-
-            .view-public h1 {
-                font-size: 1.8rem;
-            }
-
-            .view-public .hero-sub {
-                font-size: 1rem;
-            }
+            .filter-bar { justify-content: center; }
+            .view-public h1 { font-size: 1.8rem; }
+            .view-public .hero-sub { font-size: 1rem; }
         }
     </style>
 </head>
@@ -960,7 +728,7 @@
         </div>
     </header>
 
-    <!-- VISTA PÚBLICA (INDEX) -->
+    <!-- VISTA PÚBLICA -->
     <div id="view-public" class="view view-public">
         <h1>Sistema de Becas Universitarias</h1>
         <p class="hero-sub">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
@@ -1002,7 +770,6 @@
                             <button class="btn btn-small" onclick="nuevoUsuario()">+ Nuevo usuario</button>
                         </div>
 
-                        <!-- Filtros -->
                         <div class="filter-bar">
                             <button class="btn btn-small active-filter" onclick="filtrarUsuarios('todos',this)">Todos</button>
                             <button class="btn btn-small" onclick="filtrarUsuarios('aprobados',this)">Aprobados</button>
@@ -1132,8 +899,6 @@
     </div>
 
     <!-- MODALES -->
-
-    <!-- MODAL LOGIN -->
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-login')">×</button>
@@ -1163,7 +928,6 @@
             <p class="modal-sub" id="usuario-modal-sub">Completa todos los datos del usuario.</p>
             <input type="hidden" id="usuario-edit-id">
 
-            <!-- Tipo de usuario -->
             <div class="form-field">
                 <label>Tipo de usuario <span class="required">*</span></label>
                 <select id="usuario-tipo" class="form-control" onchange="toggleCamposUsuarioAdmin()">
@@ -1173,18 +937,12 @@
                 </select>
             </div>
 
-            <!-- Campos para Aspirante -->
             <div class="campos-aspirante visible" id="usuario-campos-aspirante">
-                <div class="alert-box info">
-                    ℹ️ Los aspirantes pueden enviar solicitudes de beca sin ser estudiantes.
-                </div>
+                <div class="alert-box info">ℹ️ Los aspirantes pueden enviar solicitudes de beca sin ser estudiantes.</div>
             </div>
 
-            <!-- Campos para Estudiante -->
             <div class="campos-estudiante" id="usuario-campos-estudiante">
-                <div class="alert-box success">
-                    ✅ Los estudiantes pueden solicitar becas y acceder a todos los beneficios.
-                </div>
+                <div class="alert-box success">✅ Los estudiantes pueden solicitar becas y acceder a todos los beneficios.</div>
                 <div class="form-row">
                     <div class="form-field">
                         <label>Carrera <span class="required">*</span></label>
@@ -1254,7 +1012,6 @@
                 </div>
             </div>
 
-            <!-- Campos para Empleado -->
             <div class="campos-empleado" id="usuario-campos-empleado">
                 <div class="empleado-notificacion">
                     <div class="icono">⏳</div>
@@ -1289,7 +1046,6 @@
                 </div>
             </div>
 
-            <!-- Cédula con consulta al padrón -->
             <div class="form-field">
                 <label>Cédula <span class="required">*</span></label>
                 <input type="text" id="usuario-cedula" class="form-control" placeholder="1-2345-6789" oninput="consultarPadronAdmin()">
@@ -1298,33 +1054,28 @@
                 </div>
             </div>
 
-            <!-- Nombre completo (se carga desde el padrón) -->
             <div class="form-field">
                 <label>Nombre completo <span class="required">*</span></label>
                 <input type="text" id="usuario-nombre" class="form-control" placeholder="María José González Mora">
                 <span class="hint">Se cargará automáticamente desde el padrón.</span>
             </div>
 
-            <!-- Dirección (se carga desde el padrón) -->
             <div class="form-field">
                 <label>Dirección</label>
                 <input type="text" id="usuario-direccion" class="form-control" placeholder="Provincia, Cantón, Distrito">
                 <span class="hint">Se cargará automáticamente desde el padrón.</span>
             </div>
 
-            <!-- Correo electrónico -->
             <div class="form-field">
                 <label>Correo electrónico <span class="required">*</span></label>
                 <input type="email" id="usuario-email" class="form-control" placeholder="correo@ejemplo.com">
             </div>
 
-            <!-- Teléfono -->
             <div class="form-field">
                 <label>Teléfono</label>
                 <input type="text" id="usuario-telefono" class="form-control" placeholder="8888-9999">
             </div>
 
-            <!-- Rol y Contraseña -->
             <div class="form-row">
                 <div class="form-field">
                     <label>Rol <span class="required">*</span></label>
@@ -1344,7 +1095,6 @@
                 </div>
             </div>
 
-            <!-- Usuario aprobado -->
             <div class="form-field">
                 <label>
                     <input type="checkbox" id="usuario-aprobado" checked> Usuario aprobado
@@ -1429,18 +1179,6 @@
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            justificaciones: 'becas_justificaciones',
-            suspensiones: 'becas_suspensiones',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-        };
-
         const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
         let timeoutConsultaPadronAdmin = null;
         let ultimaCedulaConsultadaAdmin = '';
@@ -1501,7 +1239,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1510,8 +1247,8 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
@@ -1543,72 +1280,23 @@
             try {
                 return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(CryptoJS.enc.Utf8);
             } catch (e) {
-                return null;
+                return encrypted;
             }
-        }
-
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
-        }
-
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = [
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ];
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
-        }
-
-        function guardarTiposBecaLocal(tipos) {
-            localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
         }
 
         // ============================================================
-        // NAVEGACIÓN - CORREGIDA
+        // NAVEGACIÓN
         // ============================================================
         function showView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             const target = document.getElementById(viewId);
             if (target) target.classList.remove('hidden');
-            // Si es la vista pública, cargar noticias
-            if (viewId === 'view-public') {
-                renderPublicNoticias();
-            }
+            if (viewId === 'view-public') renderPublicNoticias();
             if (viewId.includes('dash')) renderDashboards();
         }
 
         function irInicio(e) {
             if (e) e.preventDefault();
-            // Redirigir al index (vista pública)
             window.location.href = 'index.html';
         }
 
@@ -1621,36 +1309,25 @@
             openModal('modal-login');
         }
 
-        function goToDashboard() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            if (session) {
-                const dashMap = {
-                    estudiante: 'view-dash-estudiante',
-                    aspirante: 'view-dash-estudiante',
-                    trabajador_social: 'view-dash-social',
-                    comite: 'view-dash-comite',
-                    admin: 'view-dash-admin',
-                    auditor: 'view-dash-auditor'
-                };
-                showView(dashMap[session.rol] || 'view-public');
-            } else {
-                showView('view-public');
-            }
-        }
-
         function cerrarSesion() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
-                registrarBitacora('Cierre de sesión', '—', session);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session.nombre,
+                    rol: session.rol,
+                    accion: 'Cierre de sesión',
+                    expediente: '—'
+                });
             }
-            localStorage.removeItem(STORAGE_KEYS.session);
-            notify('Sesión cerrada correctamente.');
+            StorageManager.session.clear();
+            notify('✅ Sesión cerrada correctamente.');
             window.location.href = 'index.html';
         }
 
         function renderHeaderNav() {
             const nav = document.getElementById('mainNav');
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 nav.innerHTML =
                     '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
@@ -1666,6 +1343,23 @@
             }
         }
 
+        function goToDashboard() {
+            const session = StorageManager.session.get();
+            if (session) {
+                const dashMap = {
+                    estudiante: 'view-dash-estudiante',
+                    aspirante: 'view-dash-estudiante',
+                    trabajador_social: 'view-dash-social',
+                    comite: 'view-dash-comite',
+                    admin: 'view-dash-admin',
+                    auditor: 'view-dash-auditor'
+                };
+                showView(dashMap[session.rol] || 'view-public');
+            } else {
+                showView('view-public');
+            }
+        }
+
         // ============================================================
         // NOTICIAS PÚBLICAS
         // ============================================================
@@ -1673,7 +1367,7 @@
             const container = document.getElementById('public-noticias');
             if (!container) return;
 
-            const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
+            const noticias = StorageManager.noticias.getActivas();
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
 
@@ -1711,22 +1405,21 @@
             errorBox.textContent = '';
 
             if (!email || !password) {
-                errorBox.textContent = 'Por favor ingresa tu correo y contraseña.';
+                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
                 errorBox.className = 'login-error visible';
                 return;
             }
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuario = usuarios.find(u => u.email === email);
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
             if (!usuario) {
-                errorBox.textContent = 'Usuario no encontrado';
+                errorBox.textContent = '❌ Usuario no encontrado';
                 errorBox.className = 'login-error visible';
                 return;
             }
 
             if (usuario.bloqueado) {
-                errorBox.textContent = 'Usuario bloqueado. Contacta al administrador.';
+                errorBox.textContent = '🔒 Usuario bloqueado. Contacta al administrador.';
                 errorBox.className = 'login-error visible';
                 return;
             }
@@ -1736,27 +1429,36 @@
                 usuario.intentos = (usuario.intentos || 0) + 1;
                 if (usuario.intentos >= 3) {
                     usuario.bloqueado = true;
-                    errorBox.textContent = 'Usuario bloqueado por múltiples intentos fallidos.';
+                    errorBox.textContent = '🔒 Usuario bloqueado por múltiples intentos fallidos.';
                 } else {
-                    errorBox.textContent = 'Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
+                    errorBox.textContent = '❌ Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
                 }
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+                StorageManager.usuarios.save(usuario);
                 errorBox.className = 'login-error visible';
                 return;
             }
 
             usuario.intentos = 0;
-            localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+            StorageManager.usuarios.save(usuario);
 
             const nuevaSesion = {
-                email,
+                email: usuario.email,
                 nombre: usuario.nombre,
                 rol: usuario.rol
             };
-            localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
-            registrarBitacora('Inicio de sesión', '—', nuevaSesion);
+            StorageManager.session.set(nuevaSesion);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: usuario.nombre,
+                rol: usuario.rol,
+                accion: 'Inicio de sesión',
+                expediente: '—'
+            });
+
             closeModal('modal-login');
             renderHeaderNav();
+            StorageManager.emit('session_actualizada', nuevaSesion);
 
             const dashMap = {
                 estudiante: 'view-dash-estudiante',
@@ -1767,7 +1469,7 @@
                 auditor: 'view-dash-auditor'
             };
             showView(dashMap[usuario.rol] || 'view-public');
-            notify('Bienvenido/a ' + usuario.nombre);
+            notify('✅ Bienvenido/a ' + usuario.nombre);
         }
 
         // ============================================================
@@ -1944,7 +1646,7 @@
         // DASHBOARD ADMIN
         // ============================================================
         function renderDashboards() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (!session) return;
             if (session.rol === 'admin') renderAdminDashboard(session);
         }
@@ -1956,7 +1658,13 @@
             renderTablaTiposBeca();
             cargarConfigEnFormulario();
 
-            registrarBitacora('Consulta Admin', '—', session);
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session.nombre,
+                rol: session.rol,
+                accion: 'Consulta Admin',
+                expediente: '—'
+            });
         }
 
         // ============================================================
@@ -1975,7 +1683,7 @@
         // TABLA USUARIOS CON FILTROS
         // ============================================================
         function renderTablaUsuarios() {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+            const usuarios = StorageManager.usuarios.getAll();
             const tbody = document.getElementById('adm-tabla-usuarios');
             if (!tbody) return;
 
@@ -2009,8 +1717,7 @@
                 return;
             }
 
-            tbody.innerHTML = usuariosFiltrados.map((u, i) => {
-                const idx = usuarios.indexOf(u);
+            tbody.innerHTML = usuariosFiltrados.map((u, idx) => {
                 const aprobado = u.aprobado !== false;
                 const estadoColor = aprobado ? 'badge-success' : 'badge-warning';
                 const estadoTexto = aprobado ? 'Aprobado' : 'Pendiente';
@@ -2021,15 +1728,16 @@
                     '<td><span class="badge badge-info">' + rolLabel(u.rol) + '</span></td>' +
                     '<td><span class="badge ' + estadoColor + '">' + estadoTexto + '</span></td>' +
                     '<td style="display:flex;gap:5px;flex-wrap:wrap;">' +
-                    '<button class="btn btn-small" onclick="editarUsuario(' + idx + ')">✏️</button>' +
+                    '<button class="btn btn-small" onclick="editarUsuario(\'' + u.email +
+                    '\')">✏️</button>' +
                     (u.bloqueado ?
-                        '<button class="btn btn-small btn-success" onclick="desbloquearUsuario(' + idx + ')">🔓</button>' :
-                        '') +
+                        '<button class="btn btn-small btn-success" onclick="desbloquearUsuario(\'' + u.email +
+                        '\')">🔓</button>' : '') +
                     (u.aprobado === false ?
-                        '<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(' + idx +
-                        ')">✅ Aprobar</button>' :
-                        '') +
-                    '<button class="btn btn-danger" onclick="eliminarUsuario(' + idx + ')">🗑️</button>' +
+                        '<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(\'' + u.email +
+                        '\')">✅ Aprobar</button>' : '') +
+                    '<button class="btn btn-danger" onclick="eliminarUsuario(\'' + u.email +
+                    '\')">🗑️</button>' +
                     '</td>' +
                     '</tr>';
             }).join('');
@@ -2038,14 +1746,20 @@
         // ============================================================
         // APROBAR USUARIO DESDE LA TABLA
         // ============================================================
-        function aprobarUsuarioDirecto(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            if (usuarios[index]) {
-                usuarios[index].aprobado = true;
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario aprobado: ' + usuarios[index].nombre, '—');
+        function aprobarUsuarioDirecto(email) {
+            const usuario = StorageManager.usuarios.getByEmail(email);
+            if (usuario) {
+                usuario.aprobado = true;
+                StorageManager.usuarios.save(usuario);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: 'Admin Sistema',
+                    rol: 'admin',
+                    accion: 'Usuario aprobado: ' + usuario.nombre,
+                    expediente: '—'
+                });
                 renderTablaUsuarios();
-                notify('✅ Usuario ' + usuarios[index].nombre + ' aprobado correctamente.');
+                notify('✅ Usuario ' + usuario.nombre + ' aprobado correctamente.');
             }
         }
 
@@ -2079,36 +1793,34 @@
             openModal('modal-usuario');
         }
 
-        function editarUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const u = usuarios[index];
-            if (!u) return;
+        function editarUsuario(email) {
+            const usuario = StorageManager.usuarios.getByEmail(email);
+            if (!usuario) return;
 
             document.getElementById('usuario-modal-titulo').textContent = 'Editar usuario';
             document.getElementById('usuario-modal-sub').textContent = 'Modifica los datos del usuario.';
-            document.getElementById('usuario-edit-id').value = index;
-            document.getElementById('usuario-nombre').value = u.nombre || '';
-            document.getElementById('usuario-email').value = u.email || '';
-            document.getElementById('usuario-cedula').value = u.cedula || '';
-            document.getElementById('usuario-telefono').value = u.telefono || '';
-            document.getElementById('usuario-direccion').value = u.direccion || '';
-            document.getElementById('usuario-rol').value = u.rol || 'aspirante';
+            document.getElementById('usuario-edit-id').value = email;
+            document.getElementById('usuario-nombre').value = usuario.nombre || '';
+            document.getElementById('usuario-email').value = usuario.email || '';
+            document.getElementById('usuario-cedula').value = usuario.cedula || '';
+            document.getElementById('usuario-telefono').value = usuario.telefono || '';
+            document.getElementById('usuario-direccion').value = usuario.direccion || '';
+            document.getElementById('usuario-rol').value = usuario.rol || 'aspirante';
             document.getElementById('usuario-password').value = '';
             document.getElementById('usuario-password-field').style.display = 'none';
-            document.getElementById('usuario-aprobado').checked = u.aprobado !== false;
+            document.getElementById('usuario-aprobado').checked = usuario.aprobado !== false;
 
-            const esEmpleado = ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol);
-            const esEstudiante = u.rol === 'estudiante';
-            const esAspirante = u.rol === 'aspirante' || (!esEmpleado && !esEstudiante);
+            const esEmpleado = ['trabajador_social', 'comite', 'auditor', 'admin'].includes(usuario.rol);
+            const esEstudiante = usuario.rol === 'estudiante';
+            const esAspirante = usuario.rol === 'aspirante' || (!esEmpleado && !esEstudiante);
 
             if (esEmpleado) {
                 document.getElementById('usuario-tipo').value = 'empleado';
-                document.getElementById('usuario-cargo').value = u.cargo || u.datosAcademicos?.cargo || '';
-                document.getElementById('usuario-departamento').value = u.departamento || u.datosAcademicos?.departamento ||
-                '';
+                document.getElementById('usuario-cargo').value = usuario.cargo || usuario.datosAcademicos?.cargo || '';
+                document.getElementById('usuario-departamento').value = usuario.departamento || usuario.datosAcademicos?.departamento || '';
             } else if (esEstudiante) {
                 document.getElementById('usuario-tipo').value = 'estudiante';
-                const da = u.datosAcademicos || {};
+                const da = usuario.datosAcademicos || {};
                 document.getElementById('usuario-carrera').value = da.carrera || '';
                 document.getElementById('usuario-facultad').value = da.facultad || '';
                 document.getElementById('usuario-fecha-ingreso').value = da.fechaIngreso || '';
@@ -2118,13 +1830,13 @@
                 document.getElementById('usuario-tipo').value = 'aspirante';
             }
 
-            document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Cédula: ${u.cedula || 'No registrada'}</span>`;
+            document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Cédula: ${usuario.cedula || 'No registrada'}</span>`;
             toggleCamposUsuarioAdmin();
             openModal('modal-usuario');
         }
 
         function guardarUsuario() {
-            const editId = document.getElementById('usuario-edit-id').value;
+            const editEmail = document.getElementById('usuario-edit-id').value;
             const tipo = document.getElementById('usuario-tipo').value;
             const nombre = document.getElementById('usuario-nombre').value.trim();
             const email = document.getElementById('usuario-email').value.trim().toLowerCase();
@@ -2153,7 +1865,7 @@
                 return;
             }
 
-            if (!editId && !password) {
+            if (!editEmail && !password) {
                 errorBox.textContent = '⚠️ La contraseña es obligatoria para usuarios nuevos.';
                 errorBox.className = 'login-error visible';
                 return;
@@ -2178,9 +1890,9 @@
                 return;
             }
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
+            const usuarios = StorageManager.usuarios.getAll();
 
-            if (!editId && usuarios.some(u => u.email === email)) {
+            if (!editEmail && usuarios.some(u => u.email === email)) {
                 errorBox.textContent = '⚠️ Ya existe un usuario con ese correo.';
                 errorBox.className = 'login-error visible';
                 return;
@@ -2215,20 +1927,26 @@
                 datosAcademicos = { esAspirante: true };
             }
 
-            if (editId) {
-                const index = parseInt(editId);
-                if (usuarios[index]) {
-                    usuarios[index].nombre = nombre;
-                    usuarios[index].email = email;
-                    usuarios[index].cedula = cedula;
-                    usuarios[index].telefono = telefono || '';
-                    usuarios[index].direccion = direccion || '';
-                    usuarios[index].rol = rolFinal;
-                    usuarios[index].datosAcademicos = datosAcademicos;
-                    usuarios[index].aprobado = aprobado;
-                    if (password) usuarios[index].password = cifrarPassword(password);
-                    localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                    registrarBitacora('Usuario editado: ' + nombre, '—');
+            if (editEmail) {
+                const usuario = StorageManager.usuarios.getByEmail(editEmail);
+                if (usuario) {
+                    usuario.nombre = nombre;
+                    usuario.email = email;
+                    usuario.cedula = cedula;
+                    usuario.telefono = telefono || '';
+                    usuario.direccion = direccion || '';
+                    usuario.rol = rolFinal;
+                    usuario.datosAcademicos = datosAcademicos;
+                    usuario.aprobado = aprobado;
+                    if (password) usuario.password = cifrarPassword(password);
+                    StorageManager.usuarios.save(usuario);
+                    StorageManager.bitacora.save({
+                        fecha: new Date().toLocaleString(),
+                        usuario: 'Admin Sistema',
+                        rol: 'admin',
+                        accion: 'Usuario editado: ' + nombre,
+                        expediente: '—'
+                    });
                     notify('✅ Usuario actualizado correctamente.');
                 }
             } else {
@@ -2254,9 +1972,14 @@
                     nuevoUsuario.departamento = departamento;
                 }
 
-                usuarios.push(nuevoUsuario);
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario creado: ' + nombre + ' (Rol: ' + rolFinal + ')', '—');
+                StorageManager.usuarios.save(nuevoUsuario);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: 'Admin Sistema',
+                    rol: 'admin',
+                    accion: 'Usuario creado: ' + nombre + ' (Rol: ' + rolFinal + ')',
+                    expediente: '—'
+                });
                 notify('✅ Usuario ' + nombre + ' creado correctamente.');
             }
 
@@ -2264,27 +1987,37 @@
             renderTablaUsuarios();
         }
 
-        async function eliminarUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const u = usuarios[index];
-            if (!u) return;
+        async function eliminarUsuario(email) {
+            const usuario = StorageManager.usuarios.getByEmail(email);
+            if (!usuario) return;
 
-            if (!(await customConfirm('¿Eliminar al usuario ' + u.nombre + '? Esta acción no se puede deshacer.'))) return;
+            if (!(await customConfirm('¿Eliminar al usuario ' + usuario.nombre + '? Esta acción no se puede deshacer.'))) return;
 
-            usuarios.splice(index, 1);
-            localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-            registrarBitacora('Usuario eliminado: ' + u.nombre, '—');
+            StorageManager.usuarios.delete(usuario.id);
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: 'Admin Sistema',
+                rol: 'admin',
+                accion: 'Usuario eliminado: ' + usuario.nombre,
+                expediente: '—'
+            });
             renderTablaUsuarios();
             notify('✅ Usuario eliminado.');
         }
 
-        function desbloquearUsuario(index) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            if (usuarios[index]) {
-                usuarios[index].bloqueado = false;
-                usuarios[index].intentos = 0;
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                registrarBitacora('Usuario desbloqueado: ' + usuarios[index].nombre, '—');
+        function desbloquearUsuario(email) {
+            const usuario = StorageManager.usuarios.getByEmail(email);
+            if (usuario) {
+                usuario.bloqueado = false;
+                usuario.intentos = 0;
+                StorageManager.usuarios.save(usuario);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: 'Admin Sistema',
+                    rol: 'admin',
+                    accion: 'Usuario desbloqueado: ' + usuario.nombre,
+                    expediente: '—'
+                });
                 renderTablaUsuarios();
                 notify('✅ Usuario desbloqueado.');
             }
@@ -2294,7 +2027,7 @@
         // TIPOS DE BECA
         // ============================================================
         function renderTablaTiposBeca() {
-            const tipos = getTiposBecaLocal();
+            const tipos = StorageManager.tiposBeca.getAll();
             const tbody = document.getElementById('adm-tabla-tipos');
             if (!tbody) return;
 
@@ -2326,7 +2059,7 @@
             document.getElementById('tb-id-edicion').value = id || '';
 
             if (id) {
-                const tipo = getTiposBecaLocal().find(t => t.id === id);
+                const tipo = StorageManager.tiposBeca.getById(id);
                 if (tipo) {
                     document.getElementById('tb-icon').value = tipo.icon || '🎓';
                     document.getElementById('tb-nombre').value = tipo.nombre;
@@ -2358,39 +2091,66 @@
             const min = parseInt(document.getElementById('tb-min').value) || 0;
             const max = parseInt(document.getElementById('tb-max').value) || 0;
             const rubros = document.getElementById('tb-rubros').value.split(',').map(s => s.trim()).filter(Boolean);
-            const requisitos = document.getElementById('tb-requisitos').value.split('\n').map(s => s.trim()).filter(
-            Boolean);
+            const requisitos = document.getElementById('tb-requisitos').value.split('\n').map(s => s.trim()).filter(Boolean);
             const activo = document.getElementById('tb-activo').checked;
 
             if (!nombre) { notify('⚠️ El nombre es obligatorio.'); return; }
             if (min > max) { notify('⚠️ El porcentaje mínimo no puede ser mayor que el máximo.'); return; }
 
-            const tipos = getTiposBecaLocal();
-
+            let tipo = null;
             if (id) {
-                const index = tipos.findIndex(t => t.id === parseInt(id));
-                if (index !== -1) {
-                    tipos[index] = { ...tipos[index], nombre, icon, desc, min, max, rubros, requisitos, activo };
+                tipo = StorageManager.tiposBeca.getById(parseInt(id));
+                if (tipo) {
+                    tipo.nombre = nombre;
+                    tipo.icon = icon;
+                    tipo.desc = desc;
+                    tipo.min = min;
+                    tipo.max = max;
+                    tipo.rubros = rubros;
+                    tipo.requisitos = requisitos;
+                    tipo.activo = activo;
+                    StorageManager.tiposBeca.save(tipo);
                 }
             } else {
-                const nuevoId = tipos.length ? Math.max(...tipos.map(t => t.id)) + 1 : 1;
-                tipos.push({ id: nuevoId, nombre, icon, desc, min, max, rubros, requisitos, activo });
+                const nuevoId = StorageManager.tiposBeca.getAll().length + 1;
+                tipo = {
+                    id: nuevoId,
+                    nombre,
+                    icon,
+                    desc,
+                    min,
+                    max,
+                    rubros,
+                    requisitos,
+                    activo
+                };
+                StorageManager.tiposBeca.save(tipo);
             }
 
-            guardarTiposBecaLocal(tipos);
-            registrarBitacora(id ? 'Tipo de beca actualizado: ' + nombre : 'Tipo de beca creado: ' + nombre, '—');
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: 'Admin Sistema',
+                rol: 'admin',
+                accion: id ? 'Tipo de beca actualizado: ' + nombre : 'Tipo de beca creado: ' + nombre,
+                expediente: '—'
+            });
             closeModal('modal-tipo-beca');
             renderTablaTiposBeca();
             notify('✅ Tipo de beca guardado correctamente.');
         }
 
-        async function toggleActivoTipoBeca(id) {
-            const tipos = getTiposBecaLocal();
-            const tipo = tipos.find(t => t.id === id);
+        function toggleActivoTipoBeca(id) {
+            const tipo = StorageManager.tiposBeca.getById(id);
             if (tipo) {
                 tipo.activo = !tipo.activo;
-                guardarTiposBecaLocal(tipos);
-                registrarBitacora('Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + ': ' + tipo.nombre, '—');
+                StorageManager.tiposBeca.save(tipo);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: 'Admin Sistema',
+                    rol: 'admin',
+                    accion: 'Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + ': ' + tipo.nombre,
+                    expediente: '—'
+                });
                 renderTablaTiposBeca();
                 notify('✅ Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + '.');
             }
@@ -2399,11 +2159,14 @@
         async function eliminarTipoBeca(id) {
             if (!(await customConfirm('¿Eliminar este tipo de beca?'))) return;
 
-            let tipos = getTiposBecaLocal();
-            const tipo = tipos.find(t => t.id === id);
-            tipos = tipos.filter(t => t.id !== id);
-            guardarTiposBecaLocal(tipos);
-            registrarBitacora('Tipo de beca eliminado: ' + (tipo ? tipo.nombre : id), '—');
+            StorageManager.tiposBeca.delete(id);
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: 'Admin Sistema',
+                rol: 'admin',
+                accion: 'Tipo de beca eliminado',
+                expediente: '—'
+            });
             renderTablaTiposBeca();
             notify('✅ Tipo de beca eliminado.');
         }
@@ -2412,7 +2175,7 @@
         // CONFIGURACIÓN
         // ============================================================
         function cargarConfigEnFormulario() {
-            const config = JSON.parse(localStorage.getItem(STORAGE_KEYS.config) || '{}');
+            const config = StorageManager.config.get();
 
             document.getElementById('cfg-socio').value = config.socio || 40;
             document.getElementById('cfg-acad').value = config.academico || 35;
@@ -2474,8 +2237,14 @@
                 msgSubsanacion: document.getElementById('cfg-msg-subsanacion').value || ''
             };
 
-            localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(config));
-            registrarBitacora('Configuración guardada', '—');
+            StorageManager.config.set(config);
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: 'Admin Sistema',
+                rol: 'admin',
+                accion: 'Configuración guardada',
+                expediente: '—'
+            });
             notify('✅ Configuración guardada exitosamente.');
         }
 
@@ -2503,118 +2272,26 @@
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
-                        direccion: 'San José, Montes de Oca, Sabanilla',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: {
-                            carrera: 'Ingeniería en Sistemas',
-                            facultad: 'Ingeniería',
-                            sede: 'Central',
-                            fechaIngreso: '2022-01-10',
-                            anioIngreso: '2022'
-                        },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: cifrarPassword('123456'), rol: 'aspirante',
-                        nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
-                        direccion: 'Alajuela, San Ramón',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: { esAspirante: true },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
-                        direccion: 'Heredia, San Pablo',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
-                        direccion: 'Cartago, Paraíso',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
-                        nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
-                        direccion: 'San José, Centro',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
-                        nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
-                        direccion: 'Puntarenas, Esparza',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.tipos)) {
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify([
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.config)) {
-                localStorage.setItem(STORAGE_KEYS.config, JSON.stringify({
-                    socio: 40,
-                    academico: 35,
-                    vulnerabilidad: 15,
-                    meritos: 10,
-                    promedioMin: 80,
-                    ingresoMax: 500000,
-                    plazoSubsanacion: 5,
-                    plazoApelacion: 10,
-                    plazoRenovacion: 15,
-                    msgAprobacion: 'Felicidades, tu solicitud de beca ha sido APROBADA.',
-                    msgRechazo: 'Lamentamos informarte que tu solicitud ha sido RECHAZADA.',
-                    msgSubsanacion: 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.'
-                }));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.noticias)) {
-                const hoy = new Date();
-                const fechaHoy = hoy.toISOString().slice(0, 10);
-                localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify([
-                    { id: 1, titulo: '📢 Convocatoria 2026 abierta',
-                        contenido: 'Ya están disponibles las becas para el período 2026. Revisa los requisitos en el portal.',
-                        fechaPublicacion: fechaHoy, fecha: hoy.toLocaleDateString() }
-                ]));
-            }
-        }
-
         (function init() {
-            initData();
             renderHeaderNav();
 
-            const storedSession = localStorage.getItem(STORAGE_KEYS.session);
-            if (storedSession) {
-                const session = JSON.parse(storedSession);
-                if (session.rol === 'admin') {
-                    showView('view-dash-admin');
-                    renderDashboards();
-                } else {
-                    showView('view-public');
-                    renderPublicNoticias();
+            const storedSession = StorageManager.session.get();
+            if (storedSession && storedSession.rol === 'admin') {
+                showView('view-dash-admin');
+                renderDashboards();
+            } else if (storedSession) {
+                // Redirigir a su panel correspondiente
+                const dashMap = {
+                    estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
+                    trabajador_social: 'panel_trabajador_social.html',
+                    comite: 'panel_comite.html',
+                    admin: 'panel_admin.html',
+                    auditor: 'panel_auditor.html'
+                };
+                const target = dashMap[storedSession.rol];
+                if (target) {
+                    window.location.href = target;
                 }
             } else {
                 showView('view-public');
@@ -2625,8 +2302,13 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            document.getElementById('db-status').textContent = 'Conectado';
+            document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
+
+            // Escuchar eventos de StorageManager
+            StorageManager.on('session_actualizada', function() {
+                renderHeaderNav();
+            });
         })();
     </script>
 

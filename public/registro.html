@@ -7,10 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
-        /* ============================================================
-           ESTILOS COMPLETOS
-           ============================================================ */
         :root {
             --primary: #1a365d;
             --primary-light: #2c4a7c;
@@ -33,11 +31,7 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -55,24 +49,10 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* ============================================================
-           BOTONES
-           ============================================================ */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -85,56 +65,36 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
             box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-outline {
             background: transparent;
             color: #fff;
             border: 1.5px solid rgba(255,255,255,0.55);
         }
-
         .btn-outline:hover {
             background: rgba(255,255,255,0.12);
             border-color: #fff;
         }
-
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
+        .btn-ghost:hover { border-color: var(--primary); }
+        .btn-block { width: 100%; }
 
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        /* ============================================================
-           HEADER
-           ============================================================ */
+        /* HEADER */
         header.site-header {
             position: sticky;
             top: 0;
@@ -142,7 +102,6 @@
             background: var(--primary-dark);
             box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -151,7 +110,6 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
@@ -159,7 +117,6 @@
             color: #fff;
             cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -174,32 +131,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -207,7 +159,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -216,9 +167,7 @@
             transition: .25s;
         }
 
-        /* ============================================================
-           HERO
-           ============================================================ */
+        /* HERO */
         .hero {
             position: relative;
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%);
@@ -227,7 +176,6 @@
             padding: 60px 24px 80px;
             flex: 1;
         }
-
         .hero::before {
             content: "";
             position: absolute;
@@ -236,7 +184,6 @@
                 radial-gradient(circle at 10% 90%, rgba(197,160,40,0.10) 0%, transparent 40%);
             pointer-events: none;
         }
-
         .hero-content {
             position: relative;
             max-width: 1200px;
@@ -246,7 +193,6 @@
             gap: 48px;
             align-items: center;
         }
-
         .hero h1 {
             color: #fff;
             font-size: clamp(2.2rem, 5vw, 3.4rem);
@@ -254,19 +200,16 @@
             line-height: 1.12;
             margin-bottom: 18px;
         }
-
         .hero h1 em {
             font-style: normal;
             color: var(--accent-light);
         }
-
         .hero p.lead {
             color: rgba(255,255,255,0.78);
             font-size: 1.08rem;
             max-width: 520px;
             margin-bottom: 34px;
         }
-
         .hero-eyebrow {
             display: inline-flex;
             align-items: center;
@@ -283,9 +226,7 @@
             margin-bottom: 22px;
         }
 
-        /* ============================================================
-           REGISTRO PANEL
-           ============================================================ */
+        /* REGISTRO PANEL */
         .registro-panel {
             background: rgba(255,255,255,0.06);
             border: 1px solid rgba(255,255,255,0.14);
@@ -295,21 +236,15 @@
             max-height: 85vh;
             overflow-y: auto;
         }
-
-        .registro-panel::-webkit-scrollbar {
-            width: 6px;
-        }
-
+        .registro-panel::-webkit-scrollbar { width: 6px; }
         .registro-panel::-webkit-scrollbar-track {
             background: rgba(255,255,255,0.05);
             border-radius: 3px;
         }
-
         .registro-panel::-webkit-scrollbar-thumb {
             background: var(--accent);
             border-radius: 3px;
         }
-
         .registro-panel-title {
             font-size: 0.78rem;
             letter-spacing: 0.12em;
@@ -319,7 +254,6 @@
             margin-bottom: 20px;
             text-align: center;
         }
-
         .registro-panel .modal-sub {
             color: rgba(255,255,255,0.7);
             font-size: 0.9rem;
@@ -327,27 +261,21 @@
             margin-bottom: 20px;
         }
 
-        /* ============================================================
-           FORMULARIO
-           ============================================================ */
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
             margin-bottom: 16px;
         }
-
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: rgba(255,255,255,0.9);
         }
-
         .form-field label .required {
             color: #f6c6c0;
             margin-left: 2px;
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -361,12 +289,10 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input::placeholder,
         .form-field textarea::placeholder {
             color: rgba(255,255,255,0.4);
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
@@ -374,31 +300,22 @@
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(197,160,40,0.15);
         }
-
         .form-field select option {
             color: var(--text);
             background: var(--paper);
         }
-
         .form-field .hint {
             font-size: 0.75rem;
             color: rgba(255,255,255,0.5);
             margin-top: 2px;
         }
-
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
+        .form-row .form-field { margin-bottom: 0; }
 
-        .form-row .form-field {
-            margin-bottom: 0;
-        }
-
-        /* ============================================================
-           INDICADOR DE CARGA DEL PADRÓN
-           ============================================================ */
         .padron-status {
             display: flex;
             align-items: center;
@@ -408,7 +325,6 @@
             min-height: 24px;
             flex-wrap: wrap;
         }
-
         .padron-status .spinner {
             display: inline-block;
             width: 16px;
@@ -418,30 +334,12 @@
             border-top-color: var(--accent-light);
             animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .padron-status .success { color: #7ddfa0; }
+        .padron-status .error { color: #f6c6c0; }
+        .padron-status .info { color: var(--accent-light); }
+        .padron-status .warning { color: #f0dba3; }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .padron-status .success {
-            color: #7ddfa0;
-        }
-
-        .padron-status .error {
-            color: #f6c6c0;
-        }
-
-        .padron-status .info {
-            color: var(--accent-light);
-        }
-
-        .padron-status .warning {
-            color: #f0dba3;
-        }
-
-        /* ============================================================
-           ERROR
-           ============================================================ */
         .login-error {
             background: rgba(192,57,43,0.2);
             color: #f6c6c0;
@@ -452,14 +350,8 @@
             margin-bottom: 14px;
             display: none;
         }
+        .login-error.visible { display: block; }
 
-        .login-error.visible {
-            display: block;
-        }
-
-        /* ============================================================
-           ALERTAS
-           ============================================================ */
         .alert-box {
             background: rgba(26,54,93,0.3);
             border: 1px solid rgba(197,160,40,0.3);
@@ -469,28 +361,22 @@
             font-size: 0.85rem;
             margin-bottom: 12px;
         }
-
         .alert-box.success {
             background: rgba(30,126,79,0.2);
             border-color: rgba(30,126,79,0.4);
             color: #7ddfa0;
         }
-
         .alert-box.warning {
             background: rgba(176,125,18,0.2);
             border-color: rgba(176,125,18,0.4);
             color: #f0dba3;
         }
-
         .alert-box.info {
             background: rgba(26,54,93,0.3);
             border-color: rgba(197,160,40,0.3);
             color: var(--accent-light);
         }
 
-        /* ============================================================
-           NOTIFICACIÓN PARA EMPLEADOS
-           ============================================================ */
         .empleado-notificacion {
             background: rgba(176,125,18,0.15);
             border: 1px solid rgba(176,125,18,0.3);
@@ -501,59 +387,24 @@
             align-items: flex-start;
             gap: 12px;
         }
-
-        .empleado-notificacion .icono {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
+        .empleado-notificacion .icono { font-size: 1.5rem; flex-shrink: 0; }
         .empleado-notificacion .contenido h4 {
             color: var(--accent-light);
             font-size: 0.95rem;
             margin-bottom: 4px;
         }
-
         .empleado-notificacion .contenido p {
             color: rgba(255,255,255,0.6);
             font-size: 0.85rem;
         }
 
-        /* ============================================================
-           CAMPOS PARA EMPLEADO
-           ============================================================ */
-        .campos-empleado {
-            display: none;
-        }
+        .campos-empleado { display: none; }
+        .campos-empleado.visible { display: block; }
+        .campos-estudiante { display: none; }
+        .campos-estudiante.visible { display: block; }
+        .campos-aspirante { display: none; }
+        .campos-aspirante.visible { display: block; }
 
-        .campos-empleado.visible {
-            display: block;
-        }
-
-        /* ============================================================
-           CAMPOS PARA ESTUDIANTE
-           ============================================================ */
-        .campos-estudiante {
-            display: none;
-        }
-
-        .campos-estudiante.visible {
-            display: block;
-        }
-
-        /* ============================================================
-           CAMPOS PARA ASPIRANTE
-           ============================================================ */
-        .campos-aspirante {
-            display: none;
-        }
-
-        .campos-aspirante.visible {
-            display: block;
-        }
-
-        /* ============================================================
-           NOTA INFORMATIVA
-           ============================================================ */
         .modal-credentials {
             background: rgba(255,255,255,0.08);
             border-radius: 10px;
@@ -562,38 +413,24 @@
             font-size: 0.8rem;
             color: rgba(255,255,255,0.6);
         }
+        .modal-credentials strong { color: var(--accent-light); }
 
-        .modal-credentials strong {
-            color: var(--accent-light);
-        }
-
-        /* ============================================================
-           LINK DE LOGIN
-           ============================================================ */
         .login-link {
             text-align: center;
             margin-top: 16px;
         }
-
         .login-link a {
             color: var(--accent-light);
             font-weight: 600;
             text-decoration: underline;
             transition: color .2s ease;
         }
-
-        .login-link a:hover {
-            color: #fff;
-        }
-
+        .login-link a:hover { color: #fff; }
         .login-link span {
             color: rgba(255,255,255,0.6);
             font-size: 0.85rem;
         }
 
-        /* ============================================================
-           TOAST
-           ============================================================ */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -604,7 +441,6 @@
             gap: 10px;
             max-width: 380px;
         }
-
         .toast-box {
             padding: 14px 18px;
             border-radius: 10px;
@@ -617,23 +453,11 @@
             animation: toastIn .25s ease;
             white-space: pre-line;
         }
-
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(24px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
         .toast-close {
             background: transparent;
             border: none;
@@ -644,21 +468,14 @@
             line-height: 1;
             padding: 0 0 0 6px;
         }
+        .toast-close:hover { opacity: 1; }
 
-        .toast-close:hover {
-            opacity: 1;
-        }
-
-        /* ============================================================
-           FOOTER
-           ============================================================ */
         footer.site-footer {
             background: var(--primary-dark);
             color: rgba(255,255,255,0.75);
             padding: 30px 24px 20px;
             margin-top: auto;
         }
-
         .footer-inner {
             max-width: 1200px;
             margin: 0 auto;
@@ -667,12 +484,10 @@
             flex-wrap: wrap;
             gap: 16px;
         }
-
         .footer-inner p {
             font-size: 0.85rem;
             color: rgba(255,255,255,0.6);
         }
-
         .footer-bottom {
             max-width: 1200px;
             margin: 16px auto 0;
@@ -686,25 +501,12 @@
             color: rgba(255,255,255,0.4);
         }
 
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
         @media (max-width: 980px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-            }
-
-            .registro-panel {
-                order: -1;
-                max-height: none;
-            }
+            .hero-content { grid-template-columns: 1fr; }
+            .registro-panel { order: -1; max-height: none; }
         }
-
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -718,53 +520,19 @@
                 display: none;
                 border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
-            nav.main-nav .btn {
-                width: 100%;
-            }
-
-            .hero {
-                padding: 40px 16px 60px;
-            }
-
-            .registro-panel {
-                padding: 24px 18px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                text-align: center;
-            }
+            nav.main-nav.open { display: flex; }
+            nav.main-nav .btn { width: 100%; }
+            .hero { padding: 40px 16px 60px; }
+            .registro-panel { padding: 24px 18px; }
+            .form-row { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; text-align: center; }
+            .footer-bottom { flex-direction: column; text-align: center; }
         }
-
         @media (max-width: 480px) {
-            .registro-panel {
-                padding: 18px 14px;
-            }
-
+            .registro-panel { padding: 18px 14px; }
             .form-field input,
-            .form-field select {
-                font-size: 0.85rem;
-                padding: 9px 12px;
-            }
-
-            .btn {
-                font-size: 0.85rem;
-                padding: 11px 20px;
-            }
+            .form-field select { font-size: 0.85rem; padding: 9px 12px; }
+            .btn { font-size: 0.85rem; padding: 11px 20px; }
         }
     </style>
 </head>
@@ -812,9 +580,6 @@
 
                 <div id="registro-error" class="login-error"></div>
 
-                <!-- ==========================================================
-                     CAMPO: TIPO DE USUARIO
-                     ========================================================== -->
                 <div class="form-field">
                     <label>Tipo de usuario <span class="required">*</span></label>
                     <select id="reg-tipo-usuario" class="form-control" onchange="toggleCamposRegistro()">
@@ -825,9 +590,6 @@
                     <span class="hint">Los empleados deben esperar la aprobación del administrador para acceder a su panel.</span>
                 </div>
 
-                <!-- ==========================================================
-                     CAMPOS PARA ASPIRANTE
-                     ========================================================== -->
                 <div class="campos-aspirante visible" id="campos-aspirante">
                     <div class="alert-box info">
                         ℹ️ Como aspirante, puedes enviar solicitudes de beca sin necesidad de ser estudiante.
@@ -835,14 +597,10 @@
                     </div>
                 </div>
 
-                <!-- ==========================================================
-                     CAMPOS PARA ESTUDIANTE (SIN FECHA DE NACIMIENTO)
-                     ========================================================== -->
                 <div class="campos-estudiante" id="campos-estudiante">
                     <div class="alert-box success">
                         ✅ Como estudiante, podrás solicitar becas y acceder a todos los beneficios del sistema.
                     </div>
-
                     <div class="form-row">
                         <div class="form-field">
                             <label>Carrera <span class="required">*</span></label>
@@ -878,13 +636,11 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="form-field">
                         <label>Fecha de ingreso a la universidad <span class="required">*</span></label>
                         <input type="date" id="reg-fecha-ingreso" class="form-control">
                         <span class="hint">Fecha en la que iniciaste tus estudios universitarios.</span>
                     </div>
-
                     <div class="form-field">
                         <label>Sede <span class="required">*</span></label>
                         <select id="reg-sede" class="form-control">
@@ -896,7 +652,6 @@
                             <option value="Chorotega">Chorotega</option>
                         </select>
                     </div>
-
                     <div class="form-field">
                         <label>Año de ingreso</label>
                         <select id="reg-anio-ingreso" class="form-control">
@@ -914,9 +669,6 @@
                     </div>
                 </div>
 
-                <!-- ==========================================================
-                     CAMPOS PARA EMPLEADO
-                     ========================================================== -->
                 <div class="campos-empleado" id="campos-empleado">
                     <div class="empleado-notificacion">
                         <div class="icono">⏳</div>
@@ -930,7 +682,6 @@
                         ℹ️ Los empleados (Trabajador Social, Comité, Auditor) deben ser aprobados por el administrador
                         para poder acceder a sus paneles y funcionalidades específicas.
                     </div>
-
                     <div class="form-row">
                         <div class="form-field">
                             <label>Cargo <span class="required">*</span></label>
@@ -957,11 +708,6 @@
                     </div>
                 </div>
 
-                <!-- ==========================================================
-                     CAMPOS COMUNES
-                     ========================================================== -->
-
-                <!-- Cédula con consulta al padrón -->
                 <div class="form-field">
                     <label>Cédula <span class="required">*</span></label>
                     <input type="text" id="reg-cedula" class="form-control" placeholder="1-2345-6789" oninput="consultarPadron()">
@@ -970,14 +716,12 @@
                     </div>
                 </div>
 
-                <!-- CAMPO UNIFICADO: Nombre completo -->
                 <div class="form-field">
                     <label>Nombre completo <span class="required">*</span></label>
                     <input type="text" id="reg-nombre-completo" class="form-control" placeholder="María José González Mora">
                     <span class="hint">Se cargará automáticamente desde el padrón.</span>
                 </div>
 
-                <!-- Dirección (cargada desde el padrón) -->
                 <div class="form-field">
                     <label>Dirección</label>
                     <input type="text" id="reg-direccion" class="form-control" placeholder="Provincia, Cantón, Distrito">
@@ -1042,13 +786,6 @@
         // CONSTANTES
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-        };
-
-        // URL de la API externa de soportereal.com
         const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
 
         // ============================================================
@@ -1092,7 +829,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1101,28 +837,13 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
         function cifrarPassword(pwd) {
             return CryptoJS.AES.encrypt(pwd, SECRET_KEY).toString();
-        }
-
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
         }
 
         function goHome(e) {
@@ -1131,54 +852,39 @@
         }
 
         // ============================================================
-        // CONSULTA AL PADRÓN ELECTORAL USANDO LA API EXTERNA
+        // CONSULTA AL PADRÓN ELECTORAL
         // ============================================================
         function consultarPadron() {
             const cedulaEl = document.getElementById('reg-cedula');
             const statusEl = document.getElementById('padron-status');
-
-            // Limpiar la cédula: eliminar guiones, espacios y otros caracteres no numéricos
             const digitos = cedulaEl.value.replace(/\D/g, '');
 
-            // Limpiar timeout anterior
             clearTimeout(timeoutConsultaPadron);
 
-            // Si la cédula tiene menos de 9 dígitos, mostrar mensaje de espera
             if (digitos.length < 9) {
                 statusEl.innerHTML = `<span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>`;
                 consultaEnProceso = false;
                 return;
             }
 
-            // Si es la misma cédula que ya consultamos y no está en proceso, no repetir
             if (digitos === ultimaCedulaConsultada && !consultaEnProceso) {
                 return;
             }
 
-            // Mostrar indicador de carga
             statusEl.innerHTML = `
                 <span class="spinner"></span>
                 <span class="info">Consultando padrón electoral...</span>
             `;
             consultaEnProceso = true;
 
-            // Debounce: esperar 500ms después de que el usuario deje de escribir
             timeoutConsultaPadron = setTimeout(async () => {
                 try {
                     const url = `${API_PADRON}/${digitos}`;
-                    console.log(`🔍 Consultando padrón para cédula: ${digitos}`);
-                    console.log(`📡 URL: ${url}`);
-
                     const response = await fetch(url, {
                         method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         signal: AbortSignal.timeout(15000)
                     });
-
-                    console.log(`📡 Respuesta: ${response.status} ${response.statusText}`);
 
                     if (!response.ok) {
                         if (response.status === 404) {
@@ -1205,35 +911,17 @@
                     }
 
                     const data = await response.json();
-                    console.log('📋 Datos recibidos del padrón:', data);
-
-                    // Guardar la cédula consultada para no repetir
                     ultimaCedulaConsultada = digitos;
                     consultaEnProceso = false;
 
-                    // ==========================================================
-                    // PROCESAR LA RESPUESTA DE LA API - CORREGIDO
-                    // ==========================================================
-
-                    // Verificar si es persona física (tipoIdentificacion === "01")
                     const esFisica = data.tipoIdentificacion === '01';
-
-                    // Variable para almacenar el nombre completo
                     let nombreCompleto = '';
 
                     if (esFisica && data.persona) {
-                        // ==========================================================
-                        // CASO 2: Persona física sin bloque 'persona'
-                        // El campo 'nombre' ya contiene el nombre completo
-                        // ==========================================================
                         nombreCompleto = data.nombre || '';
-
-                        // Limpiar espacios múltiples y convertir a formato adecuado
                         nombreCompleto = nombreCompleto.replace(/\s+/g, ' ').trim();
-
                         document.getElementById('reg-nombre-completo').value = nombreCompleto;
 
-                        // Intentar obtener dirección de otros campos si existen
                         if (data.domicilio) {
                             const domicilio = data.domicilio;
                             let direccionCompleta = '';
@@ -1245,68 +933,47 @@
                             }
                         }
 
-                        statusEl.innerHTML = `
-                            <span class="success">✅ Datos cargados desde el padrón electoral</span>
-                        `;
+                        statusEl.innerHTML = `<span class="success">✅ Datos cargados desde el padrón electoral</span>`;
                         notify('✅ Datos del padrón cargados correctamente.');
 
                     } else if (!esFisica && data.nombre) {
-                        // ==========================================================
-                        // CASO 3: Persona jurídica - solo cargar nombre
-                        // ==========================================================
                         document.getElementById('reg-nombre-completo').value = data.nombre;
-                        statusEl.innerHTML = `
-                            <span class="warning">ℹ️ Cédula jurídica. Solo se cargó el nombre.</span>
-                        `;
+                        statusEl.innerHTML = `<span class="warning">ℹ️ Cédula jurídica. Solo se cargó el nombre.</span>`;
                         notify('ℹ️ Cédula jurídica detectada. Solo se cargó el nombre.');
                     } else {
-                        // ==========================================================
-                        // CASO 4: No se pudieron extraer datos
-                        // ==========================================================
-                        statusEl.innerHTML = `
-                            <span class="warning">⚠️ No se pudieron cargar todos los datos. Completa manualmente.</span>
-                        `;
+                        statusEl.innerHTML = `<span class="warning">⚠️ No se pudieron cargar todos los datos. Completa manualmente.</span>`;
                     }
 
                 } catch (error) {
                     console.error('❌ Error consultando padrón:', error);
-
                     consultaEnProceso = false;
 
                     if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
-                        statusEl.innerHTML = `
-                            <span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>
-                        `;
+                        statusEl.innerHTML =
+                            `<span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>`;
                         return;
                     }
 
                     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                        statusEl.innerHTML = `
-                            <span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>
-                        `;
+                        statusEl.innerHTML =
+                            `<span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>`;
                         return;
                     }
 
                     if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-                        statusEl.innerHTML = `
-                            <span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>
-                        `;
+                        statusEl.innerHTML =
+                            `<span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>`;
                         return;
                     }
 
-                    // Fallback para desarrollo
                     if (digitos === '101053316' || digitos === '123456789' || digitos === '305660220') {
                         document.getElementById('reg-nombre-completo').value = 'María José González Mora';
                         document.getElementById('reg-direccion').value = 'San José, Montes de Oca, Sabanilla';
                         ultimaCedulaConsultada = digitos;
-                        statusEl.innerHTML = `
-                            <span class="success">✅ Datos de prueba cargados (modo demostración)</span>
-                        `;
+                        statusEl.innerHTML = `<span class="success">✅ Datos de prueba cargados (modo demostración)</span>`;
                         notify('✅ Datos de prueba cargados correctamente.');
                     } else {
-                        statusEl.innerHTML = `
-                            <span class="error">❌ Error al consultar el padrón. Intenta nuevamente.</span>
-                        `;
+                        statusEl.innerHTML = `<span class="error">❌ Error al consultar el padrón. Intenta nuevamente.</span>`;
                     }
                 }
             }, 500);
@@ -1338,28 +1005,20 @@
             } else if (tipo === 'aspirante') {
                 camposAspirante.classList.add('visible');
                 document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
-                    .forEach(el => {
-                        el.required = false;
-                    });
+                    .forEach(el => { el.required = false; });
                 document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
-                    .forEach(el => {
-                        el.required = false;
-                    });
+                    .forEach(el => { el.required = false; });
             } else if (tipo === 'empleado') {
                 camposEmpleado.classList.add('visible');
                 document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
-                    .forEach(el => {
-                        el.required = true;
-                    });
+                    .forEach(el => { el.required = true; });
                 document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
-                    .forEach(el => {
-                        el.required = false;
-                    });
+                    .forEach(el => { el.required = false; });
             }
         }
 
         // ============================================================
-        // REGISTRO PRINCIPAL
+        // REGISTRO PRINCIPAL USANDO STORAGEMANAGER
         // ============================================================
         function handleRegistro() {
             const tipo = document.getElementById('reg-tipo-usuario').value;
@@ -1385,7 +1044,6 @@
             const anioIngreso = document.getElementById('reg-anio-ingreso')?.value || '';
 
             const errorBox = document.getElementById('registro-error');
-
             errorBox.className = 'login-error';
             errorBox.textContent = '';
 
@@ -1398,7 +1056,6 @@
                 return;
             }
 
-            // Formato de cédula (mínimo 9 dígitos)
             const cedulaLimpia = cedula.replace(/\D/g, '');
             if (cedulaLimpia.length < 9) {
                 errorBox.textContent = '❌ La cédula debe tener al menos 9 dígitos.';
@@ -1473,10 +1130,7 @@
                     rol = 'empleado';
                 }
 
-                datosAdicionales = {
-                    cargo: cargo,
-                    departamento: departamento
-                };
+                datosAdicionales = { cargo: cargo, departamento: departamento };
                 aprobado = false;
                 puedeSolicitar = false;
             }
@@ -1484,8 +1138,8 @@
             // ==========================================================
             // VERIFICAR SI EL CORREO YA ESTÁ REGISTRADO
             // ==========================================================
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            if (usuarios.some(u => u.email === email)) {
+            const usuarioExistente = StorageManager.usuarios.getByEmail(email);
+            if (usuarioExistente) {
                 errorBox.textContent = '❌ Este correo electrónico ya está registrado.';
                 errorBox.className = 'login-error visible';
                 return;
@@ -1517,10 +1171,15 @@
                 nuevoUsuario.departamento = departamento;
             }
 
-            usuarios.push(nuevoUsuario);
-            localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+            StorageManager.usuarios.save(nuevoUsuario);
 
-            registrarBitacora('Usuario registrado: ' + email + ' (Rol: ' + rol + ')', '—');
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: nombreCompleto,
+                rol: rol,
+                accion: 'Usuario registrado: ' + email + ' (Rol: ' + rol + ')',
+                expediente: '—'
+            });
 
             // ==========================================================
             // LIMPIAR CAMPOS
@@ -1540,7 +1199,6 @@
             document.getElementById('reg-cargo').value = '';
             document.getElementById('reg-departamento').value = '';
 
-            // Limpiar estado del padrón
             document.getElementById('padron-status').innerHTML =
                 `<span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>`;
             ultimaCedulaConsultada = '';
@@ -1565,8 +1223,10 @@
         // INICIALIZACIÓN
         // ============================================================
         function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
+            // StorageManager ya tiene datos por defecto
+            // Solo verificamos que existan usuarios de prueba
+            if (StorageManager.usuarios.getAll().length === 0) {
+                const usuarios = [
                     { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
                         nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
                         direccion: 'San José, Montes de Oca, Sabanilla',
@@ -1611,13 +1271,25 @@
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
                         aprobado: true, puedeSolicitar: false }
-                ]));
+                ];
+                usuarios.forEach(u => StorageManager.usuarios.save(u));
             }
-            if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
-                localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
-                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system',
-                        accion: 'Sistema iniciado', expediente: '—' }
-                ]));
+
+            // Verificar sesión activa
+            const session = StorageManager.session.get();
+            if (session) {
+                const dashMap = {
+                    estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
+                    trabajador_social: 'panel_trabajador_social.html',
+                    comite: 'panel_comite.html',
+                    admin: 'panel_admin.html',
+                    auditor: 'panel_auditor.html'
+                };
+                const target = dashMap[session.rol];
+                if (target && window.location.pathname.indexOf(target) === -1) {
+                    window.location.href = target;
+                }
             }
         }
 
@@ -1632,7 +1304,6 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            // Enter key para navegar entre campos
             const campos = ['reg-cedula', 'reg-nombre-completo', 'reg-direccion', 'reg-email', 'reg-telefono',
                 'reg-password', 'reg-confirmar'
             ];
@@ -1651,7 +1322,6 @@
                 }
             });
 
-            // Verificar conexión con la API externa al cargar la página
             async function verificarConexionAPI() {
                 try {
                     const response = await fetch(`${API_PADRON}/999999999`, {

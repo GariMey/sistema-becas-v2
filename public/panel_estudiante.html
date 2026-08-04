@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         /* ============================================================
            VARIABLES Y RESET
@@ -32,18 +33,13 @@
             --success: #1e7e4f;
             --warning: #b07d12;
             --info: #2471a3;
-            /* Colores para noticias */
             --noticia-urgente: #e74c3c;
             --noticia-importante: #f39c12;
             --noticia-informativa: #2e86c1;
             --noticia-general: #5d6d7e;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -58,20 +54,9 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
         /* ============================================================
            BOTONES
@@ -88,49 +73,33 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197, 160, 40, 0.55);
+            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197, 160, 40, 0.65);
+            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-outline {
             background: transparent;
             color: #fff;
-            border: 1.5px solid rgba(255, 255, 255, 0.55);
+            border: 1.5px solid rgba(255,255,255,0.55);
         }
-
         .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255,255,255,0.12);
             border-color: #fff;
         }
-
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
+        .btn-ghost:hover { border-color: var(--primary); }
         .btn-danger {
             background: #fdecea;
             color: var(--danger);
@@ -139,11 +108,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-danger:hover {
-            background: #f6c6c0;
-        }
-
+        .btn-danger:hover { background: #f6c6c0; }
         .btn-success {
             background: #e7f5ee;
             color: var(--success);
@@ -152,11 +117,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-success:hover { background: #b9e3cb; }
         .btn-warning {
             background: #fff3cd;
             color: var(--warning);
@@ -165,11 +126,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-warning:hover {
-            background: #ffeaa7;
-        }
-
+        .btn-warning:hover { background: #ffeaa7; }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.85rem;
@@ -177,14 +134,8 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-block { width: 100%; }
 
         /* ============================================================
            HEADER
@@ -194,9 +145,8 @@
             top: 0;
             z-index: 1000;
             background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -205,14 +155,13 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
             color: #fff;
+            cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -227,32 +176,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .session-pill {
             display: flex;
             align-items: center;
@@ -260,10 +204,9 @@
             color: #fff;
             font-size: 0.88rem;
         }
-
         .session-pill .role-badge {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
             color: var(--accent-light);
             padding: 4px 10px;
             border-radius: 999px;
@@ -272,7 +215,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -280,7 +222,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -314,32 +255,28 @@
             height: calc(100vh - 75px);
             overflow-y: auto;
         }
-
         .dash-sidebar .dash-user {
             padding: 0 8px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 14px;
         }
-
         .dash-sidebar .dash-user strong {
             display: block;
             font-size: 1.05rem;
         }
-
         .dash-sidebar .dash-user span {
             font-size: 0.78rem;
             color: var(--accent-light);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .dash-nav-item {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 11px 14px;
             border-radius: 8px;
-            color: rgba(255, 255, 255, 0.78);
+            color: rgba(255,255,255,0.78);
             font-size: 0.92rem;
             font-weight: 500;
             background: transparent;
@@ -347,44 +284,33 @@
             width: 100%;
             transition: all 0.2s ease;
         }
-
         .dash-nav-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.08);
             color: #fff;
         }
-
         .dash-nav-item.active {
             background: var(--accent);
             color: var(--primary-dark);
             font-weight: 700;
         }
-
         .dash-nav-item .icon {
             font-size: 1.2rem;
             width: 24px;
             text-align: center;
         }
-
-        /* ============================================================
-           BOTÓN SALIR (LOGOUT) - Estilo destacado
-           ============================================================ */
         .dash-nav-item.logout {
             margin-top: auto;
             color: #f6c6c0;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255,255,255,0.08);
             padding-top: 16px;
             margin-top: 8px;
             transition: all 0.3s ease;
         }
-
         .dash-nav-item.logout:hover {
-            background: rgba(192, 57, 43, 0.25);
+            background: rgba(192,57,43,0.25);
             color: #ff6b6b;
         }
-
-        .dash-nav-item.logout .icon {
-            font-size: 1.2rem;
-        }
+        .dash-nav-item.logout .icon { font-size: 1.2rem; }
 
         /* ============================================================
            MAIN CONTENT
@@ -394,12 +320,10 @@
             padding: 32px 36px;
             max-width: 1100px;
         }
-
         .dash-main h2 {
             margin-bottom: 4px;
             font-size: 1.6rem;
         }
-
         .dash-main .dash-sub {
             color: var(--muted);
             font-size: 0.95rem;
@@ -415,11 +339,7 @@
             gap: 24px;
             align-items: start;
         }
-
-        .dash-two-column .col-main {
-            min-width: 0;
-        }
-
+        .dash-two-column .col-main { min-width: 0; }
         .dash-two-column .col-sidebar {
             min-width: 0;
             position: sticky;
@@ -429,13 +349,8 @@
         /* ============================================================
            TABS
            ============================================================ */
-        .dash-tab {
-            display: none;
-        }
-
-        .dash-tab.active {
-            display: block;
-        }
+        .dash-tab { display: none; }
+        .dash-tab.active { display: block; }
 
         /* ============================================================
            CARDS
@@ -449,11 +364,7 @@
             margin-bottom: 24px;
             transition: box-shadow 0.2s ease;
         }
-
-        .card-box:hover {
-            box-shadow: var(--shadow);
-        }
-
+        .card-box:hover { box-shadow: var(--shadow); }
         .card-box h3 {
             margin-bottom: 14px;
             font-size: 1.1rem;
@@ -474,53 +385,35 @@
             gap: 12px;
             border-left: 4px solid;
         }
-
-        .alert-beca .icono {
-            font-size: 1.8rem;
-            flex-shrink: 0;
-        }
-
+        .alert-beca .icono { font-size: 1.8rem; flex-shrink: 0; }
         .alert-beca .contenido h4 {
             font-size: 1rem;
             margin-bottom: 4px;
         }
-
         .alert-beca .contenido p {
             font-size: 0.9rem;
             color: var(--muted);
         }
-
         .alert-beca.info {
             background: #e6effa;
             border-left-color: var(--info);
         }
-        .alert-beca.info h4 {
-            color: var(--info);
-        }
-
+        .alert-beca.info h4 { color: var(--info); }
         .alert-beca.success {
             background: #e7f5ee;
             border-left-color: var(--success);
         }
-        .alert-beca.success h4 {
-            color: var(--success);
-        }
-
+        .alert-beca.success h4 { color: var(--success); }
         .alert-beca.warning {
             background: #fff3cd;
             border-left-color: var(--warning);
         }
-        .alert-beca.warning h4 {
-            color: var(--warning);
-        }
-
+        .alert-beca.warning h4 { color: var(--warning); }
         .alert-beca.danger {
             background: #fdecea;
             border-left-color: var(--danger);
         }
-        .alert-beca.danger h4 {
-            color: var(--danger);
-        }
+        .alert-beca.danger h4 { color: var(--danger); }
 
         /* ============================================================
            NOTICIAS SIDEBAR
@@ -532,7 +425,6 @@
             padding: 20px;
             box-shadow: var(--shadow-sm);
         }
-
         .noticias-sidebar .noticias-header {
             display: flex;
             align-items: center;
@@ -541,13 +433,11 @@
             padding-bottom: 12px;
             border-bottom: 2px solid var(--accent);
         }
-
         .noticias-sidebar .noticias-header h3 {
             font-size: 1.05rem;
             margin: 0;
             color: var(--primary-dark);
         }
-
         .noticias-sidebar .noticias-header .badge-noticias {
             background: var(--accent);
             color: var(--primary-dark);
@@ -557,24 +447,18 @@
             border-radius: 999px;
             margin-left: auto;
         }
-
         .noticias-sidebar .noticia-item {
             padding: 14px 0;
             border-bottom: 1px solid var(--border);
             transition: background 0.2s ease;
         }
-
-        .noticias-sidebar .noticia-item:last-child {
-            border-bottom: none;
-        }
-
+        .noticias-sidebar .noticia-item:last-child { border-bottom: none; }
         .noticias-sidebar .noticia-item:hover {
             background: #f8f9fc;
             margin: 0 -8px;
             padding: 14px 8px;
             border-radius: 8px;
         }
-
         .noticias-sidebar .noticia-item .noticia-tag {
             font-size: 0.6rem;
             font-weight: 700;
@@ -586,27 +470,16 @@
             margin-bottom: 4px;
             color: #fff;
         }
-
-        .noticias-sidebar .noticia-item .noticia-tag.urgente {
-            background: var(--noticia-urgente);
-        }
-        .noticias-sidebar .noticia-item .noticia-tag.importante {
-            background: var(--noticia-importante);
-        }
-        .noticias-sidebar .noticia-item .noticia-tag.informativa {
-            background: var(--noticia-informativa);
-        }
-        .noticias-sidebar .noticia-item .noticia-tag.general {
-            background: var(--noticia-general);
-        }
-
+        .noticias-sidebar .noticia-item .noticia-tag.urgente { background: var(--noticia-urgente); }
+        .noticias-sidebar .noticia-item .noticia-tag.importante { background: var(--noticia-importante); }
+        .noticias-sidebar .noticia-item .noticia-tag.informativa { background: var(--noticia-informativa); }
+        .noticias-sidebar .noticia-item .noticia-tag.general { background: var(--noticia-general); }
         .noticias-sidebar .noticia-item .noticia-titulo {
             font-size: 0.92rem;
             font-weight: 600;
             color: var(--text);
             margin: 2px 0;
         }
-
         .noticias-sidebar .noticia-item .noticia-contenido {
             font-size: 0.82rem;
             color: var(--muted);
@@ -616,7 +489,6 @@
             overflow: hidden;
             margin-top: 2px;
         }
-
         .noticias-sidebar .noticia-item .noticia-fecha {
             font-size: 0.7rem;
             color: var(--muted);
@@ -625,14 +497,12 @@
             align-items: center;
             gap: 4px;
         }
-
         .noticias-sidebar .sin-noticias {
             text-align: center;
             padding: 30px 10px;
             color: var(--muted);
             font-size: 0.9rem;
         }
-
         .noticias-sidebar .sin-noticias .icon-grande {
             font-size: 2.5rem;
             display: block;
@@ -647,7 +517,6 @@
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-
         .data-table th,
         .data-table td {
             padding: 12px 14px;
@@ -656,7 +525,6 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         .data-table th {
             color: var(--muted);
             font-size: 0.78rem;
@@ -664,10 +532,7 @@
             letter-spacing: 0.04em;
             font-weight: 700;
         }
-
-        .data-table tbody tr:hover {
-            background: #f9fafc;
-        }
+        .data-table tbody tr:hover { background: #f9fafc; }
 
         /* ============================================================
            BADGES
@@ -681,27 +546,11 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
-
-        .badge-info {
-            background: #e6effa;
-            color: var(--info);
-        }
-        .badge-warning {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-        .badge-success {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-        .badge-danger {
-            background: #fdecea;
-            color: var(--danger);
-        }
-        .badge-neutral {
-            background: #eceff3;
-            color: var(--muted);
-        }
+        .badge-info { background: #e6effa; color: var(--info); }
+        .badge-warning { background: #fff3cd; color: var(--warning); }
+        .badge-success { background: #e7f5ee; color: var(--success); }
+        .badge-danger { background: #fdecea; color: var(--danger); }
+        .badge-neutral { background: #eceff3; color: var(--muted); }
 
         /* ============================================================
            PERFIL
@@ -711,7 +560,6 @@
             grid-template-columns: 1fr 1fr;
             gap: 16px 32px;
         }
-
         .perfil-item {
             display: flex;
             flex-direction: column;
@@ -719,7 +567,6 @@
             padding: 8px 0;
             border-bottom: 1px solid var(--border);
         }
-
         .perfil-item .label {
             font-size: 0.72rem;
             font-weight: 600;
@@ -727,19 +574,16 @@
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
-
         .perfil-item .value {
             font-size: 0.95rem;
             font-weight: 500;
             color: var(--text);
         }
-
         .perfil-item .value.sin-datos {
             color: var(--muted);
             font-style: italic;
             font-weight: 400;
         }
-
         .perfil-seccion-titulo {
             font-size: 0.85rem;
             font-weight: 700;
@@ -760,29 +604,22 @@
             margin-bottom: 16px;
             background: var(--paper);
         }
-
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 18px;
         }
-
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
+        .form-field.full { grid-column: 1/-1; }
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -796,13 +633,12 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
         }
 
         /* ============================================================
@@ -811,34 +647,26 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(16, 34, 64, 0.55);
+            background: rgba(16,34,64,0.55);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 20px;
         }
-
-        .modal-overlay.hidden {
-            display: none;
-        }
-
+        .modal-overlay.hidden { display: none; }
         .modal-box {
             background: var(--paper);
             border-radius: 16px;
             max-width: 460px;
             width: 100%;
             padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
         }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
+        .modal-box.wide { max-width: 680px; }
         .modal-close {
             position: absolute;
             top: 14px;
@@ -849,21 +677,13 @@
             line-height: 1;
             padding: 4px;
         }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
         .modal-box .modal-sub {
             color: var(--muted);
             font-size: 0.88rem;
             margin-bottom: 20px;
         }
-
         .login-error {
             background: #fdecea;
             color: var(--danger);
@@ -873,7 +693,6 @@
             font-size: 0.85rem;
             margin-bottom: 14px;
         }
-
         .success-icon {
             width: 64px;
             height: 64px;
@@ -886,7 +705,6 @@
             font-size: 2rem;
             margin: 0 auto 16px;
         }
-
         .modal-credentials {
             background: #eef2f8;
             border-radius: 10px;
@@ -895,10 +713,7 @@
             font-size: 0.8rem;
             color: var(--muted);
         }
-
-        .modal-credentials strong {
-            color: var(--primary);
-        }
+        .modal-credentials strong { color: var(--primary); }
 
         /* ============================================================
            EXPEDIENTE
@@ -906,30 +721,25 @@
         .expediente-section {
             margin-bottom: 16px;
         }
-
         .expediente-section h4 {
             margin-bottom: 10px;
             font-size: 1rem;
             color: var(--primary);
         }
-
         .expediente-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px 18px;
         }
-
         .expediente-grid p {
             font-size: 0.9rem;
             margin: 0;
         }
-
         .doc-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .doc-item {
             display: flex;
             align-items: center;
@@ -941,23 +751,17 @@
             padding: 10px 14px;
             flex-wrap: wrap;
         }
-
         .doc-item-info {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 0.88rem;
         }
-
-        .doc-item-icon {
-            font-size: 1.3rem;
-        }
-
+        .doc-item-icon { font-size: 1.3rem; }
         .doc-item-meta {
             color: var(--muted);
             font-size: 0.78rem;
         }
-
         .doc-item-actions {
             display: flex;
             gap: 8px;
@@ -974,7 +778,6 @@
             margin-bottom: 16px;
             border: 1px solid var(--border);
         }
-
         .apelacion-selector .rechazo-info {
             background: #fdecea;
             padding: 10px 14px;
@@ -997,11 +800,10 @@
             gap: 10px;
             max-width: 380px;
         }
-
         .toast-box {
             padding: 14px 18px;
             border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26, 54, 93, 0.28);
+            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
             font-family: 'Inter', sans-serif;
             font-size: 0.92rem;
             display: flex;
@@ -1010,23 +812,11 @@
             animation: toastIn .25s ease;
             white-space: pre-line;
         }
-
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(24px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
         .toast-close {
             background: transparent;
             border: none;
@@ -1037,10 +827,7 @@
             line-height: 1;
             padding: 0 0 0 6px;
         }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
+        .toast-close:hover { opacity: 1; }
 
         /* ============================================================
            DB STATUS
@@ -1058,13 +845,11 @@
             color: #1a365d;
             border: 1px solid #d0d7e0;
         }
-
         #db-status.online {
             background: #e7f5ee;
             color: #1e7e4f;
             border-color: #b9e3cb;
         }
-
         #db-status.offline {
             background: #fdecea;
             color: #c0392b;
@@ -1075,25 +860,12 @@
            RESPONSIVE
            ============================================================ */
         @media (max-width: 980px) {
-            .dash-two-column {
-                grid-template-columns: 1fr;
-            }
-
-            .dash-two-column .col-sidebar {
-                position: relative;
-                top: 0;
-            }
-
-            .perfil-grid {
-                grid-template-columns: 1fr;
-            }
+            .dash-two-column { grid-template-columns: 1fr; }
+            .dash-two-column .col-sidebar { position: relative; top: 0; }
+            .perfil-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -1105,28 +877,17 @@
                 padding: 16px 24px 24px;
                 gap: 10px;
                 display: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
+            nav.main-nav.open { display: flex; }
             nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
+            nav.main-nav .session-pill { width: 100%; }
             nav.main-nav .session-pill {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
             }
-
-            .dash-shell {
-                flex-direction: column;
-            }
-
+            .dash-shell { flex-direction: column; }
             .dash-sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -1137,13 +898,11 @@
                 height: auto;
                 gap: 4px;
             }
-
             .dash-sidebar .dash-user {
                 width: 100%;
                 border-bottom: none;
                 margin-bottom: 6px;
             }
-
             .dash-nav-item {
                 width: auto;
                 flex: 1;
@@ -1151,42 +910,22 @@
                 font-size: 0.8rem;
                 padding: 8px 10px;
             }
-
-            .dash-nav-item .icon {
-                font-size: 1rem;
-            }
-
+            .dash-nav-item .icon { font-size: 1rem; }
             .dash-nav-item.logout {
                 margin-top: 0;
                 border-top: none;
                 padding-top: 8px;
             }
-
-            .dash-main {
-                padding: 20px 16px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .dash-main { padding: 20px 16px; }
+            .form-grid { grid-template-columns: 1fr; }
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
             }
-
-            .expediente-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .perfil-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .noticias-sidebar {
-                padding: 16px;
-            }
+            .expediente-grid { grid-template-columns: 1fr; }
+            .perfil-grid { grid-template-columns: 1fr; }
+            .noticias-sidebar { padding: 16px; }
         }
     </style>
 </head>
@@ -1224,22 +963,14 @@
                     <strong id="est-nombre">—</strong>
                     <span id="est-rol">Estudiante</span>
                 </div>
-                <button class="dash-nav-item active" onclick="showDashTab('est','est-resumen',this)">Mis solicitudes
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-subsanar',this)">Subsanar documentos
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-resultados',this)">Consultar resultados
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-justificar',this)">Justificar pérdida cursos
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-apelar',this)">Apelar
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-aceptar',this)">Aceptar Beneficio
-                </button>
-                <button class="dash-nav-item" onclick="showDashTab('est','est-perfil',this)">Ver mi información
-                </button>
-                <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir
-                </button>
+                <button class="dash-nav-item active" onclick="showDashTab('est','est-resumen',this)">Mis solicitudes</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-subsanar',this)">Subsanar documentos</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-resultados',this)">Consultar resultados</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-justificar',this)">Justificar pérdida cursos</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-apelar',this)">Apelar</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-aceptar',this)">Aceptar Beneficio</button>
+                <button class="dash-nav-item" onclick="showDashTab('est','est-perfil',this)">Ver mi información</button>
+                <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
             </aside>
 
             <!-- Main Content -->
@@ -1253,11 +984,7 @@
                 <div class="dash-tab active" id="est-resumen">
                     <div class="dash-two-column">
                         <div class="col-main">
-                            <!-- ==========================================================
-                                 ALERTA DE VALIDACIÓN - Solo una beca activa/en proceso
-                                 ========================================================== -->
                             <div id="alerta-beca-unica" style="display:none;"></div>
-
                             <div class="card-box">
                                 <h3>📋 Mis solicitudes</h3>
                                 <table class="data-table">
@@ -1498,19 +1225,6 @@
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            justificaciones: 'becas_justificaciones',
-            suspensiones: 'becas_suspensiones',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-            apelaciones: 'becas_apelaciones',
-        };
-
-        const API_BASE = window.location.origin + '/api';
 
         // ============================================================
         // ESTADOS FINALES - Una vez alcanzados, el estudiante puede solicitar otra beca
@@ -1687,16 +1401,13 @@
 
         function getTipoNoticia(titulo, contenido) {
             const texto = (titulo + ' ' + contenido).toLowerCase();
-            if (texto.includes('urgente') || texto.includes('importante') || texto.includes('cierre') || texto.includes(
-                    'plazo') || texto.includes('fecha límite')) {
+            if (texto.includes('urgente') || texto.includes('importante') || texto.includes('cierre') || texto.includes('plazo') || texto.includes('fecha límite')) {
                 return 'urgente';
             }
-            if (texto.includes('nueva') || texto.includes('convocatoria') || texto.includes('abierta') || texto.includes(
-                    'disponible')) {
+            if (texto.includes('nueva') || texto.includes('convocatoria') || texto.includes('abierta') || texto.includes('disponible')) {
                 return 'importante';
             }
-            if (texto.includes('información') || texto.includes('aviso') || texto.includes('recordatorio') || texto
-                .includes('actualización')) {
+            if (texto.includes('información') || texto.includes('aviso') || texto.includes('recordatorio') || texto.includes('actualización')) {
                 return 'informativa';
             }
             return 'general';
@@ -1741,7 +1452,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1750,8 +1460,8 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
@@ -1775,39 +1485,18 @@
             });
         }
 
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
-        }
-
-        function simularNotificacion(titulo, mensaje, expediente) {
-            registrarBitacora('Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50), expediente);
-            const notifModal = document.getElementById('modal-notificacion');
-            if (notifModal) {
-                document.getElementById('notif-titulo').textContent = titulo;
-                document.getElementById('notif-mensaje').innerHTML = mensaje;
-                openModal('modal-notificacion');
-            }
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         // ============================================================
         // VALIDACIÓN: SOLO UNA BECA ACTIVA/EN PROCESO
         // ============================================================
         function verificarBecaUnica(misSolicitudes) {
-            // Filtrar solicitudes activas o en proceso
             const activas = misSolicitudes.filter(s => ESTADOS_ACTIVOS.includes(s.estado));
-
-            // Las solicitudes en estados finales NO bloquean nuevas solicitudes
             const finalizadas = misSolicitudes.filter(s => ESTADOS_FINALES.includes(s.estado));
 
             return {
@@ -1823,13 +1512,9 @@
             if (!container) return;
 
             const validacion = verificarBecaUnica(misSolicitudes);
-
-            // Verificar si el usuario tiene permiso para solicitar
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuarioCompleto = usuarios.find(u => u.email === session.email);
+            const usuarioCompleto = StorageManager.usuarios.getByEmail(session.email);
             const puedeSolicitarGlobal = usuarioCompleto && usuarioCompleto.puedeSolicitar !== false;
 
-            // Si no tiene permiso global para solicitar
             if (!puedeSolicitarGlobal) {
                 container.style.display = 'block';
                 container.innerHTML = `
@@ -1844,7 +1529,6 @@
                 return;
             }
 
-            // Si tiene una beca activa/en proceso
             if (validacion.tieneActiva) {
                 const activa = validacion.activas[0];
                 const info = getEstadoInfo(activa.estado);
@@ -1868,14 +1552,13 @@
                 return;
             }
 
-            // Si no tiene becas activas, mostrar mensaje de éxito
             container.style.display = 'block';
             container.innerHTML = `
                 <div class="alert-beca success">
                     <div class="icono">✅</div>
                     <div class="contenido">
                         <h4>Puedes solicitar una beca</h4>
-                        <p>No tienes solicitudes activas o en proceso. ${validacion.finalizadas.length > 0 ? 'Has finalizado ${validacion.finalizadas.length} solicitud(es) anteriormente.' : ''}</p>
+                        <p>No tienes solicitudes activas o en proceso. ${validacion.finalizadas.length > 0 ? 'Has finalizado ' + validacion.finalizadas.length + ' solicitud(es) anteriormente.' : ''}</p>
                         <div style="margin-top:8px;">
                             <button class="btn btn-primary" onclick="irASolicitar()">📝 Solicitar nueva beca</button>
                         </div>
@@ -1885,11 +1568,7 @@
         }
 
         function irASolicitar() {
-            // Verificar si hay convocatorias activas
-            const convocatorias = JSON.parse(localStorage.getItem('becas_convocatorias') || '[]');
-            const activas = convocatorias.filter(c =>
-                c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
-            );
+            const activas = StorageManager.convocatorias.getActivas();
 
             if (activas.length === 0) {
                 notify('⚠️ No hay convocatorias activas en este momento. No se pueden realizar solicitudes.');
@@ -1919,7 +1598,7 @@
         }
 
         function goToDashboard() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 const dashMap = {
                     estudiante: 'view-dash-estudiante',
@@ -1934,18 +1613,24 @@
         }
 
         function cerrarSesion() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
-                registrarBitacora('Cierre de sesión', '—', session);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session.nombre,
+                    rol: session.rol,
+                    accion: 'Cierre de sesión',
+                    expediente: '—'
+                });
             }
-            localStorage.removeItem(STORAGE_KEYS.session);
+            StorageManager.session.clear();
             notify('👋 Sesión cerrada correctamente.');
             window.location.href = 'index.html';
         }
 
         function renderHeaderNav() {
             const nav = document.getElementById('mainNav');
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 nav.innerHTML =
                     '<a href="#" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
@@ -1975,8 +1660,7 @@
                 return;
             }
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuario = usuarios.find(u => u.email === email);
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
             if (!usuario) {
                 errorBox.textContent = '❌ Usuario no encontrado';
@@ -1991,15 +1675,24 @@
             }
 
             const nuevaSesion = {
-                email,
+                email: usuario.email,
                 nombre: usuario.nombre,
                 rol: usuario.rol,
                 datosAcademicos: usuario.datosAcademicos || {}
             };
-            localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
-            registrarBitacora('Inicio de sesión', '—', nuevaSesion);
+            StorageManager.session.set(nuevaSesion);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: usuario.nombre,
+                rol: usuario.rol,
+                accion: 'Inicio de sesión',
+                expediente: '—'
+            });
+
             closeModal('modal-login');
             renderHeaderNav();
+            StorageManager.emit('session_actualizada', nuevaSesion);
 
             const dashMap = {
                 estudiante: 'view-dash-estudiante',
@@ -2017,7 +1710,7 @@
         // DASHBOARD ESTUDIANTE / ASPIRANTE
         // ============================================================
         function renderDashboards() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (!session) return;
             if (session.rol === 'estudiante' || session.rol === 'aspirante') {
                 renderEstudianteDashboard(session);
@@ -2028,15 +1721,10 @@
             document.getElementById('est-nombre').textContent = session.nombre;
             document.getElementById('est-rol').textContent = rolLabel(session.rol);
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const misSolicitudes = solicitudes.filter(s => s.estudianteEmail === session.email);
+            const misSolicitudes = StorageManager.solicitudes.getByEstudiante(session.email);
 
-            // ==========================================================
-            // ALERTA DE VALIDACIÓN - Solo una beca activa/en proceso
-            // ==========================================================
             renderAlertaBecaUnica(misSolicitudes, session);
 
-            // Tabla de solicitudes
             document.getElementById('est-tabla-solicitudes').innerHTML = misSolicitudes.length === 0 ?
                 '<tr><td colspan="5" style="text-align:center;">Aún no has enviado solicitudes.</td></tr>' :
                 misSolicitudes.map(s => {
@@ -2046,8 +1734,7 @@
                         '<td>' + s.fecha + '</td>' +
                         '<td>' + s.tipoBeca + '</td>' +
                         '<td><span class="badge ' + info.color + '">' + info.label + '</span></td>' +
-                        '<td><button class="btn btn-small" onclick="verExpedienteEstudiante(\'' + s
-                        .expediente + '\')">📂 Ver expediente</button></td>' +
+                        '<td><button class="btn btn-small" onclick="verExpedienteEstudiante(\'' + s.expediente + '\')">📂 Ver expediente</button></td>' +
                         '</tr>';
                 }).join('');
 
@@ -2058,12 +1745,10 @@
             if (aprobadaSinAceptar) {
                 contenedorCarta.innerHTML =
                     '<h3>📄 Carta Compromiso - Expediente ' + aprobadaSinAceptar.expediente + '</h3>' +
-                    '<p>Porcentaje otorgado: <strong>' + (aprobadaSinAceptar.porcentajeCobertura || '50%') +
-                    '</strong></p>' +
+                    '<p>Porcentaje otorgado: <strong>' + (aprobadaSinAceptar.porcentajeCobertura || '50%') + '</strong></p>' +
                     '<p>Rubros cubiertos: Matrícula, Aranceles.</p>' +
                     '<p>Al aceptar, te comprometes a mantener un promedio mínimo de 80 y cumplir con el reglamento de becas.</p>' +
-                    '<button class="btn btn-success" onclick="aceptarBeneficio(\'' + aprobadaSinAceptar.expediente +
-                    '\')">Aceptar condiciones y activar beneficio</button>';
+                    '<button class="btn btn-success" onclick="aceptarBeneficio(\'' + aprobadaSinAceptar.expediente + '\')">Aceptar condiciones y activar beneficio</button>';
             } else {
                 contenedorCarta.innerHTML = '<p>No hay beneficios pendientes de aceptación.</p>';
             }
@@ -2079,7 +1764,7 @@
         // NOTICIAS SIDEBAR
         // ============================================================
         function renderNoticiasSidebar() {
-            const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
+            const noticias = StorageManager.noticias.getActivas();
             const container = document.getElementById('noticias-lista');
             const contador = document.getElementById('noticias-contador');
 
@@ -2121,8 +1806,7 @@
         // PERFIL
         // ============================================================
         function renderPerfilEstudiante(session) {
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuarioCompleto = usuarios.find(u => u.email === session.email);
+            const usuarioCompleto = StorageManager.usuarios.getByEmail(session.email);
 
             if (!usuarioCompleto) {
                 document.getElementById('perfil-contenido').innerHTML =
@@ -2261,8 +1945,7 @@
                 );
 
                 return '<div class="resultado-card">' +
-                    '<h4>Expediente ' + s.expediente + ' <span class="badge ' + badgeClassEstado(s.estado) + '">' + getEstadoInfo(s
-                        .estado).label + '</span></h4>' +
+                    '<h4>Expediente ' + s.expediente + ' <span class="badge ' + badgeClassEstado(s.estado) + '">' + getEstadoInfo(s.estado).label + '</span></h4>' +
                     '<p style="color:var(--muted);font-size:0.88rem;margin-bottom:10px;">Los siguientes documentos requieren ser corregidos y vueltos a cargar:</p>' +
                     '<div class="doc-list">' +
                     (pendientes.length === 0 ?
@@ -2272,20 +1955,14 @@
                             '<div class="doc-item-info">' +
                             '<span class="doc-item-icon">⚠️</span>' +
                             '<div>' +
-                            '<div><strong>' + (d.label || key) + '</strong> · <span class="badge ' + (d
-                                .estado === 'Rechazado' ? 'badge-danger' : 'badge-warning') + '">' + d
-                                .estado + '</span></div>' +
-                            '<div class="doc-item-meta">Archivo actual: ' + (d.nombre || 'Sin archivo') +
-                            '</div>' +
-                            (d.observacion ? '<div class="doc-item-meta">📝 Motivo: ' + d.observacion +
-                                '</div>' : '') +
+                            '<div><strong>' + (d.label || key) + '</strong> · <span class="badge ' + (d.estado === 'Rechazado' ? 'badge-danger' : 'badge-warning') + '">' + d.estado + '</span></div>' +
+                            '<div class="doc-item-meta">Archivo actual: ' + (d.nombre || 'Sin archivo') + '</div>' +
+                            (d.observacion ? '<div class="doc-item-meta">📝 Motivo: ' + d.observacion + '</div>' : '') +
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
-                            '<input type="file" id="resub-' + s.expediente + '-' + key +
-                            '" accept=".pdf,.jpg,.jpeg,.png" style="font-size:0.78rem;">' +
-                            '<button class="btn btn-small" onclick="resubirDocumento(\'' + s.expediente +
-                            '\',\'' + key + '\')">Subir corrección</button>' +
+                            '<input type="file" id="resub-' + s.expediente + '-' + key + '" accept=".pdf,.jpg,.jpeg,.png" style="font-size:0.78rem;">' +
+                            '<button class="btn btn-small" onclick="resubirDocumento(\'' + s.expediente + '\',\'' + key + '\')">Subir corrección</button>' +
                             '</div>' +
                             '</div>'
                         ).join('')
@@ -2305,28 +1982,32 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
-                const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-                const sol = solicitudes.find(s => s.expediente === expediente);
+                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
 
-                if (sol && sol.documentos && sol.documentos[docKey]) {
-                    sol.documentos[docKey].nombre = file.name;
-                    sol.documentos[docKey].tipo = file.type;
-                    sol.documentos[docKey].tamano = file.size;
-                    sol.documentos[docKey].datos = base64;
-                    sol.documentos[docKey].estado = 'Pendiente';
-                    sol.documentos[docKey].observacion = '';
+                if (solicitud && solicitud.documentos && solicitud.documentos[docKey]) {
+                    solicitud.documentos[docKey].nombre = file.name;
+                    solicitud.documentos[docKey].tipo = file.type;
+                    solicitud.documentos[docKey].tamano = file.size;
+                    solicitud.documentos[docKey].datos = base64;
+                    solicitud.documentos[docKey].estado = 'Pendiente';
+                    solicitud.documentos[docKey].observacion = '';
 
-                    const todosPendientes = Object.values(sol.documentos).every(d => d.estado === 'Pendiente' || d
-                        .estado === 'Aprobado');
-                    if (todosPendientes && sol.estado === 'Pendiente subsanación') {
-                        sol.estado = 'En revisión TS';
+                    const todosPendientes = Object.values(solicitud.documentos).every(d => d.estado === 'Pendiente' || d.estado === 'Aprobado');
+                    if (todosPendientes && solicitud.estado === 'Pendiente subsanación') {
+                        solicitud.estado = 'En revisión TS';
                     }
 
-                    localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
-                    registrarBitacora('Documento "' + (sol.documentos[docKey].label || docKey) +
-                        '" corregido y reenviado', expediente);
+                    StorageManager.solicitudes.save(solicitud);
+                    const session = StorageManager.session.get();
+                    StorageManager.bitacora.save({
+                        fecha: new Date().toLocaleString(),
+                        usuario: session ? session.nombre : 'Estudiante',
+                        rol: session ? session.rol : 'estudiante',
+                        accion: 'Documento "' + (solicitud.documentos[docKey].label || docKey) + '" corregido y reenviado',
+                        expediente: expediente
+                    });
                     notify('✅ Documento actualizado correctamente.');
-                    renderEstudianteDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+                    renderEstudianteDashboard(session);
                 }
             };
             reader.readAsDataURL(file);
@@ -2344,15 +2025,11 @@
                 return;
             }
 
-            // Verificar si hay una beca activa para mostrar mensaje
-            const activas = misSolicitudes.filter(s => ESTADOS_ACTIVOS.includes(s.estado));
-
             cont.innerHTML = misSolicitudes.map(s => {
                 const info = getEstadoInfo(s.estado);
                 let detalle = '';
                 let acciones = '';
 
-                // Mostrar información específica según el estado
                 if (s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada') {
                     detalle = `
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;">
@@ -2363,12 +2040,10 @@
                         <button class="btn btn-small" onclick="descargarResolucionPDF('${s.expediente}')">📄 Descargar resolución (PDF)</button>
                     `;
                     if (s.estado === 'Aprobada' && !s.aceptado) {
-                        acciones =
-                            `<button class="btn btn-success" onclick="irAAceptarBeneficio()">✅ Aceptar beneficio</button>`;
+                        acciones = `<button class="btn btn-success" onclick="irAAceptarBeneficio()">✅ Aceptar beneficio</button>`;
                     }
                     if (s.estado === 'Beneficio Activo') {
-                        acciones =
-                            `<span class="badge badge-success" style="font-size:0.85rem;">🌟 Beneficio activo</span>`;
+                        acciones = `<span class="badge badge-success" style="font-size:0.85rem;">🌟 Beneficio activo</span>`;
                     }
                 } else if (s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' || s.estado === 'No elegible') {
                     detalle = `
@@ -2381,8 +2056,7 @@
                         <button class="btn btn-small" onclick="descargarResolucionPDF('${s.expediente}')">📄 Descargar resolución (PDF)</button>
                     `;
                     if (s.estado === 'Rechazada') {
-                        acciones =
-                            `<button class="btn btn-warning" onclick="irAApelar()">📝 Apelar decisión</button>`;
+                        acciones = `<button class="btn btn-warning" onclick="irAApelar()">📝 Apelar decisión</button>`;
                     }
                 } else if (s.estado === 'Pendiente subsanación') {
                     detalle = `
@@ -2456,7 +2130,6 @@
                     `;
                 }
 
-                // Barra de progreso
                 const progresoHtml = `
                     <div style="margin:12px 0;">
                         <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);">
@@ -2469,14 +2142,12 @@
                     </div>
                 `;
 
-                // Siguiente paso
                 const siguienteHtml = info.siguiente && info.siguiente !== '—' ? `
                     <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">
                         ⏭️ Próximo paso: <strong>${info.siguiente}</strong>
                     </div>
                 ` : '';
 
-                // Indicador de estado final
                 const esFinal = ESTADOS_FINALES.includes(s.estado);
                 const esActiva = ESTADOS_ACTIVOS.includes(s.estado);
 
@@ -2520,11 +2191,17 @@
         }
 
         function descargarResolucionPDF(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const s = solicitudes.find(x => x.expediente === expediente);
+            const s = StorageManager.solicitudes.getByExpediente(expediente);
             if (!s) return;
 
-            registrarBitacora('Descarga de resolución (PDF)', expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Estudiante',
+                rol: session ? session.rol : 'estudiante',
+                accion: 'Descarga de resolución (PDF)',
+                expediente: expediente
+            });
 
             const contenido = 'ACTA DE RESOLUCIÓN%0A%0A' +
                 'Expediente: ' + s.expediente + '%0A' +
@@ -2554,7 +2231,7 @@
         // JUSTIFICACIONES
         // ============================================================
         function renderJustificacionesEstudiante(email) {
-            const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
+            const justificaciones = StorageManager.justificaciones.getAll();
             const misJustif = justificaciones.filter(j => j.email === email);
 
             const listaDiv = document.getElementById('lista-justificaciones');
@@ -2565,22 +2242,18 @@
                         '<div class="resultado-card" style="margin-bottom:10px;">' +
                         '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
                         '<h4>' + j.curso + ' (' + j.codigo + ')</h4>' +
-                        '<span class="badge ' + (j.estado === 'Aprobada' ? 'badge-success' : (j.estado === 'Rechazada' ?
-                            'badge-danger' : 'badge-warning')) + '">' + j.estado + '</span>' +
+                        '<span class="badge ' + (j.estado === 'Aprobada' ? 'badge-success' : (j.estado === 'Rechazada' ? 'badge-danger' : 'badge-warning')) + '">' + j.estado + '</span>' +
                         '</div>' +
-                        '<p style="font-size:0.85rem;color:var(--muted);">Período: ' + j.periodo + ' | Nota: ' + (j
-                            .nota || 'N/A') + '</p>' +
+                        '<p style="font-size:0.85rem;color:var(--muted);">Período: ' + j.periodo + ' | Nota: ' + (j.nota || 'N/A') + '</p>' +
                         '<p style="font-size:0.88rem;"><strong>Motivo:</strong> ' + j.motivo + '</p>' +
-                        (j.observacion ? '<p style="font-size:0.85rem;color:var(--muted);"><strong>Observación:</strong> ' +
-                            j.observacion + '</p>' : '') +
+                        (j.observacion ? '<p style="font-size:0.85rem;color:var(--muted);"><strong>Observación:</strong> ' + j.observacion + '</p>' : '') +
                         '</div>'
                     ).join('');
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const tieneBeneficioActivo = solicitudes.some(s =>
-                s.estudianteEmail === email && (s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s
-                    .estado === 'Restaurada')
+                s.estudianteEmail === email && (s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada')
             );
 
             const formDiv = document.getElementById('justificacion-formulario');
@@ -2589,18 +2262,16 @@
             if (formDiv) {
                 if (tieneBeneficioActivo) {
                     formDiv.style.display = 'block';
-                    if (infoDiv) infoDiv.innerHTML =
-                        '<div class="alert-box success">✅ Tienes un beneficio activo. Puedes justificar pérdida de cursos.</div>';
+                    if (infoDiv) infoDiv.innerHTML = '<div class="alert-box success">✅ Tienes un beneficio activo. Puedes justificar pérdida de cursos.</div>';
                 } else {
                     formDiv.style.display = 'none';
-                    if (infoDiv) infoDiv.innerHTML =
-                        '<div class="alert-box warning">⚠️ Solo puedes justificar pérdida de cursos si tienes una beca aprobada o activa.</div>';
+                    if (infoDiv) infoDiv.innerHTML = '<div class="alert-box warning">⚠️ Solo puedes justificar pérdida de cursos si tienes una beca aprobada o activa.</div>';
                 }
             }
         }
 
         function enviarJustificacion() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+            const session = StorageManager.session.get();
             if (!session) {
                 notify('⚠️ Debes iniciar sesión.');
                 return;
@@ -2621,71 +2292,50 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const archivoBase64 = e.target.result;
-
-                const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
-                const nuevaId = justificaciones.length ? Math.max(...justificaciones.map(j => j.id)) + 1 : 1;
-
-                justificaciones.push({
-                    id: nuevaId,
-                    email: session.email,
-                    nombreEstudiante: session.nombre,
-                    curso: curso,
-                    codigo: codigo,
-                    periodo: periodo,
-                    nota: nota || null,
-                    motivo: motivo,
-                    estado: 'Pendiente',
-                    observacion: '',
-                    fecha: new Date().toLocaleString(),
-                    archivo: archivoBase64
-                });
-
-                localStorage.setItem(STORAGE_KEYS.justificaciones, JSON.stringify(justificaciones));
-                registrarBitacora('Justificación enviada: ' + curso + ' (' + codigo + ')', '—', session);
-                notify('✅ Justificación enviada correctamente. Un trabajador social la revisará.');
-
-                document.getElementById('justif-curso').value = '';
-                document.getElementById('justif-codigo').value = '';
-                document.getElementById('justif-nota').value = '';
-                document.getElementById('justif-motivo').value = '';
-                document.getElementById('justif-archivo').value = '';
-
-                renderEstudianteDashboard(session);
+                guardarJustificacion(session, curso, codigo, periodo, nota, motivo, archivoBase64);
             };
 
             if (archivoInput && archivoInput.files && archivoInput.files[0]) {
                 reader.readAsDataURL(archivoInput.files[0]);
             } else {
-                const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
-                const nuevaId = justificaciones.length ? Math.max(...justificaciones.map(j => j.id)) + 1 : 1;
-
-                justificaciones.push({
-                    id: nuevaId,
-                    email: session.email,
-                    nombreEstudiante: session.nombre,
-                    curso: curso,
-                    codigo: codigo,
-                    periodo: periodo,
-                    nota: nota || null,
-                    motivo: motivo,
-                    estado: 'Pendiente',
-                    observacion: '',
-                    fecha: new Date().toLocaleString(),
-                    archivo: null
-                });
-
-                localStorage.setItem(STORAGE_KEYS.justificaciones, JSON.stringify(justificaciones));
-                registrarBitacora('Justificación enviada: ' + curso + ' (' + codigo + ')', '—', session);
-                notify('✅ Justificación enviada correctamente. Un trabajador social la revisará.');
-
-                document.getElementById('justif-curso').value = '';
-                document.getElementById('justif-codigo').value = '';
-                document.getElementById('justif-nota').value = '';
-                document.getElementById('justif-motivo').value = '';
-                document.getElementById('justif-archivo').value = '';
-
-                renderEstudianteDashboard(session);
+                guardarJustificacion(session, curso, codigo, periodo, nota, motivo, null);
             }
+        }
+
+        function guardarJustificacion(session, curso, codigo, periodo, nota, motivo, archivoBase64) {
+            const nuevaJustificacion = {
+                email: session.email,
+                nombreEstudiante: session.nombre,
+                curso: curso,
+                codigo: codigo,
+                periodo: periodo,
+                nota: nota || null,
+                motivo: motivo,
+                estado: 'Pendiente',
+                observacion: '',
+                fecha: new Date().toLocaleString(),
+                archivo: archivoBase64
+            };
+
+            StorageManager.justificaciones.save(nuevaJustificacion);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session.nombre,
+                rol: session.rol,
+                accion: 'Justificación enviada: ' + curso + ' (' + codigo + ')',
+                expediente: '—'
+            });
+
+            notify('✅ Justificación enviada correctamente. Un trabajador social la revisará.');
+
+            document.getElementById('justif-curso').value = '';
+            document.getElementById('justif-codigo').value = '';
+            document.getElementById('justif-nota').value = '';
+            document.getElementById('justif-motivo').value = '';
+            document.getElementById('justif-archivo').value = '';
+
+            renderEstudianteDashboard(session);
         }
 
         // ============================================================
@@ -2695,7 +2345,7 @@
         let misSolicitudesParaApelar = [];
 
         function renderApelacionesEstudiante(session) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             misSolicitudesParaApelar = solicitudes.filter(s => s.estudianteEmail === session.email);
 
             const rechazadas = misSolicitudesParaApelar.filter(s =>
@@ -2706,7 +2356,7 @@
             const formulario = document.getElementById('apelacion-formulario');
             const historialDiv = document.getElementById('lista-apelaciones-estudiante');
 
-            const apelaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.apelaciones) || '[]');
+            const apelaciones = StorageManager.apelaciones.getAll();
             const misApelaciones = apelaciones.filter(a => a.email === session.email);
 
             historialDiv.innerHTML = misApelaciones.length === 0 ?
@@ -2715,21 +2365,18 @@
                     '<div class="resultado-card" style="margin-bottom:8px;">' +
                     '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
                     '<h4 style="font-size:0.95rem;">Expediente: ' + a.expediente + '</h4>' +
-                    '<span class="badge ' + (a.estado === 'Pendiente' ? 'badge-warning' : 'badge-success') + '">' +
-                    a.estado + '</span>' +
+                    '<span class="badge ' + (a.estado === 'Pendiente' ? 'badge-warning' : 'badge-success') + '">' + a.estado + '</span>' +
                     '</div>' +
                     '<p style="font-size:0.85rem;color:var(--muted);margin-top:4px;">Enviado: ' + a.fecha + '</p>' +
                     '<p style="font-size:0.88rem;"><strong>Motivo:</strong> ' +
                     (a.motivo.length > 100 ? a.motivo.substring(0, 100) + '...' : a.motivo) +
                     '</p>' +
-                    (a.decision ? '<p style="font-size:0.88rem;color:var(--success);"><strong>Decisión:</strong> ' +
-                        a.decision + '</p>' : '') +
+                    (a.decision ? '<p style="font-size:0.88rem;color:var(--success);"><strong>Decisión:</strong> ' + a.decision + '</p>' : '') +
                     '</div>'
                 ).join('');
 
             if (rechazadas.length === 0) {
-                container.innerHTML =
-                    '<div class="alert-box success">✅ No tienes solicitudes rechazadas. Solo puedes apelar solicitudes que hayan sido rechazadas.</div>';
+                container.innerHTML = '<div class="alert-box success">✅ No tienes solicitudes rechazadas. Solo puedes apelar solicitudes que hayan sido rechazadas.</div>';
                 formulario.classList.add('hidden');
                 return;
             }
@@ -2774,8 +2421,7 @@
                 return;
             }
 
-            document.getElementById('apelacion-expediente-seleccionado').textContent = 'Expediente: ' + solicitud
-            .expediente;
+            document.getElementById('apelacion-expediente-seleccionado').textContent = 'Expediente: ' + solicitud.expediente;
             document.getElementById('apelacion-tipo-seleccionado').textContent = solicitud.tipoBeca;
             document.getElementById('apelacion-fecha-seleccionada').textContent = 'Rechazada: ' + solicitud.fecha;
             document.getElementById('apelacion-motivo-texto').textContent = solicitud.motivoRechazo ||
@@ -2790,8 +2436,7 @@
             textarea.oninput = function() {
                 const count = this.value.length;
                 document.getElementById('apelacion-contador').textContent = count + ' / 50 caracteres mínimo';
-                document.getElementById('apelacion-contador').style.color = count >= 50 ? 'var(--success)' :
-                    'var(--muted)';
+                document.getElementById('apelacion-contador').style.color = count >= 50 ? 'var(--success)' : 'var(--muted)';
             };
 
             formulario.classList.remove('hidden');
@@ -2816,7 +2461,7 @@
                 return;
             }
 
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+            const session = StorageManager.session.get();
             const archivoInput = document.getElementById('apelacion-archivo');
 
             const reader = new FileReader();
@@ -2835,8 +2480,7 @@
         function guardarApelacion(session, texto, archivoBase64) {
             const solicitud = misSolicitudesParaApelar.find(s => s.expediente === apelacionSeleccionada);
 
-            const apelaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.apelaciones) || '[]');
-            apelaciones.push({
+            const nuevaApelacion = {
                 expediente: apelacionSeleccionada,
                 email: session.email,
                 nombreEstudiante: session.nombre,
@@ -2846,22 +2490,33 @@
                 decision: null,
                 archivo: archivoBase64,
                 tipoBeca: solicitud ? solicitud.tipoBeca : ''
-            });
-            localStorage.setItem(STORAGE_KEYS.apelaciones, JSON.stringify(apelaciones));
+            };
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solIndex = solicitudes.findIndex(s => s.expediente === apelacionSeleccionada);
-            if (solIndex !== -1) {
-                solicitudes[solIndex].estado = 'En Apelación';
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+            StorageManager.apelaciones.save(nuevaApelacion);
+
+            const solicitudActual = StorageManager.solicitudes.getByExpediente(apelacionSeleccionada);
+            if (solicitudActual) {
+                solicitudActual.estado = 'En Apelación';
+                StorageManager.solicitudes.save(solicitudActual);
             }
 
-            registrarBitacora('Apelación enviada', apelacionSeleccionada);
-            simularNotificacion('Apelación Enviada',
-                'Tu apelación para el expediente ' + apelacionSeleccionada +
-                ' ha sido recibida y será revisada por el Trabajador Social.',
-                apelacionSeleccionada
-            );
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session.nombre,
+                rol: session.rol,
+                accion: 'Apelación enviada',
+                expediente: apelacionSeleccionada
+            });
+
+            // Simular notificación
+            const notifModal = document.getElementById('modal-notificacion');
+            if (notifModal) {
+                document.getElementById('notif-titulo').textContent = 'Apelación Enviada';
+                document.getElementById('notif-mensaje').innerHTML =
+                    'Tu apelación para el expediente ' + apelacionSeleccionada +
+                    ' ha sido recibida y será revisada por el Trabajador Social.';
+                openModal('modal-notificacion');
+            }
 
             notify('✅ Apelación enviada correctamente. Un trabajador social la revisará.');
 
@@ -2879,8 +2534,7 @@
         // ACEPTAR BENEFICIO
         // ============================================================
         function aceptarBeneficio(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const sol = solicitudes.find(s => s.expediente === expediente);
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
 
             if (!(sol && sol.estado === 'Aprobada' && !sol.aceptado)) {
                 notify('No hay un beneficio pendiente de aceptación.');
@@ -2889,24 +2543,35 @@
 
             sol.aceptado = true;
             sol.estado = 'Beneficio Activo';
-            localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+            StorageManager.solicitudes.save(sol);
 
-            registrarBitacora('Beneficio aceptado por estudiante', expediente);
-            simularNotificacion('Beneficio Activo',
-                'Has aceptado la beca con cobertura ' + (sol.porcentajeCobertura || '50%') +
-                '. El descuento se aplicará en tu próxima matrícula.',
-                expediente
-            );
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Estudiante',
+                rol: session ? session.rol : 'estudiante',
+                accion: 'Beneficio aceptado',
+                expediente: expediente
+            });
 
-            renderEstudianteDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            // Simular notificación
+            const notifModal = document.getElementById('modal-notificacion');
+            if (notifModal) {
+                document.getElementById('notif-titulo').textContent = 'Beneficio Activo';
+                document.getElementById('notif-mensaje').innerHTML =
+                    'Has aceptado la beca con cobertura ' + (sol.porcentajeCobertura || '50%') +
+                    '. El descuento se aplicará en tu próxima matrícula.';
+                openModal('modal-notificacion');
+            }
+
+            renderEstudianteDashboard(session);
         }
 
         // ============================================================
         // EXPEDIENTE
         // ============================================================
         function verExpedienteEstudiante(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
 
             if (solicitud) {
                 document.getElementById('modal-expediente-titulo').textContent = 'Mi expediente: ' + expediente;
@@ -2960,8 +2625,7 @@
                 campo('Teléfono', d['f-telefono'] || solicitud.telefono) +
                 campo('Fecha de nacimiento', d['f-nacimiento']) +
                 '</div>' +
-                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] +
-                    '</p>' : '') +
+                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] + '</p>' : '') +
                 '</div>';
 
             html += '<div class="expediente-section">' +
@@ -2982,23 +2646,19 @@
                 campo('Dependientes económicos', d['f-dependientes']) +
                 campo('Miembros que trabajan', d['f-trabajadores']) +
                 campo('Tipo de vivienda', d['f-vivienda']) +
-                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() :
-                    '') +
+                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() : '') +
                 campo('Situación laboral', d['f-laboral']) +
                 campo('¿Posee discapacidad?', d['f-discapacidad']) +
                 '</div></div>';
 
             html += '<div class="expediente-section">' +
                 '<h4>✨ Información Complementaria</h4>' +
-                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d[
-                    'f-extracurricular'] + '</p>' : '') +
-                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' :
-                '') +
+                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d['f-extracurricular'] + '</p>' : '') +
+                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' : '') +
                 campo('¿Beca anterior?', d['f-beca-anterior']) +
                 '<p style="margin-top:6px;"><strong>Justificación de mérito:</strong><br>' +
                 (d['f-merito'] || 'No disponible') + '</p>' +
-                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d[
-                    'f-motivacion'] + '</p>' : '') +
+                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d['f-motivacion'] + '</p>' : '') +
                 '</div>';
 
             const docKeys = Object.keys(docs);
@@ -3012,8 +2672,7 @@
                         const estadoDoc = doc.estado || 'Pendiente';
                         const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
                             (estadoDoc === 'Rechazado' ? 'badge-danger' :
-                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' :
-                                    'badge-neutral'));
+                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
                         return '<div class="doc-item">' +
                             '<div class="doc-item-info">' +
                             '<span class="doc-item-icon">📄</span>' +
@@ -3022,8 +2681,7 @@
                             '<div class="doc-item-meta">' + (doc.nombre || '') +
                             (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
                             '</div>' +
-                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion +
-                                '</div>' : '') +
+                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
@@ -3065,21 +2723,13 @@
                     '<h4>⏸️ Suspensión / Cancelación</h4>' +
                     campo('Motivo', solicitud.suspensionMotivo) +
                     (solicitud.suspensionObservaciones ?
-                        `<p style="margin-top:4px;"><strong>Observaciones:</strong> ${solicitud.suspensionObservaciones}</p>`
-                        : '') +
+                        `<p style="margin-top:4px;"><strong>Observaciones:</strong> ${solicitud.suspensionObservaciones}</p>` : '') +
                     (solicitud.suspensionFecha ? campo('Fecha', solicitud.suspensionFecha) : '') +
                     (solicitud.restauradoFecha ? campo('Fecha de restauración', solicitud.restauradoFecha) : '') +
                     '</div>';
             }
 
             return html;
-        }
-
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         function guardarObservaciones() {
@@ -3103,193 +2753,46 @@
                 btn.classList.add('active');
             }
 
+            const session = StorageManager.session.get();
+            if (!session) return;
+
             if (tabId === 'est-justificar') {
-                const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
-                if (session) renderJustificacionesEstudiante(session.email);
+                renderJustificacionesEstudiante(session.email);
             }
             if (tabId === 'est-apelar') {
-                const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
-                if (session) renderApelacionesEstudiante(session);
+                renderApelacionesEstudiante(session);
             }
             if (tabId === 'est-perfil') {
-                const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
-                if (session) renderPerfilEstudiante(session);
+                renderPerfilEstudiante(session);
             }
             if (tabId === 'est-resultados') {
-                const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
-                if (session) {
-                    const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-                    const misSolicitudes = solicitudes.filter(s => s.estudianteEmail === session.email);
-                    renderResultadosEstudiante(misSolicitudes);
-                }
+                const misSolicitudes = StorageManager.solicitudes.getByEstudiante(session.email);
+                renderResultadosEstudiante(misSolicitudes);
             }
         }
 
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
-                        nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: {
-                            carrera: 'Ingeniería en Sistemas',
-                            facultad: 'Ingeniería',
-                            sede: 'Central',
-                            fechaNacimiento: '2000-05-15',
-                            fechaIngreso: '2022-01-10',
-                            anioIngreso: '2022'
-                        },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante',
-                        nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        datosAcademicos: { esAspirante: true },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
-                        nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
-                        nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
-                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([
-                    { expediente: 'BEC-2026-001', fecha: '2026-01-15',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Excelencia Académica', estado: 'Beneficio Activo', progreso: 100,
-                        puntaje: 95, promedio: 92, ingresoFamiliar: 450000, aceptado: true,
-                        porcentajeCobertura: '75%',
-                        observacionTS: 'Documentación completa. Se recomienda aprobación.',
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Aprobado' },
-                            'f-cedula-p': { label: 'Copia de cédula (posterior)',
-                                nombre: 'cedula_posterior.pdf', estado: 'Aprobado' }
-                        }
-                    },
-                    { expediente: 'BEC-2026-002', fecha: '2026-01-18',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Socioeconómica', estado: 'En comité', progreso: 60,
-                        puntaje: 82, promedio: 85, ingresoFamiliar: 350000, aceptado: false,
-                        observacionTS: 'Documentación en orden. Se recomienda evaluación.'
-                    },
-                    { expediente: 'BEC-2026-003', fecha: '2026-01-20',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Investigación', estado: 'Rechazada', progreso: 100,
-                        puntaje: 0, promedio: 76, ingresoFamiliar: 600000, aceptado: false,
-                        motivoRechazo: 'El promedio académico (76) no alcanza el mínimo requerido (85) para becas de investigación.',
-                        observacionesComite: 'No cumple con el promedio mínimo requerido.'
-                    },
-                    { expediente: 'BEC-2026-004', fecha: '2026-01-22',
-                        estudianteEmail: 'aspirante@becas.com', nombres: 'Carlos',
-                        apellidos: 'Fernández', cedula: '2-3456-7890', correo: 'aspirante@becas.com',
-                        tipoBeca: 'Socioeconómica', estado: 'Pendiente subsanación', progreso: 30,
-                        puntaje: 0, promedio: 80, ingresoFamiliar: 400000, aceptado: false,
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Corrección solicitada',
-                                observacion: 'La imagen no es legible.' }
-                        }
-                    },
-                    { expediente: 'BEC-2026-005', fecha: '2026-01-25',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Deportiva', estado: 'Elegible', progreso: 50,
-                        puntaje: 78, promedio: 84, ingresoFamiliar: 450000, aceptado: false,
-                        observacionTS: 'Perfil deportivo destacado. Documentación completa.'
-                    }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.apelaciones)) {
-                localStorage.setItem(STORAGE_KEYS.apelaciones, JSON.stringify([
-                    { expediente: 'BEC-2026-003', email: 'estudiante@becas.com',
-                        nombreEstudiante: 'María Gómez',
-                        motivo: 'Considero que mi promedio (76) no refleja mi capacidad real, ya que tuve problemas de salud que afectaron mi rendimiento en el último semestre.',
-                        estado: 'Pendiente', fecha: '2026-02-10', decision: null, archivo: null }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.justificaciones)) {
-                localStorage.setItem(STORAGE_KEYS.justificaciones, JSON.stringify([
-                    { id: 1, email: 'estudiante@becas.com', nombreEstudiante: 'María Gómez',
-                        curso: 'Matemática I', codigo: 'MA-1001', periodo: 'I-2025', nota: 65,
-                        motivo: 'Problemas de salud.', estado: 'Aprobada', observacion: '',
-                        fecha: '2025-12-01', archivo: null }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.noticias)) {
-                localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify([
-                    { id: 1, titulo: '🔴 Cierre de convocatoria 2026',
-                        contenido: 'La convocatoria 2026 cierra el 31 de marzo. Asegúrate de completar tu solicitud a tiempo.',
-                        fecha: '28/02/2026' },
-                    { id: 2, titulo: '🟡 Nuevas becas disponibles',
-                        contenido: 'El próximo mes se abrirán nuevas becas de interés para estudiantes de ingeniería y ciencias sociales.',
-                        fecha: '25/02/2026' },
-                    { id: 3, titulo: '🔵 Convocatoria 2026 abierta',
-                        contenido: 'Ya están disponibles las becas para el período 2026. Fecha límite: 31/03/2026',
-                        fecha: '15/01/2026' },
-                    { id: 4, titulo: '⚪ Recordatorio: Documentación',
-                        contenido: 'Revisa que toda tu documentación esté actualizada antes de enviar tu solicitud.',
-                        fecha: '10/02/2026' }
-                ]));
-            }
-
-            // Convocatorias para pruebas
-            if (!localStorage.getItem('becas_convocatorias')) {
-                const hoy = new Date();
-                const fmt = (d) => d.toISOString().slice(0, 10);
-                const apertura = new Date(hoy.getTime() - 10 * 86400000);
-                const cierre = new Date(hoy.getTime() + 20 * 86400000);
-                localStorage.setItem('becas_convocatorias', JSON.stringify([
-                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica',
-                        cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' }
-                ]));
-            }
-        }
-
-        // ============================================================
-        // INICIALIZAR
-        // ============================================================
         (function init() {
-            initData();
             renderHeaderNav();
 
-            const storedSession = localStorage.getItem(STORAGE_KEYS.session);
-            if (storedSession) {
-                const session = JSON.parse(storedSession);
-                if (session.rol === 'estudiante' || session.rol === 'aspirante') {
-                    showView('view-dash-estudiante');
-                    renderDashboards();
-                } else {
-                    showView('view-public');
+            const storedSession = StorageManager.session.get();
+            if (storedSession && (storedSession.rol === 'estudiante' || storedSession.rol === 'aspirante')) {
+                showView('view-dash-estudiante');
+                renderDashboards();
+            } else if (storedSession) {
+                const dashMap = {
+                    estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
+                    trabajador_social: 'panel_trabajador_social.html',
+                    comite: 'panel_comite.html',
+                    admin: 'panel_admin.html',
+                    auditor: 'panel_auditor.html'
+                };
+                const target = dashMap[storedSession.rol];
+                if (target) {
+                    window.location.href = target;
                 }
             } else {
                 showView('view-public');
@@ -3301,6 +2804,17 @@
 
             document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
+
+            StorageManager.on('session_actualizada', function() {
+                renderHeaderNav();
+            });
+
+            StorageManager.on('solicitud_actualizada', function(data) {
+                const session = StorageManager.session.get();
+                if (session && (session.rol === 'estudiante' || session.rol === 'aspirante')) {
+                    renderDashboards();
+                }
+            });
         })();
     </script>
 

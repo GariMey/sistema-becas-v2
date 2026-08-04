@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -29,11 +30,7 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -48,20 +45,9 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
         .btn {
             display: inline-flex;
@@ -75,44 +61,32 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
             box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
         .btn-outline {
             background: transparent;
             color: #fff;
             border: 1.5px solid rgba(255,255,255,0.55);
         }
-
         .btn-outline:hover {
             background: rgba(255,255,255,0.12);
             border-color: #fff;
         }
-
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
+        .btn-ghost:hover { border-color: var(--primary); }
         .btn-danger {
             background: #fdecea;
             color: var(--danger);
@@ -121,11 +95,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-danger:hover {
-            background: #f6c6c0;
-        }
-
+        .btn-danger:hover { background: #f6c6c0; }
         .btn-success {
             background: #e7f5ee;
             color: var(--success);
@@ -134,11 +104,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-success:hover { background: #b9e3cb; }
         .btn-warning {
             background: #fff3cd;
             color: var(--warning);
@@ -147,11 +113,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-warning:hover {
-            background: #ffeaa7;
-        }
-
+        .btn-warning:hover { background: #ffeaa7; }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.85rem;
@@ -159,14 +121,8 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-block { width: 100%; }
 
         /* HEADER */
         header.site-header {
@@ -176,7 +132,6 @@
             background: var(--primary-dark);
             box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -185,7 +140,6 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
@@ -193,7 +147,6 @@
             color: #fff;
             cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -208,32 +161,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .session-pill {
             display: flex;
             align-items: center;
@@ -241,7 +189,6 @@
             color: #fff;
             font-size: 0.88rem;
         }
-
         .session-pill .role-badge {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -253,7 +200,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -261,7 +207,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -275,7 +220,6 @@
             display: flex;
             min-height: calc(100vh - 75px);
         }
-
         .dash-sidebar {
             width: 250px;
             background: var(--primary-dark);
@@ -290,25 +234,21 @@
             height: calc(100vh - 75px);
             overflow-y: auto;
         }
-
         .dash-sidebar .dash-user {
             padding: 0 8px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 14px;
         }
-
         .dash-sidebar .dash-user strong {
             display: block;
             font-size: 0.98rem;
         }
-
         .dash-sidebar .dash-user span {
             font-size: 0.78rem;
             color: var(--accent-light);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .dash-nav-item {
             display: flex;
             align-items: center;
@@ -322,50 +262,37 @@
             text-align: left;
             width: 100%;
         }
-
         .dash-nav-item:hover {
             background: rgba(255,255,255,0.06);
             color: #fff;
         }
-
         .dash-nav-item.active {
             background: var(--accent);
             color: var(--primary-dark);
             font-weight: 700;
         }
-
         .dash-nav-item.logout {
             margin-top: auto;
             color: #f6c6c0;
         }
-
         .dash-nav-item.logout:hover {
             background: rgba(192,57,43,0.18);
         }
-
         .dash-main {
             flex: 1;
             padding: 32px;
             max-width: 1100px;
         }
-
         .dash-main h2 {
             margin-bottom: 4px;
         }
-
         .dash-main .dash-sub {
             color: var(--muted);
             font-size: 0.95rem;
             margin-bottom: 24px;
         }
-
-        .dash-tab {
-            display: none;
-        }
-
-        .dash-tab.active {
-            display: block;
-        }
+        .dash-tab { display: none; }
+        .dash-tab.active { display: block; }
 
         .card-box {
             background: var(--paper);
@@ -375,7 +302,6 @@
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
-
         .card-box h3 {
             margin-bottom: 14px;
             font-size: 1.1rem;
@@ -393,19 +319,16 @@
             font-size: 0.88rem;
             margin-bottom: 10px;
         }
-
         .alert-box.info {
             background: #e6effa;
             border-color: #b8d0e8;
             color: var(--info);
         }
-
         .alert-box.success {
             background: #e7f5ee;
             border-color: #b9e3cb;
             color: var(--success);
         }
-
         .alert-box.danger {
             background: #fdecea;
             border-color: #f6c6c0;
@@ -417,7 +340,6 @@
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-
         .data-table th,
         .data-table td {
             padding: 12px 14px;
@@ -426,7 +348,6 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         .data-table th {
             color: var(--muted);
             font-size: 0.78rem;
@@ -434,7 +355,6 @@
             letter-spacing: 0.04em;
             font-weight: 700;
         }
-
         .data-table tbody tr:hover {
             background: #f9fafc;
         }
@@ -448,31 +368,11 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
-
-        .badge-info {
-            background: #e6effa;
-            color: var(--info);
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-
-        .badge-success {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-
-        .badge-danger {
-            background: #fdecea;
-            color: var(--danger);
-        }
-
-        .badge-neutral {
-            background: #eceff3;
-            color: var(--muted);
-        }
+        .badge-info { background: #e6effa; color: var(--info); }
+        .badge-warning { background: #fff3cd; color: var(--warning); }
+        .badge-success { background: #e7f5ee; color: var(--success); }
+        .badge-danger { background: #fdecea; color: var(--danger); }
+        .badge-neutral { background: #eceff3; color: var(--muted); }
 
         .counters-row {
             display: grid;
@@ -480,7 +380,6 @@
             gap: 16px;
             margin-bottom: 28px;
         }
-
         .counter-card {
             background: var(--paper);
             border: 1px solid var(--border);
@@ -488,14 +387,12 @@
             padding: 20px;
             box-shadow: var(--shadow-sm);
         }
-
         .counter-card .num {
             font-family: 'Sora', sans-serif;
             font-size: 1.9rem;
             font-weight: 800;
             color: var(--primary);
         }
-
         .counter-card .label {
             color: var(--muted);
             font-size: 0.85rem;
@@ -515,29 +412,22 @@
             grid-template-columns: 1fr 1fr;
             gap: 18px;
         }
-
         .form-grid-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 14px;
         }
-
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
+        .form-field.full { grid-column: 1/-1; }
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -551,7 +441,6 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
@@ -570,7 +459,6 @@
             z-index: 2000;
             padding: 20px;
         }
-
         .modal-box {
             background: var(--paper);
             border-radius: 16px;
@@ -582,11 +470,7 @@
             overflow-y: auto;
             position: relative;
         }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
+        .modal-box.wide { max-width: 680px; }
         .modal-close {
             position: absolute;
             top: 14px;
@@ -597,15 +481,8 @@
             line-height: 1;
             padding: 4px;
         }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
         .modal-box .modal-sub {
             color: var(--muted);
             font-size: 0.88rem;
@@ -643,27 +520,21 @@
             font-size: 0.8rem;
             color: var(--muted);
         }
-
-        .modal-credentials strong {
-            color: var(--primary);
-        }
+        .modal-credentials strong { color: var(--primary); }
 
         .expediente-section {
             margin-bottom: 16px;
         }
-
         .expediente-section h4 {
             margin-bottom: 10px;
             font-size: 1rem;
             color: var(--primary);
         }
-
         .expediente-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px 18px;
         }
-
         .expediente-grid p {
             font-size: 0.9rem;
             margin: 0;
@@ -674,7 +545,6 @@
             flex-direction: column;
             gap: 10px;
         }
-
         .doc-item {
             display: flex;
             align-items: center;
@@ -686,23 +556,17 @@
             padding: 10px 14px;
             flex-wrap: wrap;
         }
-
         .doc-item-info {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 0.88rem;
         }
-
-        .doc-item-icon {
-            font-size: 1.3rem;
-        }
-
+        .doc-item-icon { font-size: 1.3rem; }
         .doc-item-meta {
             color: var(--muted);
             font-size: 0.78rem;
         }
-
         .doc-item-actions {
             display: flex;
             gap: 8px;
@@ -716,12 +580,10 @@
             border-radius: 8px;
             margin-bottom: 12px;
         }
-
         .suspension-card.suspendida {
             border-left-color: var(--danger);
             background: #fdecea;
         }
-
         .suspension-card.restaurada {
             border-left-color: var(--success);
             background: #e7f5ee;
@@ -733,7 +595,6 @@
             flex-wrap: wrap;
             margin-top: 8px;
         }
-
         .acciones-rapidas .btn-small {
             font-size: 0.7rem;
             padding: 4px 10px;
@@ -746,17 +607,14 @@
             font-size: 0.85rem;
             display: inline-block;
         }
-
         .pobreza-indicador.alta {
             background: #fdecea;
             color: var(--danger);
         }
-
         .pobreza-indicador.media {
             background: #fff3cd;
             color: var(--warning);
         }
-
         .pobreza-indicador.baja {
             background: #e7f5ee;
             color: var(--success);
@@ -770,12 +628,10 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-
         .visita-badge.pendiente {
             background: #fff3cd;
             color: var(--warning);
         }
-
         .visita-badge.realizada {
             background: #e7f5ee;
             color: var(--success);
@@ -791,7 +647,6 @@
             gap: 10px;
             max-width: 380px;
         }
-
         .toast-box {
             padding: 14px 18px;
             border-radius: 10px;
@@ -804,23 +659,11 @@
             animation: toastIn .25s ease;
             white-space: pre-line;
         }
-
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(24px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
         .toast-close {
             background: transparent;
             border: none;
@@ -831,10 +674,7 @@
             line-height: 1;
             padding: 0 0 0 6px;
         }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
+        .toast-close:hover { opacity: 1; }
 
         #db-status {
             position: fixed;
@@ -849,24 +689,18 @@
             color: #1a365d;
             border: 1px solid #d0d7e0;
         }
-
         #db-status.online {
             background: #e7f5ee;
             color: #1e7e4f;
             border-color: #b9e3cb;
         }
-
         #db-status.offline {
             background: #fdecea;
             color: #c0392b;
             border-color: #f6c6c0;
         }
 
-        .noticia-inactiva {
-            opacity: 0.6;
-            filter: grayscale(0.3);
-        }
-
+        .noticia-inactiva { opacity: 0.6; filter: grayscale(0.3); }
         .noticia-tag {
             display: inline-block;
             padding: 2px 10px;
@@ -875,17 +709,14 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-
         .noticia-tag.activa {
             background: #e7f5ee;
             color: var(--success);
         }
-
         .noticia-tag.inactiva {
             background: #eceff3;
             color: var(--muted);
         }
-
         .noticia-tag.programada {
             background: #fff3cd;
             color: var(--warning);
@@ -901,12 +732,10 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-
         .historial-item .fecha {
             color: var(--muted);
             font-size: 0.78rem;
         }
-
         .historial-item .estado-badge {
             font-size: 0.7rem;
             padding: 2px 10px;
@@ -914,7 +743,6 @@
             font-weight: 600;
         }
 
-        /* Comparación de declaraciones */
         .comparacion-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -925,16 +753,13 @@
             border: 1px solid var(--border);
             margin-bottom: 16px;
         }
-
         .comparacion-grid .col-declarado {
             border-right: 2px solid var(--border);
             padding-right: 16px;
         }
-
         .comparacion-grid .col-observado {
             padding-left: 16px;
         }
-
         .comparacion-grid h5 {
             font-size: 0.85rem;
             color: var(--muted);
@@ -942,7 +767,6 @@
             letter-spacing: 0.05em;
             margin-bottom: 8px;
         }
-
         .comparacion-item {
             display: flex;
             justify-content: space-between;
@@ -950,26 +774,11 @@
             font-size: 0.88rem;
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-
-        .comparacion-item .label {
-            color: var(--muted);
-        }
-
-        .comparacion-item .valor {
-            font-weight: 500;
-        }
-
-        .comparacion-item .coincide {
-            color: var(--success);
-        }
-
-        .comparacion-item .no-coincide {
-            color: var(--danger);
-        }
-
-        .comparacion-item .parcial {
-            color: var(--warning);
-        }
+        .comparacion-item .label { color: var(--muted); }
+        .comparacion-item .valor { font-weight: 500; }
+        .comparacion-item .coincide { color: var(--success); }
+        .comparacion-item .no-coincide { color: var(--danger); }
+        .comparacion-item .parcial { color: var(--warning); }
 
         .evidencia-metadata {
             background: #eef2f8;
@@ -980,49 +789,32 @@
             margin-top: 8px;
             border: 1px dashed var(--border);
         }
+        .evidencia-metadata strong { color: var(--primary); }
 
-        .evidencia-metadata strong {
-            color: var(--primary);
-        }
-
-        /* Vista pública */
         .view-public {
             padding: 40px 24px;
             max-width: 1200px;
             margin: 0 auto;
         }
-
         .view-public h1 {
             font-size: 2.2rem;
             margin-bottom: 16px;
         }
-
         .view-public .hero-sub {
             font-size: 1.1rem;
             color: var(--muted);
             margin-bottom: 32px;
         }
-
         .view-public .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
         }
+        .view-public .card-grid .card-box { margin-bottom: 0; }
+        .view-public .card-grid .card-box h3 { font-size: 1.2rem; }
 
-        .view-public .card-grid .card-box {
-            margin-bottom: 0;
-        }
-
-        .view-public .card-grid .card-box h3 {
-            font-size: 1.2rem;
-        }
-
-        /* Responsive */
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -1036,26 +828,15 @@
                 display: none;
                 border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
+            nav.main-nav.open { display: flex; }
             nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
+            nav.main-nav .session-pill { width: 100%; }
             nav.main-nav .session-pill {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
             }
-
-            .dash-shell {
-                flex-direction: column;
-            }
-
+            .dash-shell { flex-direction: column; }
             .dash-sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -1065,56 +846,33 @@
                 top: 0;
                 height: auto;
             }
-
             .dash-sidebar .dash-user {
                 width: 100%;
                 border-bottom: none;
                 margin-bottom: 6px;
             }
-
             .dash-nav-item {
                 width: auto;
                 flex: 1;
                 justify-content: center;
             }
-
-            .dash-nav-item.logout {
-                margin-top: 0;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid-3 {
-                grid-template-columns: 1fr;
-            }
-
+            .dash-nav-item.logout { margin-top: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid-3 { grid-template-columns: 1fr; }
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
             }
-
-            .expediente-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .acciones-rapidas {
-                flex-direction: column;
-            }
-
-            .comparacion-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .expediente-grid { grid-template-columns: 1fr; }
+            .acciones-rapidas { flex-direction: column; }
+            .comparacion-grid { grid-template-columns: 1fr; }
             .comparacion-grid .col-declarado {
                 border-right: none;
                 border-bottom: 2px solid var(--border);
                 padding-right: 0;
                 padding-bottom: 12px;
             }
-
             .comparacion-grid .col-observado {
                 padding-left: 0;
                 padding-top: 12px;
@@ -1148,22 +906,10 @@
         <h1>Bienvenido al Sistema de Becas</h1>
         <p class="hero-sub">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
         <div class="card-grid">
-            <div class="card-box">
-                <h3>Convocatorias</h3>
-                <p>Revisa las convocatorias disponibles y los requisitos para cada tipo de beca.</p>
-            </div>
-            <div class="card-box">
-                <h3>Noticias</h3>
-                <p>Mantente informado sobre fechas importantes y cambios en el sistema.</p>
-            </div>
-            <div class="card-box">
-                <h3>Solicitudes</h3>
-                <p>Envía tu solicitud de beca y da seguimiento a su estado.</p>
-            </div>
-            <div class="card-box">
-                <h3>Ayuda</h3>
-                <p>Consulta las preguntas frecuentes o contacta al equipo de becas.</p>
-            </div>
+            <div class="card-box"><h3>Convocatorias</h3><p>Revisa las convocatorias disponibles y los requisitos para cada tipo de beca.</p></div>
+            <div class="card-box"><h3>Noticias</h3><p>Mantente informado sobre fechas importantes y cambios en el sistema.</p></div>
+            <div class="card-box"><h3>Solicitudes</h3><p>Envía tu solicitud de beca y da seguimiento a su estado.</p></div>
+            <div class="card-box"><h3>Ayuda</h3><p>Consulta las preguntas frecuentes o contacta al equipo de becas.</p></div>
         </div>
         <div style="margin-top:32px; padding:20px; background:var(--paper); border-radius:var(--radius); border:1px solid var(--border);">
             <h3>Noticias recientes</h3>
@@ -1283,7 +1029,6 @@
                             <option value="">Seleccionar Expediente</option>
                         </select>
 
-                        <!-- Panel de comparación de declaraciones -->
                         <div id="visita-declaraciones" class="hidden" style="margin-bottom:16px;">
                             <h4 style="font-size:0.95rem; margin-bottom:8px;">Comparación de declaraciones</h4>
                             <div class="comparacion-grid">
@@ -1476,26 +1221,11 @@
                     <div class="card-box">
                         <h3>Resumen General de Becas</h3>
                         <div class="counters-row">
-                            <div class="counter-card">
-                                <div class="num" id="stat-aprobadas">0</div>
-                                <div class="label">Aprobadas / Activas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="stat-rechazadas">0</div>
-                                <div class="label">Rechazadas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="stat-subsanacion">0</div>
-                                <div class="label">En Subsanación</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="stat-pendientes">0</div>
-                                <div class="label">En proceso</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="stat-total">0</div>
-                                <div class="label">Total</div>
-                            </div>
+                            <div class="counter-card"><div class="num" id="stat-aprobadas">0</div><div class="label">Aprobadas / Activas</div></div>
+                            <div class="counter-card"><div class="num" id="stat-rechazadas">0</div><div class="label">Rechazadas</div></div>
+                            <div class="counter-card"><div class="num" id="stat-subsanacion">0</div><div class="label">En Subsanación</div></div>
+                            <div class="counter-card"><div class="num" id="stat-pendientes">0</div><div class="label">En proceso</div></div>
+                            <div class="counter-card"><div class="num" id="stat-total">0</div><div class="label">Total</div></div>
                         </div>
                         <div style="position:relative;height:260px;margin-bottom:24px;">
                             <canvas id="statsChart"></canvas>
@@ -1562,10 +1292,7 @@
             <h3>Iniciar sesión</h3>
             <div id="login-error" class="login-error hidden"></div>
             <div id="login-2fa" class="hidden">
-                <div class="form-field">
-                    <label>Código 2FA</label>
-                    <input type="text" id="login-2fa-code" class="form-control">
-                </div>
+                <div class="form-field"><label>Código 2FA</label><input type="text" id="login-2fa-code" class="form-control"></div>
             </div>
             <div class="form-field">
                 <label>Correo</label>
@@ -1622,20 +1349,6 @@
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            justificaciones: 'becas_justificaciones',
-            suspensiones: 'becas_suspensiones',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-            visitas: 'becas_visitas',
-            convocatorias: 'becas_convocatorias',
-            apelaciones: 'becas_apelaciones',
-        };
 
         // ============================================================
         // UTILIDADES
@@ -1654,8 +1367,7 @@
         function badgeClassEstado(estado) {
             if (estado === 'Aprobada' || estado === 'Beneficio Activo' || estado === 'Elegible' || estado === 'Restaurada')
                 return 'badge-success';
-            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado ===
-                'Cancelada' || estado === 'Suspendida')
+            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado === 'Cancelada' || estado === 'Suspendida')
                 return 'badge-danger';
             if (estado === 'Pendiente subsanación' || estado === 'En revisión TS' || estado === 'Visita pendiente')
                 return 'badge-warning';
@@ -1703,7 +1415,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1712,8 +1423,8 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
@@ -1747,18 +1458,15 @@
                     if (f.type === 'select') {
                         return '<div class="form-field"><label>' + f.label +
                             '</label><select id="cp-' + f.id + '" class="form-control">' +
-                            f.options.map(o => '<option value="' + o + '" ' + (o === val ? 'selected' :
-                                '') + '>' + o + '</option>').join('') +
+                            f.options.map(o => '<option value="' + o + '" ' + (o === val ? 'selected' : '') + '>' + o + '</option>').join('') +
                             '</select></div>';
                     }
                     if (f.type === 'textarea') {
                         return '<div class="form-field"><label>' + f.label +
-                            '</label><textarea id="cp-' + f.id +
-                            '" class="form-control" rows="3">' + val + '</textarea></div>';
+                            '</label><textarea id="cp-' + f.id + '" class="form-control" rows="3">' + val + '</textarea></div>';
                     }
                     return '<div class="form-field"><label>' + f.label +
-                        '</label><input type="' + (f.type || 'text') + '" id="cp-' + f.id +
-                        '" class="form-control" value="' + val + '"></div>';
+                        '</label><input type="' + (f.type || 'text') + '" id="cp-' + f.id + '" class="form-control" value="' + val + '"></div>';
                 }).join('');
                 modal.classList.remove('hidden');
 
@@ -1786,55 +1494,28 @@
             });
         }
 
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         function simularNotificacion(titulo, mensaje, expediente) {
-            registrarBitacora('Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50), expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Sistema',
+                rol: session ? session.rol : 'system',
+                accion: 'Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50),
+                expediente: expediente || '—'
+            });
             const notifModal = document.getElementById('modal-notificacion');
             if (notifModal) {
                 document.getElementById('notif-titulo').textContent = titulo;
                 document.getElementById('notif-mensaje').innerHTML = mensaje;
                 openModal('modal-notificacion');
             }
-        }
-
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = [
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ];
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
         }
 
         // ============================================================
@@ -1853,7 +1534,7 @@
         }
 
         function goToDashboard() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 const dashMap = {
                     estudiante: 'view-dash-estudiante',
@@ -1868,18 +1549,24 @@
         }
 
         function cerrarSesion() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
-                registrarBitacora('Cierre de sesión', '—', session);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session.nombre,
+                    rol: session.rol,
+                    accion: 'Cierre de sesión',
+                    expediente: '—'
+                });
             }
-            localStorage.removeItem(STORAGE_KEYS.session);
-            notify('Sesión cerrada correctamente.');
+            StorageManager.session.clear();
+            notify('✅ Sesión cerrada correctamente.');
             window.location.href = 'index.html';
         }
 
         function renderHeaderNav() {
             const nav = document.getElementById('mainNav');
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 nav.innerHTML =
                     '<a href="#" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
@@ -1901,7 +1588,7 @@
             const container = document.getElementById('public-noticias');
             if (!container) return;
 
-            const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
+            const noticias = StorageManager.noticias.getActivas();
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
 
@@ -1921,8 +1608,7 @@
             container.innerHTML = activas.map(n =>
                 '<div style="padding:12px 0; border-bottom:1px solid var(--border);">' +
                 '<strong>' + n.titulo + '</strong>' +
-                '<span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion +
-                '</span>' +
+                '<span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion + '</span>' +
                 '<p style="font-size:0.9rem;margin-top:4px;">' + n.contenido + '</p>' +
                 '</div>'
             ).join('');
@@ -1938,35 +1624,43 @@
             errorBox.classList.add('hidden');
 
             if (!email || !password) {
-                errorBox.textContent = 'Por favor ingresa tu correo y contraseña.';
+                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
                 errorBox.classList.remove('hidden');
                 return;
             }
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuario = usuarios.find(u => u.email === email);
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
             if (!usuario) {
-                errorBox.textContent = 'Usuario no encontrado';
+                errorBox.textContent = '❌ Usuario no encontrado';
                 errorBox.classList.remove('hidden');
                 return;
             }
 
             if (password !== '123456') {
-                errorBox.textContent = 'Contraseña incorrecta.';
+                errorBox.textContent = '❌ Contraseña incorrecta.';
                 errorBox.classList.remove('hidden');
                 return;
             }
 
             const nuevaSesion = {
-                email,
+                email: usuario.email,
                 nombre: usuario.nombre,
                 rol: usuario.rol
             };
-            localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
-            registrarBitacora('Inicio de sesión', '—', nuevaSesion);
+            StorageManager.session.set(nuevaSesion);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: usuario.nombre,
+                rol: usuario.rol,
+                accion: 'Inicio de sesión',
+                expediente: '—'
+            });
+
             closeModal('modal-login');
             renderHeaderNav();
+            StorageManager.emit('session_actualizada', nuevaSesion);
 
             const dashMap = {
                 estudiante: 'view-dash-estudiante',
@@ -1977,7 +1671,7 @@
                 auditor: 'view-dash-auditor'
             };
             showView(dashMap[usuario.rol] || 'view-public');
-            notify('Bienvenido/a ' + usuario.nombre);
+            notify('✅ Bienvenido/a ' + usuario.nombre);
         }
 
         // ============================================================
@@ -1992,7 +1686,7 @@
         let evidenciaMetadata = null;
 
         function renderDashboards() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (!session) return;
             if (session.rol === 'trabajador_social') renderSocialDashboard(session);
         }
@@ -2004,11 +1698,11 @@
 
             const tiposSelect = document.getElementById('conv-tipo');
             if (tiposSelect) {
-                const tipos = getTiposBecaLocal().filter(t => t.activo);
+                const tipos = StorageManager.tiposBeca.getActivos();
                 tiposSelect.innerHTML = tipos.map(t => '<option value="' + t.nombre + '">' + t.nombre + '</option>').join('');
             }
 
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
+            const convocatorias = StorageManager.convocatorias.getAll();
             const convTable = document.getElementById('soc-tabla-convocatorias');
             if (convTable) {
                 convTable.innerHTML = convocatorias.map(c =>
@@ -2023,28 +1717,23 @@
                     '">' + c.estado + '</span></td>' +
                     '<td>' +
                     (c.estado === 'Borrador' ?
-                        '<button class="btn btn-small" onclick="publicarConvocatoria(' + c.id +
-                        ')">Publicar</button>' : '') +
+                        '<button class="btn btn-small" onclick="publicarConvocatoria(' + c.id + ')">Publicar</button>' : '') +
                     (c.estado === 'Activa' ?
-                        '<button class="btn btn-small btn-warning" onclick="cerrarConvocatoria(' + c.id +
-                        ')">Cerrar</button>' : '') +
+                        '<button class="btn btn-small btn-warning" onclick="cerrarConvocatoria(' + c.id + ')">Cerrar</button>' : '') +
                     '</td>' +
                     '</tr>'
                 ).join('');
             }
 
-            // Visitas - cargar expedientes
             const expedientesSelect = document.getElementById('visita-expediente');
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             if (expedientesSelect) {
-                // Mostrar expedientes que están en estado "Visita pendiente" o que tienen visitas previas
                 const expedientesConVisita = solicitudes.filter(s =>
                     s.estado === 'Visita pendiente' || s.estado === 'En revisión TS' || s.estado === 'Enviada'
                 );
                 expedientesSelect.innerHTML = '<option value="">Seleccionar Expediente</option>' +
                     expedientesConVisita.map(s =>
-                        '<option value="' + s.expediente + '">' + s.expediente + ' - ' + s.nombres + ' ' + s
-                        .apellidos + ' (' + s.estado + ')</option>'
+                        '<option value="' + s.expediente + '">' + s.expediente + ' - ' + s.nombres + ' ' + s.apellidos + ' (' + s.estado + ')</option>'
                     ).join('');
             }
             renderVisitasLista();
@@ -2087,8 +1776,7 @@
                 return;
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
 
             if (!solicitud) {
                 declaracionesDiv.classList.add('hidden');
@@ -2104,14 +1792,12 @@
                 'Material de construcción': datos['f-material'] || 'No especificado',
                 'Servicios básicos': datos['f-servicios'] || 'No especificado',
                 'Condiciones generales': datos['f-condiciones'] || 'No especificado',
-                'Ingreso familiar mensual': datos['f-ingreso'] ? '₡' + parseFloat(datos['f-ingreso']).toLocaleString() :
-                    'No especificado',
+                'Ingreso familiar mensual': datos['f-ingreso'] ? '₡' + parseFloat(datos['f-ingreso']).toLocaleString() : 'No especificado',
                 'Número de dependientes': datos['f-dependientes'] || '0',
                 'Miembros que trabajan': datos['f-trabajadores'] || '0',
                 'Situación laboral': datos['f-laboral'] || 'No especificado',
                 'Medio de transporte': datos['f-transporte'] || 'No especificado',
-                'Gastos mensuales': datos['f-gastos'] ? '₡' + parseFloat(datos['f-gastos']).toLocaleString() :
-                    'No especificado'
+                'Gastos mensuales': datos['f-gastos'] ? '₡' + parseFloat(datos['f-gastos']).toLocaleString() : 'No especificado'
             };
 
             let html = '';
@@ -2124,11 +1810,8 @@
 
             declaradoContent.innerHTML = html;
 
-            // Pre-cargar información del estudiante para la evidencia
             const cedula = solicitud.cedula || 'No especificada';
             const nombre = solicitud.nombres + ' ' + solicitud.apellidos;
-
-            // Actualizar metadata de evidencia
             actualizarMetadataEvidencia(cedula, nombre);
         }
 
@@ -2156,8 +1839,6 @@
 
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                // Intentar extraer metadata del archivo (si tiene EXIF o similar)
-                // Por simplicidad, usamos la fecha actual
                 const ahora = new Date();
                 const fecha = ahora.toISOString().slice(0, 10);
                 const hora = ahora.toTimeString().slice(0, 8);
@@ -2167,7 +1848,6 @@
                         `Cédula: ${evidenciaMetadata.cedula} | Estudiante: ${evidenciaMetadata.nombre} | Fecha: ${fecha} | Hora: ${hora} | Archivo: ${file.name}`;
                     metadataDiv.classList.remove('hidden');
                 } else {
-                    // Si no hay metadata previa, mostrar solo la info del archivo
                     detalleSpan.textContent =
                         `Archivo: ${file.name} | Fecha: ${fecha} | Hora: ${hora} | (Cédula del estudiante no disponible)`;
                     metadataDiv.classList.remove('hidden');
@@ -2186,7 +1866,7 @@
         }
 
         function renderSolicitudes() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const tbody = document.getElementById('soc-tabla');
             if (!tbody) return;
 
@@ -2208,8 +1888,7 @@
             tbody.innerHTML = pendientes.map(s => {
                 const pobreza = calcularPorcentajePobreza(s);
                 const pobrezaLabel = pobreza !== null ? pobreza.toFixed(1) + '%' : 'N/D';
-                const pobrezaClass = pobreza !== null ? (pobreza > 60 ? 'alta' : (pobreza > 40 ? 'media' :
-                    'baja')) : '';
+                const pobrezaClass = pobreza !== null ? (pobreza > 60 ? 'alta' : (pobreza > 40 ? 'media' : 'baja')) : '';
 
                 return '<tr>' +
                     '<td><strong>' + s.expediente + '</strong></td>' +
@@ -2222,8 +1901,7 @@
                     '</td>' +
                     '<td>' +
                     '<div style="display:flex; gap:4px; flex-wrap:wrap;">' +
-                    '<button class="btn btn-small" onclick="verExpedienteTS(\'' + s.expediente +
-                    '\')">Ver</button>' +
+                    '<button class="btn btn-small" onclick="verExpedienteTS(\'' + s.expediente + '\')">Ver</button>' +
                     generarAccionesRapidas(s) +
                     '</div>' +
                     '</td>' +
@@ -2270,35 +1948,25 @@
             let acciones = '';
 
             if (estado === 'En revisión TS' || estado === 'Enviada') {
-                acciones +=
-                    `<button class="btn btn-small btn-success" onclick="abrirModalAccion('${solicitud.expediente}','aprobar')">Aprobar</button>`;
-                acciones +=
-                    `<button class="btn btn-small btn-warning" onclick="abrirModalAccion('${solicitud.expediente}','visita')">Visita</button>`;
-                acciones +=
-                    `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
-                acciones +=
-                    `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
+                acciones += `<button class="btn btn-small btn-success" onclick="abrirModalAccion('${solicitud.expediente}','aprobar')">Aprobar</button>`;
+                acciones += `<button class="btn btn-small btn-warning" onclick="abrirModalAccion('${solicitud.expediente}','visita')">Visita</button>`;
+                acciones += `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
+                acciones += `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
             }
 
             if (estado === 'Elegible') {
-                acciones +=
-                    `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
-                acciones +=
-                    `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
+                acciones += `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
+                acciones += `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
             }
 
             if (estado === 'Visita pendiente') {
-                acciones +=
-                    `<button class="btn btn-small btn-success" onclick="abrirModalAccion('${solicitud.expediente}','aprobar')">Aprobar</button>`;
-                acciones +=
-                    `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
-                acciones +=
-                    `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
+                acciones += `<button class="btn btn-small btn-success" onclick="abrirModalAccion('${solicitud.expediente}','aprobar')">Aprobar</button>`;
+                acciones += `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','comite')">Comité</button>`;
+                acciones += `<button class="btn btn-small btn-danger" onclick="abrirModalAccion('${solicitud.expediente}','rechazar')">Rechazar</button>`;
             }
 
             if (estado === 'Pendiente subsanación') {
-                acciones +=
-                    `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','subsanacion_ok')">Subsanación OK</button>`;
+                acciones += `<button class="btn btn-small" onclick="abrirModalAccion('${solicitud.expediente}','subsanacion_ok')">Subsanación OK</button>`;
             }
 
             return acciones;
@@ -2325,8 +1993,7 @@
             document.getElementById('accion-modal-titulo').textContent = titulos[tipo] || 'Acción sobre solicitud';
             const contenido = document.getElementById('accion-modal-contenido');
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const sol = solicitudes.find(s => s.expediente === expediente);
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
 
             let html = `
                 <div class="alert-box info" style="margin-bottom:16px;">
@@ -2415,16 +2082,13 @@
             const expediente = accionSolicitudExpediente;
             const tipo = accionSolicitudTipo;
             const observaciones = document.getElementById('accion-observaciones')?.value || '';
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
 
-            if (solIndex === -1) {
+            if (!sol) {
                 notify('No se encontró la solicitud.');
                 closeModal('modal-accion-solicitud');
                 return;
             }
-
-            const sol = solicitudes[solIndex];
 
             switch (tipo) {
                 case 'aprobar': {
@@ -2485,8 +2149,7 @@
                 case 'visita': {
                     sol.estado = 'Visita pendiente';
                     sol.progreso = 40;
-                    sol.observacionTS = (sol.observacionTS || '') + '\nVisita solicitada: ' + (observaciones ||
-                        'Sin observaciones');
+                    sol.observacionTS = (sol.observacionTS || '') + '\nVisita solicitada: ' + (observaciones || 'Sin observaciones');
                     sol.historial = sol.historial || [];
                     sol.historial.push({
                         fecha: new Date().toISOString(),
@@ -2494,8 +2157,7 @@
                         detalles: observaciones || 'Sin observaciones',
                         usuario: 'Trabajador Social'
                     });
-                    const visitas = JSON.parse(localStorage.getItem(STORAGE_KEYS.visitas) || '[]');
-                    visitas.push({
+                    StorageManager.visitas.save({
                         expediente: expediente,
                         fecha: new Date().toISOString().slice(0, 10),
                         condiciones: 'Pendiente de realizar',
@@ -2504,7 +2166,6 @@
                         fechaRegistro: new Date().toLocaleString(),
                         estado: 'Pendiente'
                     });
-                    localStorage.setItem(STORAGE_KEYS.visitas, JSON.stringify(visitas));
                     simularNotificacion('Visita Domiciliaria',
                         'Se ha programado una visita domiciliaria para tu expediente ' + expediente +
                         '. Pronto te contactaremos.', expediente);
@@ -2514,8 +2175,7 @@
                 case 'subsanacion_ok': {
                     sol.estado = 'Elegible';
                     sol.progreso = 50;
-                    sol.observacionTS = (sol.observacionTS || '') + '\nSubsanación completada: ' + (observaciones ||
-                        'Documentos corregidos');
+                    sol.observacionTS = (sol.observacionTS || '') + '\nSubsanación completada: ' + (observaciones || 'Documentos corregidos');
                     sol.historial = sol.historial || [];
                     sol.historial.push({
                         fecha: new Date().toISOString(),
@@ -2525,8 +2185,7 @@
                     });
                     if (sol.documentos) {
                         Object.keys(sol.documentos).forEach(key => {
-                            if (sol.documentos[key].estado === 'Corrección solicitada' || sol.documentos[key]
-                                .estado === 'Rechazado') {
+                            if (sol.documentos[key].estado === 'Corrección solicitada' || sol.documentos[key].estado === 'Rechazado') {
                                 sol.documentos[key].estado = 'Aprobado';
                             }
                         });
@@ -2544,8 +2203,16 @@
                 }
             }
 
-            localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
-            registrarBitacora('Acción rápida: ' + tipo + ' - Expediente ' + expediente, expediente);
+            StorageManager.solicitudes.save(sol);
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Acción rápida: ' + tipo + ' - Expediente ' + expediente,
+                expediente: expediente
+            });
 
             closeModal('modal-accion-solicitud');
             renderDashboards();
@@ -2560,8 +2227,7 @@
         // EXPEDIENTE
         // ============================================================
         function verExpedienteTS(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
             if (solicitud) {
                 expedienteActual = expediente;
                 document.getElementById('modal-expediente-titulo').textContent = 'Expediente: ' + expediente;
@@ -2590,8 +2256,7 @@
                 '<h4>Estado del expediente</h4>' +
                 '<div class="expediente-grid">' +
                 campo('N° Expediente', solicitud.expediente) +
-                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud
-                .estado + '</span>') +
+                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud.estado + '</span>') +
                 campo('Fecha de solicitud', solicitud.fecha) +
                 campo('Tipo de beca', solicitud.tipoBeca) +
                 campo('Progreso', (solicitud.progreso || 0) + '%') +
@@ -2606,8 +2271,7 @@
                     solicitud.historial.map(h =>
                         '<div class="historial-item" style="border-bottom:1px solid var(--border);padding:4px 0;font-size:0.85rem;">' +
                         '<span>' + h.accion + (h.detalles ? ' - ' + h.detalles : '') + '</span>' +
-                        '<span style="color:var(--muted);font-size:0.75rem;">' + h.usuario + ' · ' + new Date(h
-                            .fecha).toLocaleDateString() + '</span>' +
+                        '<span style="color:var(--muted);font-size:0.75rem;">' + h.usuario + ' · ' + new Date(h.fecha).toLocaleDateString() + '</span>' +
                         '</div>'
                     ).join('') +
                     '</div>';
@@ -2623,8 +2287,7 @@
                 campo('Teléfono', d['f-telefono'] || solicitud.telefono) +
                 campo('Fecha de nacimiento', d['f-nacimiento']) +
                 '</div>' +
-                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] +
-                    '</p>' : '') +
+                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] + '</p>' : '') +
                 '</div>';
 
             html += '<div class="expediente-section">' +
@@ -2645,8 +2308,7 @@
                 campo('Dependientes económicos', d['f-dependientes']) +
                 campo('Miembros que trabajan', d['f-trabajadores']) +
                 campo('Tipo de vivienda', d['f-vivienda']) +
-                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() :
-                    '') +
+                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() : '') +
                 campo('Situación laboral', d['f-laboral']) +
                 campo('¿Posee discapacidad?', d['f-discapacidad']) +
                 campo('Medio de transporte', d['f-transporte']) +
@@ -2659,24 +2321,19 @@
                     '<thead><tr><th>Nombre</th><th>Edad</th><th>Estudia</th><th>Trabaja</th><th>Transporte</th></tr></thead>' +
                     '<tbody>' +
                     solicitud.convivientes.map(c =>
-                        '<tr><td>' + (c.nombre || '') + '</td><td>' + (c.edad || '') + '</td><td>' + (c
-                            .estudia || '') + '</td><td>' + (c.trabaja || '') + '</td><td>' + (c.transporte ||
-                            '') + '</td></tr>'
+                        '<tr><td>' + (c.nombre || '') + '</td><td>' + (c.edad || '') + '</td><td>' + (c.estudia || '') + '</td><td>' + (c.trabaja || '') + '</td><td>' + (c.transporte || '') + '</td></tr>'
                     ).join('') +
                     '</tbody></table></div>';
             }
 
             html += '<div class="expediente-section">' +
                 '<h4>Información Complementaria</h4>' +
-                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d[
-                    'f-extracurricular'] + '</p>' : '') +
-                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' :
-                '') +
+                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d['f-extracurricular'] + '</p>' : '') +
+                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' : '') +
                 campo('¿Beca anterior?', d['f-beca-anterior']) +
                 '<p style="margin-top:6px;"><strong>Justificación de mérito:</strong><br>' +
                 (d['f-merito'] || 'No disponible') + '</p>' +
-                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d[
-                    'f-motivacion'] + '</p>' : '') +
+                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d['f-motivacion'] + '</p>' : '') +
                 '</div>';
 
             const docKeys = Object.keys(docs);
@@ -2690,8 +2347,7 @@
                         const estadoDoc = doc.estado || 'Pendiente';
                         const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
                             (estadoDoc === 'Rechazado' ? 'badge-danger' :
-                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' :
-                                    'badge-neutral'));
+                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
                         return '<div class="doc-item">' +
                             '<div class="doc-item-info">' +
                             '<span class="doc-item-icon">📄</span>' +
@@ -2700,19 +2356,15 @@
                             '<div class="doc-item-meta">' + (doc.nombre || '') +
                             (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
                             '</div>' +
-                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion +
-                                '</div>' : '') +
+                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
                             '<span class="badge ' + badgeDoc + '">' + estadoDoc + '</span>' +
                             (opciones.permitirRevision ?
-                                '<button class="btn btn-success" style="padding:6px 10px;font-size:0.78rem;" onclick="revisarDocumento(\'' +
-                                solicitud.expediente + '\',\'' + key + '\',\'Aprobado\')">✓</button>' +
-                                '<button class="btn btn-danger" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' +
-                                solicitud.expediente + '\',\'' + key + '\',\'Rechazado\')">✗</button>' +
-                                '<button class="btn btn-warning" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' +
-                                solicitud.expediente + '\',\'' + key + '\',\'Corrección solicitada\')">Corregir</button>'
+                                '<button class="btn btn-success" style="padding:6px 10px;font-size:0.78rem;" onclick="revisarDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Aprobado\')">✓</button>' +
+                                '<button class="btn btn-danger" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Rechazado\')">✗</button>' +
+                                '<button class="btn btn-warning" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Corrección solicitada\')">Corregir</button>'
                                 : '') +
                             '</div>' +
                             '</div>';
@@ -2749,13 +2401,6 @@
             return html;
         }
 
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
         // ============================================================
         // REVISIÓN DE DOCUMENTOS
         // ============================================================
@@ -2775,8 +2420,7 @@
         }
 
         function aplicarRevisionDocumento(expediente, docKey, nuevoEstado, observacion) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const sol = solicitudes.find(s => s.expediente === expediente);
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
             if (!sol || !sol.documentos || !sol.documentos[docKey]) return;
 
             sol.documentos[docKey].estado = nuevoEstado;
@@ -2805,11 +2449,18 @@
                 }
             }
 
-            localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
-            registrarBitacora('Documento "' + (sol.documentos[docKey].label || docKey) +
-                '" marcado como ' + nuevoEstado, expediente);
+            StorageManager.solicitudes.save(sol);
 
-            const config = JSON.parse(localStorage.getItem(STORAGE_KEYS.config) || '{}');
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Documento "' + (sol.documentos[docKey].label || docKey) + '" marcado como ' + nuevoEstado,
+                expediente: expediente
+            });
+
+            const config = StorageManager.config.get();
             if (nuevoEstado === 'Corrección solicitada') {
                 simularNotificacion('Subsanación requerida',
                     config.msgSubsanacion || 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.',
@@ -2838,23 +2489,31 @@
             const observacion = document.getElementById('observacion-ts').value;
             if (!expedienteActual) return;
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const index = solicitudes.findIndex(s => s.expediente === expedienteActual);
-            if (index !== -1) {
-                solicitudes[index].observacionTS = observacion;
-                if (solicitudes[index].estado === 'Enviada') {
-                    solicitudes[index].estado = 'En revisión TS';
+            const sol = StorageManager.solicitudes.getByExpediente(expedienteActual);
+            if (sol) {
+                sol.observacionTS = observacion;
+                if (sol.estado === 'Enviada') {
+                    sol.estado = 'En revisión TS';
                 }
-                solicitudes[index].historial = solicitudes[index].historial || [];
-                solicitudes[index].historial.push({
+                sol.historial = sol.historial || [];
+                sol.historial.push({
                     fecha: new Date().toISOString(),
                     accion: 'Observaciones agregadas',
                     detalles: observacion,
                     usuario: 'Trabajador Social'
                 });
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
-                registrarBitacora('Observaciones agregadas por Trabajador Social', expedienteActual);
-                notify('Observaciones guardadas correctamente');
+                StorageManager.solicitudes.save(sol);
+
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Trabajador Social',
+                    rol: session ? session.rol : 'trabajador_social',
+                    accion: 'Observaciones agregadas por Trabajador Social',
+                    expediente: expedienteActual
+                });
+
+                notify('✅ Observaciones guardadas correctamente');
                 closeModal('modal-expediente');
                 renderDashboards();
                 if (document.getElementById('soc-estadisticas').classList.contains('active')) {
@@ -2882,46 +2541,65 @@
                 return;
             }
 
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const nuevaId = convocatorias.length ? Math.max(...convocatorias.map(c => c.id)) + 1 : 1;
-            convocatorias.push({
-                id: nuevaId,
-                nombre,
-                tipo,
+            const nuevaConvocatoria = {
+                nombre: nombre,
+                tipo: tipo,
                 cupos: parseInt(cupos),
                 fechaApertura: fechaApertura,
                 horaApertura: horaApertura,
                 fechaCierre: fechaCierre,
                 horaCierre: horaCierre,
                 estado: 'Borrador'
+            };
+
+            StorageManager.convocatorias.save(nuevaConvocatoria);
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Convocatoria creada (Borrador)',
+                expediente: '—'
             });
-            localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify(convocatorias));
-            registrarBitacora('Convocatoria creada (Borrador)', '—');
+
             notify('Convocatoria registrada como Borrador');
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            renderSocialDashboard(session);
         }
 
         function publicarConvocatoria(id) {
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const index = convocatorias.findIndex(c => c.id === id);
-            if (index !== -1) {
-                convocatorias[index].estado = 'Activa';
-                localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify(convocatorias));
-                registrarBitacora('Convocatoria publicada', '—');
+            const convocatoria = StorageManager.convocatorias.getById(id);
+            if (convocatoria) {
+                convocatoria.estado = 'Activa';
+                StorageManager.convocatorias.save(convocatoria);
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Trabajador Social',
+                    rol: session ? session.rol : 'trabajador_social',
+                    accion: 'Convocatoria publicada',
+                    expediente: '—'
+                });
                 notify('Convocatoria publicada y visible para estudiantes');
-                renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+                renderSocialDashboard(session);
             }
         }
 
         function cerrarConvocatoria(id) {
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const index = convocatorias.findIndex(c => c.id === id);
-            if (index !== -1) {
-                convocatorias[index].estado = 'Cerrada';
-                localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify(convocatorias));
-                registrarBitacora('Convocatoria cerrada manualmente', '—');
+            const convocatoria = StorageManager.convocatorias.getById(id);
+            if (convocatoria) {
+                convocatoria.estado = 'Cerrada';
+                StorageManager.convocatorias.save(convocatoria);
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Trabajador Social',
+                    rol: session ? session.rol : 'trabajador_social',
+                    accion: 'Convocatoria cerrada manualmente',
+                    expediente: '—'
+                });
                 notify('Convocatoria cerrada');
-                renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+                renderSocialDashboard(session);
             }
         }
 
@@ -2932,7 +2610,7 @@
             const visitasLista = document.getElementById('visitas-lista');
             if (!visitasLista) return;
 
-            const visitas = JSON.parse(localStorage.getItem(STORAGE_KEYS.visitas) || '[]');
+            const visitas = StorageManager.visitas.getAll();
             if (visitas.length === 0) {
                 visitasLista.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;">No hay visitas registradas.</p>';
                 return;
@@ -2946,8 +2624,7 @@
                 (v.condiciones ? '<br><strong>Condiciones:</strong> ' + v.condiciones : '') +
                 (v.coincide ? '<br><strong>Coincide:</strong> ' + v.coincide : '') +
                 (v.archivo ? ' <span style="font-size:0.8rem;">(📎 Archivo adjunto)</span>' : '') +
-                (v.metadata ? '<br><span style="font-size:0.75rem;color:var(--muted);">🔍 Evidencia: ' + v.metadata +
-                    '</span>' : '') +
+                (v.metadata ? '<br><span style="font-size:0.75rem;color:var(--muted);">🔍 Evidencia: ' + v.metadata + '</span>' : '') +
                 (v.estado === 'Pendiente' ?
                     ' <span class="badge badge-warning">Pendiente</span>' :
                     ' <span class="badge badge-success">Realizada</span>') +
@@ -2969,9 +2646,6 @@
                 return;
             }
 
-            const visitas = JSON.parse(localStorage.getItem(STORAGE_KEYS.visitas) || '[]');
-
-            // Procesar archivo y metadata
             let archivo = null;
             let metadata = '';
 
@@ -2980,10 +2654,7 @@
                 const ahora = new Date();
                 const fechaHora = ahora.toLocaleString();
 
-                // Obtener datos del estudiante
-                const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-                const solicitud = solicitudes.find(s => s.expediente === expediente);
-
+                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
                 if (solicitud) {
                     metadata = `Cédula: ${solicitud.cedula || 'N/D'} | ${solicitud.nombres} ${solicitud.apellidos} | Fecha/Hora: ${fechaHora} | Archivo: ${archivo}`;
                 } else {
@@ -2991,40 +2662,42 @@
                 }
             }
 
-            // Actualizar la solicitud si estaba en "Visita pendiente"
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
-            if (solIndex !== -1 && solicitudes[solIndex].estado === 'Visita pendiente') {
-                solicitudes[solIndex].estado = 'En revisión TS';
-                solicitudes[solIndex].progreso = 45;
-                solicitudes[solIndex].historial = solicitudes[solIndex].historial || [];
-                solicitudes[solIndex].historial.push({
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
+            if (sol && sol.estado === 'Visita pendiente') {
+                sol.estado = 'En revisión TS';
+                sol.progreso = 45;
+                sol.historial = sol.historial || [];
+                sol.historial.push({
                     fecha: new Date().toISOString(),
                     accion: 'Visita realizada',
                     detalles: condiciones + (obsAdicional ? ' - ' + obsAdicional : ''),
                     usuario: 'Trabajador Social'
                 });
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+                StorageManager.solicitudes.save(sol);
             }
 
-            // Guardar visita
             const visitaCompleta = {
-                expediente,
-                fecha,
+                expediente: expediente,
+                fecha: fecha,
                 condiciones: condiciones + (obsAdicional ? ' (Observación adicional: ' + obsAdicional + ')' : ''),
-                coincide,
+                coincide: coincide,
                 archivo: archivo,
                 metadata: metadata,
                 fechaRegistro: new Date().toLocaleString(),
                 estado: 'Realizada'
             };
 
-            visitas.push(visitaCompleta);
-            localStorage.setItem(STORAGE_KEYS.visitas, JSON.stringify(visitas));
+            StorageManager.visitas.save(visitaCompleta);
 
-            registrarBitacora('Visita domiciliaria registrada - Expediente ' + expediente, expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Visita domiciliaria registrada - Expediente ' + expediente,
+                expediente: expediente
+            });
 
-            // Limpiar campos
             document.getElementById('visita-expediente').value = '';
             document.getElementById('visita-fecha').value = '';
             document.getElementById('visita-condiciones').value = '';
@@ -3034,14 +2707,14 @@
             document.getElementById('visita-declaraciones').classList.add('hidden');
 
             notify('✅ Visita registrada correctamente');
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            renderSocialDashboard(session);
         }
 
         // ============================================================
         // NOTICIAS
         // ============================================================
         function renderNoticias() {
-            const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
+            const noticias = StorageManager.noticias.getAll();
             const noticiasListaDiv = document.getElementById('noticias-lista');
             if (!noticiasListaDiv) return;
 
@@ -3059,8 +2732,7 @@
                     '<div style="flex:1;">' +
                     '<strong>' + n.titulo + '</strong>' +
                     ' <span class="noticia-tag ' + estadoClass + '">' + estadoLabel + '</span>' +
-                    '<br><span style="font-size:0.78rem;color:var(--muted);">Publicación: ' + n
-                    .fechaPublicacion + '</span>' +
+                    '<br><span style="font-size:0.78rem;color:var(--muted);">Publicación: ' + n.fechaPublicacion + '</span>' +
                     '<br>' + n.contenido +
                     '</div>' +
                     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' +
@@ -3082,35 +2754,46 @@
                 return;
             }
 
-            let noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
+            const noticia = {
+                titulo: titulo,
+                contenido: contenido,
+                fechaPublicacion: fechaPublicacion,
+                fecha: new Date().toLocaleDateString()
+            };
 
             if (idEdicion) {
-                const index = noticias.findIndex(n => n.id == idEdicion);
-                if (index !== -1) {
-                    noticias[index] = { ...noticias[index], titulo, contenido, fechaPublicacion, fechaEdicion: new Date()
-                            .toLocaleDateString() };
-                    registrarBitacora('Noticia editada', '—');
+                const existente = StorageManager.noticias.getById(parseInt(idEdicion));
+                if (existente) {
+                    existente.titulo = titulo;
+                    existente.contenido = contenido;
+                    existente.fechaPublicacion = fechaPublicacion;
+                    existente.fechaEdicion = new Date().toLocaleDateString();
+                    StorageManager.noticias.save(existente);
                 }
                 document.getElementById('noticia-editar-id').value = '';
             } else {
-                const nuevaId = noticias.length ? Math.max(...noticias.map(n => n.id)) + 1 : 1;
-                noticias.unshift({ id: nuevaId, titulo, contenido, fechaPublicacion, fecha: new Date()
-                        .toLocaleDateString() });
-                registrarBitacora('Noticia publicada', '—');
+                StorageManager.noticias.save(noticia);
             }
 
-            localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify(noticias));
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: idEdicion ? 'Noticia editada' : 'Noticia publicada',
+                expediente: '—'
+            });
+
             notify('Noticia guardada');
             document.getElementById('noticia-titulo').value = '';
             document.getElementById('noticia-contenido').value = '';
             document.getElementById('noticia-fecha-publicacion').value = '';
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            renderSocialDashboard(session);
             renderPublicNoticias();
         }
 
         function editarNoticia(id) {
-            const noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
-            const noticia = noticias.find(n => n.id === id);
+            const noticia = StorageManager.noticias.getById(id);
             if (noticia) {
                 document.getElementById('noticia-titulo').value = noticia.titulo;
                 document.getElementById('noticia-contenido').value = noticia.contenido;
@@ -3122,11 +2805,16 @@
 
         async function eliminarNoticia(id) {
             if (!(await customConfirm('¿Eliminar esta noticia?'))) return;
-            let noticias = JSON.parse(localStorage.getItem(STORAGE_KEYS.noticias) || '[]');
-            noticias = noticias.filter(n => n.id !== id);
-            localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify(noticias));
-            registrarBitacora('Noticia eliminada', '—');
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            StorageManager.noticias.delete(id);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Noticia eliminada',
+                expediente: '—'
+            });
+            renderSocialDashboard(session);
             renderPublicNoticias();
         }
 
@@ -3139,7 +2827,7 @@
         }
 
         function renderApelaciones() {
-            const apelaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.apelaciones) || '[]');
+            const apelaciones = StorageManager.apelaciones.getAll();
             const tbody = document.getElementById('soc-tabla-apelaciones');
             if (!tbody) return;
 
@@ -3154,8 +2842,7 @@
             }
 
             if (apelacionesFiltradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay apelaciones con estado "' +
-                    filtroApelaciones + '".</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay apelaciones con estado "' + filtroApelaciones + '".</td></tr>';
                 return;
             }
 
@@ -3164,12 +2851,9 @@
                     (a.estado === 'Revisada' ? 'badge-success' : 'badge-neutral');
                 const nombreEstudiante = a.nombreEstudiante || a.email;
                 const accionBotones = a.estado === 'Pendiente' ?
-                    '<button class="btn btn-small btn-success" onclick="resolverApelacion(\'' + a
-                    .expediente + '\', \'Revocar Rechazo\')">Revocar</button>' +
-                    '<button class="btn btn-small btn-danger" onclick="resolverApelacion(\'' + a
-                    .expediente + '\', \'Confirmar Rechazo\')">Confirmar</button>' :
-                    '<span style="color:var(--muted);font-size:0.8rem;">' + (a.decision || 'Resuelta') +
-                    '</span>';
+                    '<button class="btn btn-small btn-success" onclick="resolverApelacion(\'' + a.expediente + '\', \'Revocar Rechazo\')">Revocar</button>' +
+                    '<button class="btn btn-small btn-danger" onclick="resolverApelacion(\'' + a.expediente + '\', \'Confirmar Rechazo\')">Confirmar</button>' :
+                    '<span style="color:var(--muted);font-size:0.8rem;">' + (a.decision || 'Resuelta') + '</span>';
 
                 return '<tr>' +
                     '<td><strong>' + a.expediente + '</strong></td>' +
@@ -3185,53 +2869,55 @@
 
         async function resolverApelacion(expediente, decision) {
             if (!(await customConfirm('¿Está seguro de ' +
-                    (decision === 'Revocar Rechazo' ?
-                        'revocar el rechazo y aprobar la apelación' :
-                        'confirmar el rechazo') +
+                    (decision === 'Revocar Rechazo' ? 'revocar el rechazo y aprobar la apelación' : 'confirmar el rechazo') +
                     ' para el expediente ' + expediente + '?'))) return;
 
-            const apelaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.apelaciones) || '[]');
-            const apelacionIndex = apelaciones.findIndex(a => a.expediente === expediente);
-            if (apelacionIndex !== -1) {
-                apelaciones[apelacionIndex].estado = 'Revisada';
-                apelaciones[apelacionIndex].decision = decision;
-                localStorage.setItem(STORAGE_KEYS.apelaciones, JSON.stringify(apelaciones));
+            const apelacion = StorageManager.apelaciones.getByExpediente(expediente);
+            if (apelacion) {
+                apelacion.estado = 'Revisada';
+                apelacion.decision = decision;
+                StorageManager.apelaciones.save(apelacion);
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
-            if (solicitud) {
-                solicitud.historial = solicitud.historial || [];
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
+            if (sol) {
+                sol.historial = sol.historial || [];
                 if (decision === 'Revocar Rechazo') {
-                    solicitud.estado = 'En Revisión por Apelación';
-                    solicitud.progreso = 60;
-                    solicitud.historial.push({
+                    sol.estado = 'En Revisión por Apelación';
+                    sol.progreso = 60;
+                    sol.historial.push({
                         fecha: new Date().toISOString(),
                         accion: 'Apelación revocada',
                         detalles: 'El rechazo fue revocado. Solicitud en revisión.',
                         usuario: 'Trabajador Social'
                     });
                 } else {
-                    solicitud.estado = 'Rechazado Definitivo';
-                    solicitud.progreso = 100;
-                    solicitud.historial.push({
+                    sol.estado = 'Rechazado Definitivo';
+                    sol.progreso = 100;
+                    sol.historial.push({
                         fecha: new Date().toISOString(),
                         accion: 'Apelación confirmada',
                         detalles: 'El rechazo original se mantiene.',
                         usuario: 'Trabajador Social'
                     });
                 }
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+                StorageManager.solicitudes.save(sol);
             }
 
-            registrarBitacora('Apelación resuelta: ' + decision, expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Apelación resuelta: ' + decision,
+                expediente: expediente
+            });
+
             simularNotificacion(
                 decision === 'Revocar Rechazo' ? 'Apelación Revocada' : 'Apelación Rechazada',
                 decision === 'Revocar Rechazo' ?
-                'Tu apelación para el expediente ' + expediente +
-                ' ha sido aceptada. Tu solicitud será reevaluada.' :
-                'Tu apelación para el expediente ' + expediente +
-                ' ha sido confirmada. La decisión de rechazo se mantiene.',
+                'Tu apelación para el expediente ' + expediente + ' ha sido aceptada. Tu solicitud será reevaluada.' :
+                'Tu apelación para el expediente ' + expediente + ' ha sido confirmada. La decisión de rechazo se mantiene.',
                 expediente
             );
 
@@ -3253,13 +2939,12 @@
         }
 
         function renderJustificacionesTS() {
-            const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
+            const justificaciones = StorageManager.justificaciones.getAll();
             const tbody = document.getElementById('soc-tabla-justificaciones');
             if (!tbody) return;
 
             if (justificaciones.length === 0) {
-                tbody.innerHTML =
-                    '<tr><td colspan="7" style="text-align:center;">No hay justificaciones registradas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay justificaciones registradas.</td></tr>';
                 return;
             }
 
@@ -3269,8 +2954,7 @@
             }
 
             if (justificacionesFiltradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay justificaciones con estado "' +
-                    filtroJustificaciones + '".</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay justificaciones con estado "' + filtroJustificaciones + '".</td></tr>';
                 return;
             }
 
@@ -3279,14 +2963,10 @@
                     (j.estado === 'Rechazada' ? 'badge-danger' : 'badge-warning');
                 const nombreEstudiante = j.nombreEstudiante || j.email;
                 const accionBotones = j.estado === 'Pendiente' ?
-                    '<button class="btn btn-small btn-success" onclick="revisarJustificacion(' + j.id +
-                    ', \'Aprobada\')">Aprobar</button>' +
-                    '<button class="btn btn-small btn-danger" onclick="revisarJustificacion(' + j.id +
-                    ', \'Rechazada\')">Rechazar</button>' +
-                    '<button class="btn btn-small" onclick="verJustificacionDetalle(' + j.id +
-                    ')">Ver</button>' :
-                    '<span style="color:var(--muted);font-size:0.8rem;">' + (j.observacion || 'Revisada') +
-                    '</span>';
+                    '<button class="btn btn-small btn-success" onclick="revisarJustificacion(' + j.id + ', \'Aprobada\')">Aprobar</button>' +
+                    '<button class="btn btn-small btn-danger" onclick="revisarJustificacion(' + j.id + ', \'Rechazada\')">Rechazar</button>' +
+                    '<button class="btn btn-small" onclick="verJustificacionDetalle(' + j.id + ')">Ver</button>' :
+                    '<span style="color:var(--muted);font-size:0.8rem;">' + (j.observacion || 'Revisada') + '</span>';
 
                 return '<tr>' +
                     '<td><strong>' + nombreEstudiante + '</strong></td>' +
@@ -3302,9 +2982,8 @@
         }
 
         async function revisarJustificacion(id, nuevoEstado) {
-            const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
-            const index = justificaciones.findIndex(j => j.id === id);
-            if (index === -1) return;
+            const justificacion = StorageManager.justificaciones.getById(id);
+            if (!justificacion) return;
 
             const resultado = await customPrompt('Observación de la justificación', [
                 { id: 'obs', label: 'Observación (opcional)', type: 'textarea', value: '' }
@@ -3312,18 +2991,25 @@
             if (resultado === null) return;
 
             const observacion = resultado.obs || '';
-            justificaciones[index].estado = nuevoEstado;
-            if (observacion && observacion.trim()) justificaciones[index].observacion = observacion.trim();
-            localStorage.setItem(STORAGE_KEYS.justificaciones, JSON.stringify(justificaciones));
+            justificacion.estado = nuevoEstado;
+            if (observacion && observacion.trim()) justificacion.observacion = observacion.trim();
+            StorageManager.justificaciones.save(justificacion);
 
-            registrarBitacora('Justificación ' + nuevoEstado + ' para ' + justificaciones[index].curso, '—');
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Justificación ' + nuevoEstado + ' para ' + justificacion.curso,
+                expediente: '—'
+            });
+
             notify('Justificación ' + (nuevoEstado === 'Aprobada' ? 'aprobada' : 'rechazada') + ' correctamente.');
             renderJustificacionesTS();
         }
 
         function verJustificacionDetalle(id) {
-            const justificaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.justificaciones) || '[]');
-            const j = justificaciones.find(j => j.id === id);
+            const j = StorageManager.justificaciones.getById(id);
             if (!j) return;
 
             notify('DETALLE DE JUSTIFICACIÓN\n\n' +
@@ -3342,7 +3028,7 @@
         // SUSPENSIONES
         // ============================================================
         function renderSuspensionesLista() {
-            const suspensiones = JSON.parse(localStorage.getItem(STORAGE_KEYS.suspensiones) || '[]');
+            const suspensiones = StorageManager.suspensiones.getAll();
             const listaDiv = document.getElementById('suspensiones-lista');
             if (!listaDiv) return;
 
@@ -3360,27 +3046,22 @@
                     (s.estado === 'Restaurada' ? 'Restaurada' : 'Cancelada');
                 return '<div class="suspension-card ' + estadoClass + '">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
-                    '<strong>' + (s.nombreEstudiante || s.email) + ' - Expediente: ' + (s.expediente || 'N/A') +
-                    '</strong>' +
+                    '<strong>' + (s.nombreEstudiante || s.email) + ' - Expediente: ' + (s.expediente || 'N/A') + '</strong>' +
                     '<span class="badge ' + (s.estado === 'Activa' ? 'badge-danger' :
                         (s.estado === 'Restaurada' ? 'badge-success' : 'badge-neutral')) +
                     '">' + estadoTexto + '</span>' +
                     '</div>' +
                     '<p style="margin-top:4px; font-size:0.88rem;">' +
-                    '<strong>Tipo:</strong> ' + (s.tipo === 'suspension' ? 'Suspensión temporal' :
-                        'Cancelación definitiva') +
+                    '<strong>Tipo:</strong> ' + (s.tipo === 'suspension' ? 'Suspensión temporal' : 'Cancelación definitiva') +
                     (s.dias && s.dias !== 'Cancelada' ? ' · <strong>Días:</strong> ' + s.dias : '') +
                     '</p>' +
                     '<p style="font-size:0.88rem;"><strong>Motivo:</strong> ' + s.motivo + '</p>' +
                     '<p style="font-size:0.85rem; color:var(--muted);">' +
                     (s.observaciones || 'Sin observaciones adicionales.') + '</p>' +
-                    (s.evidencia ? '<p style="font-size:0.85rem;"><a href="' + s.evidencia +
-                    '" target="_blank">Ver evidencia adjunta</a></p>' : '') +
-                    '<p style="font-size:0.78rem; color:var(--muted); margin-top:4px;">Registrado: ' + s.fecha +
-                    '</p>' +
+                    (s.evidencia ? '<p style="font-size:0.85rem;"><a href="' + s.evidencia + '" target="_blank">Ver evidencia adjunta</a></p>' : '') +
+                    '<p style="font-size:0.78rem; color:var(--muted); margin-top:4px;">Registrado: ' + s.fecha + '</p>' +
                     (s.estado === 'Activa' ?
-                        '<button class="btn btn-small btn-success" onclick="restaurarBecaEspecifica(' + s.id +
-                        ')" style="margin-top:8px;">Restaurar beca</button>' : '') +
+                        '<button class="btn btn-small btn-success" onclick="restaurarBecaEspecifica(' + s.id + ')" style="margin-top:8px;">Restaurar beca</button>' : '') +
                     '</div>';
             }).join('');
         }
@@ -3401,13 +3082,10 @@
                 return;
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const estudiante = solicitudes.find(s => s.estudianteEmail === email && s.expediente === expediente);
+            const estudiante = StorageManager.solicitudes.getByExpediente(expediente);
             if (!estudiante) { notify('No se encontró el estudiante.'); return; }
 
-            const suspensiones = JSON.parse(localStorage.getItem(STORAGE_KEYS.suspensiones) || '[]');
             const nuevaSuspension = {
-                id: suspensiones.length ? Math.max(...suspensiones.map(s => s.id)) + 1 : 1,
                 email: email,
                 expediente: expediente,
                 tipo: tipo,
@@ -3419,33 +3097,37 @@
                 evidencia: null,
                 nombreEstudiante: estudiante.nombres + ' ' + estudiante.apellidos
             };
-            suspensiones.push(nuevaSuspension);
-            localStorage.setItem(STORAGE_KEYS.suspensiones, JSON.stringify(suspensiones));
 
-            const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
-            if (solIndex !== -1) {
-                solicitudes[solIndex].estado = tipo === 'suspension' ? 'Suspendida' : 'Cancelada';
-                solicitudes[solIndex].suspensionMotivo = motivo;
-                solicitudes[solIndex].suspensionObservaciones = observaciones;
-                solicitudes[solIndex].suspensionFecha = nuevaSuspension.fecha;
-                solicitudes[solIndex].historial = solicitudes[solIndex].historial || [];
-                solicitudes[solIndex].historial.push({
+            StorageManager.suspensiones.save(nuevaSuspension);
+
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
+            if (sol) {
+                sol.estado = tipo === 'suspension' ? 'Suspendida' : 'Cancelada';
+                sol.suspensionMotivo = motivo;
+                sol.suspensionObservaciones = observaciones;
+                sol.suspensionFecha = nuevaSuspension.fecha;
+                sol.historial = sol.historial || [];
+                sol.historial.push({
                     fecha: new Date().toISOString(),
                     accion: tipo === 'suspension' ? 'Beca Suspendida' : 'Beca Cancelada',
                     detalles: motivo + ' - ' + observaciones,
                     usuario: 'Trabajador Social'
                 });
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+                StorageManager.solicitudes.save(sol);
             }
 
-            registrarBitacora('Beca ' + (tipo === 'suspension' ? 'suspendida' : 'cancelada') +
-                ' para ' + email + ' - Motivo: ' + motivo, expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Beca ' + (tipo === 'suspension' ? 'suspendida' : 'cancelada') + ' para ' + email + ' - Motivo: ' + motivo,
+                expediente: expediente
+            });
 
             const mensaje = tipo === 'suspension' ?
-                'Tu beca ha sido suspendida por ' + (dias || '30') +
-                ' días. Motivo: ' + motivo + '. Por favor revisa las observaciones en tu panel.' :
-                'Tu beca ha sido cancelada definitivamente. Motivo: ' + motivo +
-                '. Puedes apelar esta decisión si lo consideras.';
+                'Tu beca ha sido suspendida por ' + (dias || '30') + ' días. Motivo: ' + motivo + '. Por favor revisa las observaciones en tu panel.' :
+                'Tu beca ha sido cancelada definitivamente. Motivo: ' + motivo + '. Puedes apelar esta decisión si lo consideras.';
             simularNotificacion('Beca ' + (tipo === 'suspension' ? 'Suspendida' : 'Cancelada'), mensaje, expediente);
 
             notify('Beca ' + (tipo === 'suspension' ? 'suspendida' : 'cancelada') + ' correctamente.');
@@ -3454,44 +3136,48 @@
             document.getElementById('suspender-evidencia').value = '';
             document.getElementById('suspender-dias').value = '';
 
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            renderSocialDashboard(session);
         }
 
         async function restaurarBecaEspecifica(id) {
-            if (!(await customConfirm('¿Restaurar esta beca? El estudiante volverá a tener el beneficio activo.')))
-            return;
+            if (!(await customConfirm('¿Restaurar esta beca? El estudiante volverá a tener el beneficio activo.'))) return;
 
-            const suspensiones = JSON.parse(localStorage.getItem(STORAGE_KEYS.suspensiones) || '[]');
-            const susIndex = suspensiones.findIndex(s => s.id === id);
-            if (susIndex === -1) return;
+            const suspension = StorageManager.suspensiones.getById(id);
+            if (!suspension) return;
 
-            const sus = suspensiones[susIndex];
-            suspensiones[susIndex].estado = 'Restaurada';
-            localStorage.setItem(STORAGE_KEYS.suspensiones, JSON.stringify(suspensiones));
+            suspension.estado = 'Restaurada';
+            StorageManager.suspensiones.save(suspension);
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solIndex = solicitudes.findIndex(s => s.expediente === sus.expediente);
-            if (solIndex !== -1) {
-                solicitudes[solIndex].estado = 'Beneficio Activo';
-                solicitudes[solIndex].restauradoFecha = new Date().toLocaleString();
-                solicitudes[solIndex].historial = solicitudes[solIndex].historial || [];
-                solicitudes[solIndex].historial.push({
+            const sol = StorageManager.solicitudes.getByExpediente(suspension.expediente);
+            if (sol) {
+                sol.estado = 'Beneficio Activo';
+                sol.restauradoFecha = new Date().toLocaleString();
+                sol.historial = sol.historial || [];
+                sol.historial.push({
                     fecha: new Date().toISOString(),
                     accion: 'Beca Restaurada',
                     detalles: 'Beca restaurada por Trabajador Social',
                     usuario: 'Trabajador Social'
                 });
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+                StorageManager.solicitudes.save(sol);
             }
 
-            registrarBitacora('Beca restaurada para ' + sus.email, sus.expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Beca restaurada para ' + suspension.email,
+                expediente: suspension.expediente
+            });
+
             simularNotificacion('Beca Restaurada',
                 'Tu beca ha sido restaurada. El beneficio vuelve a estar activo.',
-                sus.expediente
+                suspension.expediente
             );
 
             notify('Beca restaurada correctamente.');
-            renderSocialDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+            renderSocialDashboard(session);
         }
 
         function restaurarBeca() {
@@ -3501,7 +3187,7 @@
 
             const [email, expediente] = valor.split('|');
 
-            const suspensiones = JSON.parse(localStorage.getItem(STORAGE_KEYS.suspensiones) || '[]');
+            const suspensiones = StorageManager.suspensiones.getAll();
             const susActiva = suspensiones.find(s =>
                 s.email === email && s.expediente === expediente && s.estado === 'Activa'
             );
@@ -3518,7 +3204,7 @@
         // ESTADÍSTICAS
         // ============================================================
         function actualizarEstadisticas() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const aprobadas = solicitudes.filter(s =>
                 s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada'
             ).length;
@@ -3526,9 +3212,7 @@
                 s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' ||
                 s.estado === 'No elegible' || s.estado === 'Cancelada'
             ).length;
-            const subsanacion = solicitudes.filter(s =>
-                s.estado === 'Pendiente subsanación'
-            ).length;
+            const subsanacion = solicitudes.filter(s => s.estado === 'Pendiente subsanación').length;
             const estadosFinales = ['Aprobada', 'Beneficio Activo', 'Restaurada', 'Rechazada',
                 'Rechazado Definitivo', 'No elegible', 'Cerrada', 'Cancelada'
             ];
@@ -3579,9 +3263,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -3606,7 +3288,7 @@
         }
 
         function renderHistorial() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const container = document.getElementById('historial-lista');
             if (!container) return;
 
@@ -3649,8 +3331,7 @@
                 const estadoLabel = s.estado;
                 const acciones = s.historial && s.historial.length > 0 ?
                     s.historial.slice(0, 2).map(h =>
-                        '<span style="font-size:0.75rem;color:var(--muted);">' + h.accion + ' (' + new Date(h
-                            .fecha).toLocaleDateString() + ')</span>'
+                        '<span style="font-size:0.75rem;color:var(--muted);">' + h.accion + ' (' + new Date(h.fecha).toLocaleDateString() + ')</span>'
                     ).join('<br>') :
                     '<span style="font-size:0.75rem;color:var(--muted);">Sin acciones registradas</span>';
 
@@ -3661,14 +3342,12 @@
                     '</div>' +
                     '<div style="flex:1;min-width:120px;">' +
                     '<span class="badge ' + badgeEstado + '">' + estadoLabel + '</span>' +
-                    (pobreza !== null ? ' <span style="font-size:0.75rem;color:var(--muted);">' + pobreza
-                        .toFixed(1) + '% pobreza</span>' : '') +
+                    (pobreza !== null ? ' <span style="font-size:0.75rem;color:var(--muted);">' + pobreza.toFixed(1) + '% pobreza</span>' : '') +
                     '</div>' +
                     '<div style="flex:1;min-width:150px;">' + acciones + '</div>' +
                     '<div style="font-size:0.78rem;color:var(--muted);min-width:100px;">' + fecha + '</div>' +
                     '<div>' +
-                    '<button class="btn btn-small" onclick="verExpedienteTS(\'' + s.expediente +
-                    '\')" style="font-size:0.7rem;padding:4px 10px;">Ver</button>' +
+                    '<button class="btn btn-small" onclick="verExpedienteTS(\'' + s.expediente + '\')" style="font-size:0.7rem;padding:4px 10px;">Ver</button>' +
                     '</div>' +
                     '</div>';
             }).join('');
@@ -3678,10 +3357,10 @@
         // EXPORTAR REPORTES
         // ============================================================
         function exportarReporteCompleto() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const apelaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.apelaciones) || '[]');
-            const suspensiones = JSON.parse(localStorage.getItem(STORAGE_KEYS.suspensiones) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
+            const convocatorias = StorageManager.convocatorias.getAll();
+            const apelaciones = StorageManager.apelaciones.getAll();
+            const suspensiones = StorageManager.suspensiones.getAll();
 
             let csv = "=== REPORTE COMPLETO DE BECAS ===\n";
             csv += "Fecha de exportación: " + new Date().toLocaleString() + "\n\n";
@@ -3713,22 +3392,18 @@
             csv += "\n\n=== APELACIONES ===\n";
             csv += "Expediente,Estudiante,Motivo,Estado,Fecha,Decisión\n";
             csv += apelaciones.map(a =>
-                [a.expediente, a.nombreEstudiante || a.email, (a.motivo || '').replace(/,/g, ';'), a.estado, a.fecha, a
-                    .decision || 'N/A'
-                ].join(',')
+                [a.expediente, a.nombreEstudiante || a.email, (a.motivo || '').replace(/,/g, ';'), a.estado, a.fecha, a.decision || 'N/A']
             ).join('\n');
 
             csv += "\n\n=== SUSPENSIONES ===\n";
             csv += "Expediente,Estudiante,Tipo,Días,Motivo,Estado,Fecha\n";
             csv += suspensiones.map(s =>
-                [s.expediente || 'N/A', s.nombreEstudiante || s.email, s.tipo, s.dias, (s.motivo || '').replace(/,/g,
-                    ';'), s.estado, s.fecha].join(',')
+                [s.expediente || 'N/A', s.nombreEstudiante || s.email, s.tipo, s.dias, (s.motivo || '').replace(/,/g, ';'), s.estado, s.fecha]
             ).join('\n');
 
             csv += "\n\n=== RESUMEN ESTADÍSTICO ===\n";
             const aprobadas = solicitudes.filter(s => s.estado === 'Aprobada' || s.estado === 'Beneficio Activo').length;
-            const rechazadas = solicitudes.filter(s => s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' || s
-                .estado === 'No elegible').length;
+            const rechazadas = solicitudes.filter(s => s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' || s.estado === 'No elegible').length;
             const subsanacion = solicitudes.filter(s => s.estado === 'Pendiente subsanación').length;
             const enProceso = solicitudes.filter(s => !['Aprobada', 'Beneficio Activo', 'Rechazada', 'Rechazado Definitivo',
                     'No elegible', 'Cerrada', 'Cancelada', 'Pendiente subsanación'
@@ -3748,12 +3423,20 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            registrarBitacora('Exportación CSV de reporte completo', '—');
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Exportación CSV de reporte completo',
+                expediente: '—'
+            });
             notify('Reporte completo exportado correctamente.');
         }
 
         function exportarReporteResumido() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             let csv = "Expediente,Estudiante,Tipo Beca,Estado,Promedio,% Pobreza,Fecha\n";
             csv += solicitudes.map(s => {
                 const pobreza = calcularPorcentajePobreza(s);
@@ -3777,7 +3460,15 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            registrarBitacora('Exportación CSV de reporte resumido', '—');
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Exportación CSV de reporte resumido',
+                expediente: '—'
+            });
             notify('Reporte resumido exportado correctamente.');
         }
 
@@ -3808,8 +3499,7 @@
             if (tabId === 'soc-asignadas') renderSolicitudes();
             if (tabId === 'soc-noticias') renderNoticias();
             if (tabId === 'soc-visitas') {
-                // Recargar lista de expedientes para visitas
-                const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+                const solicitudes = StorageManager.solicitudes.getAll();
                 const select = document.getElementById('visita-expediente');
                 if (select) {
                     const expedientesConVisita = solicitudes.filter(s =>
@@ -3817,8 +3507,7 @@
                     );
                     select.innerHTML = '<option value="">Seleccionar Expediente</option>' +
                         expedientesConVisita.map(s =>
-                            '<option value="' + s.expediente + '">' + s.expediente + ' - ' + s.nombres + ' ' + s
-                            .apellidos + ' (' + s.estado + ')</option>'
+                            '<option value="' + s.expediente + '">' + s.expediente + ' - ' + s.nombres + ' ' + s.apellidos + ' (' + s.estado + ')</option>'
                         ).join('');
                 }
                 renderVisitasLista();
@@ -3828,179 +3517,25 @@
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
-                        nombre: 'María Gómez' },
-                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez' },
-                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Ana Méndez' },
-                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
-                        nombre: 'Admin Sistema' },
-                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
-                        nombre: 'Luis Fernández' }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([
-                    { expediente: 'BEC-2026-001', fecha: '2026-01-15',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Excelencia Académica', estado: 'Beneficio Activo', progreso: 100,
-                        puntaje: 95, promedio: 92, ingresoFamiliar: 450000, aceptado: true,
-                        porcentajeCobertura: '75%', fechaAprobacion: '2026-01-20',
-                        observacionTS: 'Documentación completa. Se recomienda aprobación.',
-                        datosCompletos: {
-                            'f-vivienda': 'Casa propia de concreto',
-                            'f-habitaciones': '4',
-                            'f-material': 'Concreto y block',
-                            'f-servicios': 'Agua potable, electricidad, internet',
-                            'f-condiciones': 'Buenas condiciones generales',
-                            'f-ingreso': '450000',
-                            'f-dependientes': '2',
-                            'f-trabajadores': '2',
-                            'f-laboral': 'Empleado formal',
-                            'f-transporte': 'Automóvil propio',
-                            'f-gastos': '200000'
-                        },
-                        historial: [
-                            { fecha: '2026-01-15T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' },
-                            { fecha: '2026-01-18T14:30:00', accion: 'Documentos aprobados',
-                                detalles: 'Todos los documentos fueron validados',
-                                usuario: 'Trabajador Social' },
-                            { fecha: '2026-01-20T09:00:00', accion: 'Aprobada',
-                                detalles: 'Aprobada con cobertura del 75%',
-                                usuario: 'Trabajador Social' }
-                        ],
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Aprobado' },
-                            'f-cedula-p': { label: 'Copia de cédula (posterior)',
-                                nombre: 'cedula_posterior.pdf', estado: 'Aprobado' }
-                        }
-                    },
-                    { expediente: 'BEC-2026-002', fecha: '2026-01-18',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Socioeconómica', estado: 'Visita pendiente', progreso: 40,
-                        puntaje: 0, promedio: 85, ingresoFamiliar: 350000, aceptado: false,
-                        datosCompletos: {
-                            'f-vivienda': 'Casa alquilada de madera',
-                            'f-habitaciones': '2',
-                            'f-material': 'Madera y lámina',
-                            'f-servicios': 'Agua potable, electricidad (compartido)',
-                            'f-condiciones': 'Condiciones regulares, requiere mantenimiento',
-                            'f-ingreso': '350000',
-                            'f-dependientes': '3',
-                            'f-trabajadores': '1',
-                            'f-laboral': 'Trabajo informal',
-                            'f-transporte': 'Transporte público',
-                            'f-gastos': '300000'
-                        },
-                        historial: [
-                            { fecha: '2026-01-18T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' },
-                            { fecha: '2026-01-20T11:00:00', accion: 'Visita solicitada',
-                                detalles: 'Se requiere verificación de condiciones de vivienda',
-                                usuario: 'Trabajador Social' }
-                        ],
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Pendiente' },
-                            'f-cedula-p': { label: 'Copia de cédula (posterior)',
-                                nombre: 'cedula_posterior.pdf', estado: 'Pendiente' }
-                        }
-                    },
-                    { expediente: 'BEC-2026-003', fecha: '2026-01-20',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Investigación', estado: 'Rechazada', progreso: 50, puntaje: 0,
-                        promedio: 76, ingresoFamiliar: 600000, aceptado: false,
-                        motivoRechazo: 'El promedio académico (76) no alcanza el mínimo requerido (85).',
-                        fechaRechazo: '2026-01-25',
-                        historial: [
-                            { fecha: '2026-01-20T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' },
-                            { fecha: '2026-01-25T09:00:00', accion: 'Rechazada',
-                                detalles: 'No cumple con el requisito de promedio mínimo',
-                                usuario: 'Trabajador Social' }
-                        ]
-                    }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.apelaciones)) {
-                localStorage.setItem(STORAGE_KEYS.apelaciones, JSON.stringify([
-                    { expediente: 'BEC-2026-003', email: 'estudiante@becas.com',
-                        nombreEstudiante: 'María Gómez',
-                        motivo: 'Considero que mi promedio (76) no refleja mi capacidad real.',
-                        estado: 'Pendiente', fecha: '2026-02-10', decision: null, archivo: null }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.justificaciones)) {
-                localStorage.setItem(STORAGE_KEYS.justificaciones, JSON.stringify([
-                    { id: 1, email: 'estudiante@becas.com', nombreEstudiante: 'María Gómez',
-                        curso: 'Matemática I', codigo: 'MA-1001', periodo: 'I-2025', nota: 65,
-                        motivo: 'Problemas de salud.', estado: 'Pendiente', observacion: '',
-                        fecha: '2025-12-01', archivo: null }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.noticias)) {
-                const hoy = new Date();
-                const fechaHoy = hoy.toISOString().slice(0, 10);
-                const fechaFutura = new Date(hoy.getTime() + 30 * 86400000).toISOString().slice(0, 10);
-                localStorage.setItem(STORAGE_KEYS.noticias, JSON.stringify([
-                    { id: 1, titulo: 'Convocatoria 2026 abierta',
-                        contenido: 'Ya están disponibles las becas para el período 2026. Revisa los requisitos en el portal.',
-                        fechaPublicacion: fechaHoy, fecha: hoy.toLocaleDateString() },
-                    { id: 2, titulo: 'Próxima convocatoria',
-                        contenido: 'La convocatoria para becas de investigación se abrirá en marzo.',
-                        fechaPublicacion: fechaFutura, fecha: hoy.toLocaleDateString() }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.convocatorias)) {
-                const hoy = new Date();
-                const fmt = (d) => d.toISOString().slice(0, 10);
-                const apertura = new Date(hoy.getTime() - 10 * 86400000);
-                const cierre = new Date(hoy.getTime() + 20 * 86400000);
-                localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify([
-                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica',
-                        cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre),
-                        estado: 'Borrador' }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.suspensiones)) {
-                localStorage.setItem(STORAGE_KEYS.suspensiones, JSON.stringify([]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.visitas)) {
-                localStorage.setItem(STORAGE_KEYS.visitas, JSON.stringify([]));
-            }
-        }
-
         (function init() {
-            initData();
             renderHeaderNav();
 
-            const storedSession = localStorage.getItem(STORAGE_KEYS.session);
-            if (storedSession) {
-                const session = JSON.parse(storedSession);
-                if (session.rol === 'trabajador_social') {
-                    showView('view-dash-social');
-                    renderDashboards();
-                } else {
-                    showView('view-public');
-                    renderPublicNoticias();
+            const storedSession = StorageManager.session.get();
+            if (storedSession && storedSession.rol === 'trabajador_social') {
+                showView('view-dash-social');
+                renderDashboards();
+            } else if (storedSession) {
+                const dashMap = {
+                    estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
+                    trabajador_social: 'panel_trabajador_social.html',
+                    comite: 'panel_comite.html',
+                    admin: 'panel_admin.html',
+                    auditor: 'panel_auditor.html'
+                };
+                const target = dashMap[storedSession.rol];
+                if (target) {
+                    window.location.href = target;
                 }
             } else {
                 showView('view-public');
@@ -4011,16 +3546,12 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            document.getElementById('db-status').textContent = 'Conectado';
+            document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
 
-            const tipos = getTiposBecaLocal();
-            const convTipo = document.getElementById('conv-tipo');
-            if (convTipo) {
-                convTipo.innerHTML = tipos.filter(t => t.activo).map(t =>
-                    '<option value="' + t.nombre + '">' + t.nombre + '</option>'
-                ).join('');
-            }
+            StorageManager.on('session_actualizada', function() {
+                renderHeaderNav();
+            });
         })();
     </script>
 

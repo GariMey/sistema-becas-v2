@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -29,11 +30,7 @@
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -48,20 +45,9 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
         .btn {
             display: inline-flex;
@@ -75,44 +61,32 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
             box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
         .btn-outline {
             background: transparent;
             color: #fff;
             border: 1.5px solid rgba(255,255,255,0.55);
         }
-
         .btn-outline:hover {
             background: rgba(255,255,255,0.12);
             border-color: #fff;
         }
-
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
+        .btn-ghost:hover { border-color: var(--primary); }
         .btn-danger {
             background: #fdecea;
             color: var(--danger);
@@ -121,11 +95,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-danger:hover {
-            background: #f6c6c0;
-        }
-
+        .btn-danger:hover { background: #f6c6c0; }
         .btn-success {
             background: #e7f5ee;
             color: var(--success);
@@ -134,11 +104,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-success:hover { background: #b9e3cb; }
         .btn-warning {
             background: #fff3cd;
             color: var(--warning);
@@ -147,11 +113,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-warning:hover {
-            background: #ffeaa7;
-        }
-
+        .btn-warning:hover { background: #ffeaa7; }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.85rem;
@@ -159,14 +121,8 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-block { width: 100%; }
 
         .btn-vote-yes {
             background: #e7f5ee;
@@ -176,17 +132,12 @@
             font-size: 0.78rem;
             border-radius: 8px;
         }
-
-        .btn-vote-yes:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-vote-yes:hover { background: #b9e3cb; }
         .btn-vote-yes.voted {
             background: var(--success);
             color: #fff;
             border-color: var(--success);
         }
-
         .btn-vote-no {
             background: #fdecea;
             color: var(--danger);
@@ -195,17 +146,12 @@
             font-size: 0.78rem;
             border-radius: 8px;
         }
-
-        .btn-vote-no:hover {
-            background: #f6c6c0;
-        }
-
+        .btn-vote-no:hover { background: #f6c6c0; }
         .btn-vote-no.voted {
             background: var(--danger);
             color: #fff;
             border-color: var(--danger);
         }
-
         .btn-vote-abstain {
             background: #eceff3;
             color: var(--muted);
@@ -214,11 +160,7 @@
             font-size: 0.78rem;
             border-radius: 8px;
         }
-
-        .btn-vote-abstain:hover {
-            background: #d0d7e0;
-        }
-
+        .btn-vote-abstain:hover { background: #d0d7e0; }
         .btn-vote-abstain.voted {
             background: var(--muted);
             color: #fff;
@@ -233,7 +175,6 @@
             background: var(--primary-dark);
             box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -242,7 +183,6 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
@@ -250,7 +190,6 @@
             color: #fff;
             cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -265,32 +204,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .session-pill {
             display: flex;
             align-items: center;
@@ -298,7 +232,6 @@
             color: #fff;
             font-size: 0.88rem;
         }
-
         .session-pill .role-badge {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -310,7 +243,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -318,7 +250,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -332,7 +263,6 @@
             display: flex;
             min-height: calc(100vh - 75px);
         }
-
         .dash-sidebar {
             width: 250px;
             background: var(--primary-dark);
@@ -347,25 +277,21 @@
             height: calc(100vh - 75px);
             overflow-y: auto;
         }
-
         .dash-sidebar .dash-user {
             padding: 0 8px 18px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 14px;
         }
-
         .dash-sidebar .dash-user strong {
             display: block;
             font-size: 0.98rem;
         }
-
         .dash-sidebar .dash-user span {
             font-size: 0.78rem;
             color: var(--accent-light);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .dash-nav-item {
             display: flex;
             align-items: center;
@@ -379,50 +305,37 @@
             text-align: left;
             width: 100%;
         }
-
         .dash-nav-item:hover {
             background: rgba(255,255,255,0.06);
             color: #fff;
         }
-
         .dash-nav-item.active {
             background: var(--accent);
             color: var(--primary-dark);
             font-weight: 700;
         }
-
         .dash-nav-item.logout {
             margin-top: auto;
             color: #f6c6c0;
         }
-
         .dash-nav-item.logout:hover {
             background: rgba(192,57,43,0.18);
         }
-
         .dash-main {
             flex: 1;
             padding: 32px;
             max-width: 1100px;
         }
-
         .dash-main h2 {
             margin-bottom: 4px;
         }
-
         .dash-main .dash-sub {
             color: var(--muted);
             font-size: 0.95rem;
             margin-bottom: 24px;
         }
-
-        .dash-tab {
-            display: none;
-        }
-
-        .dash-tab.active {
-            display: block;
-        }
+        .dash-tab { display: none; }
+        .dash-tab.active { display: block; }
 
         .card-box {
             background: var(--paper);
@@ -432,7 +345,6 @@
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
-
         .card-box h3 {
             margin-bottom: 14px;
             font-size: 1.1rem;
@@ -450,19 +362,16 @@
             font-size: 0.88rem;
             margin-bottom: 10px;
         }
-
         .alert-box.info {
             background: #e6effa;
             border-color: #b8d0e8;
             color: var(--info);
         }
-
         .alert-box.success {
             background: #e7f5ee;
             border-color: #b9e3cb;
             color: var(--success);
         }
-
         .alert-box.danger {
             background: #fdecea;
             border-color: #f6c6c0;
@@ -474,7 +383,6 @@
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-
         .data-table th,
         .data-table td {
             padding: 12px 14px;
@@ -483,7 +391,6 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         .data-table th {
             color: var(--muted);
             font-size: 0.78rem;
@@ -491,7 +398,6 @@
             letter-spacing: 0.04em;
             font-weight: 700;
         }
-
         .data-table tbody tr:hover {
             background: #f9fafc;
         }
@@ -505,31 +411,11 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
-
-        .badge-info {
-            background: #e6effa;
-            color: var(--info);
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-
-        .badge-success {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-
-        .badge-danger {
-            background: #fdecea;
-            color: var(--danger);
-        }
-
-        .badge-neutral {
-            background: #eceff3;
-            color: var(--muted);
-        }
+        .badge-info { background: #e6effa; color: var(--info); }
+        .badge-warning { background: #fff3cd; color: var(--warning); }
+        .badge-success { background: #e7f5ee; color: var(--success); }
+        .badge-danger { background: #fdecea; color: var(--danger); }
+        .badge-neutral { background: #eceff3; color: var(--muted); }
 
         .counters-row {
             display: grid;
@@ -537,7 +423,6 @@
             gap: 16px;
             margin-bottom: 28px;
         }
-
         .counter-card {
             background: var(--paper);
             border: 1px solid var(--border);
@@ -546,14 +431,12 @@
             box-shadow: var(--shadow-sm);
             text-align: center;
         }
-
         .counter-card .num {
             font-family: 'Sora', sans-serif;
             font-size: 1.9rem;
             font-weight: 800;
             color: var(--primary);
         }
-
         .counter-card .label {
             color: var(--muted);
             font-size: 0.85rem;
@@ -565,23 +448,17 @@
             grid-template-columns: 1fr 1fr;
             gap: 18px;
         }
-
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
+        .form-field.full { grid-column: 1/-1; }
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -595,7 +472,6 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
@@ -614,7 +490,6 @@
             z-index: 2000;
             padding: 20px;
         }
-
         .modal-box {
             background: var(--paper);
             border-radius: 16px;
@@ -626,11 +501,7 @@
             overflow-y: auto;
             position: relative;
         }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
+        .modal-box.wide { max-width: 680px; }
         .modal-close {
             position: absolute;
             top: 14px;
@@ -641,15 +512,8 @@
             line-height: 1;
             padding: 4px;
         }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
         .modal-box .modal-sub {
             color: var(--muted);
             font-size: 0.88rem;
@@ -687,40 +551,32 @@
             font-size: 0.8rem;
             color: var(--muted);
         }
-
-        .modal-credentials strong {
-            color: var(--primary);
-        }
+        .modal-credentials strong { color: var(--primary); }
 
         .expediente-section {
             margin-bottom: 16px;
         }
-
         .expediente-section h4 {
             margin-bottom: 10px;
             font-size: 1rem;
             color: var(--primary);
         }
-
         .expediente-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px 18px;
         }
-
         .expediente-grid p {
             font-size: 0.9rem;
             margin: 0;
         }
 
-        /* Votación */
         .votacion-container {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             align-items: center;
         }
-
         .votacion-container .miembro-voto {
             display: flex;
             align-items: center;
@@ -731,68 +587,45 @@
             border: 1px solid var(--border);
             font-size: 0.78rem;
         }
-
-        .votacion-container .miembro-voto .nombre {
-            font-weight: 600;
-        }
-
+        .votacion-container .miembro-voto .nombre { font-weight: 600; }
         .votacion-container .miembro-voto .voto {
             font-weight: 700;
             font-size: 0.85rem;
         }
+        .votacion-container .miembro-voto .voto.si { color: var(--success); }
+        .votacion-container .miembro-voto .voto.no { color: var(--danger); }
+        .votacion-container .miembro-voto .voto.abstencion { color: var(--muted); }
+        .votacion-container .miembro-voto .voto.pendiente { color: var(--warning); }
 
-        .votacion-container .miembro-voto .voto.si {
-            color: var(--success);
-        }
-
-        .votacion-container .miembro-voto .voto.no {
-            color: var(--danger);
-        }
-
-        .votacion-container .miembro-voto .voto.abstencion {
-            color: var(--muted);
-        }
-
-        .votacion-container .miembro-voto .voto.pendiente {
-            color: var(--warning);
-        }
-
-        /* Resultado de votación */
         .votacion-resultado {
             padding: 8px 14px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.85rem;
         }
-
         .votacion-resultado.aprobada {
             background: #e7f5ee;
             color: var(--success);
         }
-
         .votacion-resultado.rechazada {
             background: #fdecea;
             color: var(--danger);
         }
-
         .votacion-resultado.pendiente {
             background: #fff3cd;
             color: var(--warning);
         }
-
         .votacion-resultado.devuelta {
             background: #e6effa;
             color: var(--info);
         }
 
-        /* Miembros del comité */
         .miembros-comite {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
             margin-bottom: 16px;
         }
-
         .miembro-card {
             background: var(--paper);
             border: 1px solid var(--border);
@@ -802,29 +635,18 @@
             min-width: 150px;
             text-align: center;
         }
-
-        .miembro-card .avatar {
-            font-size: 2rem;
-        }
-
+        .miembro-card .avatar { font-size: 2rem; }
         .miembro-card .nombre {
             font-weight: 600;
             font-size: 0.88rem;
             margin-top: 4px;
         }
-
         .miembro-card .estado {
             font-size: 0.75rem;
             color: var(--muted);
         }
-
-        .miembro-card .estado.activo {
-            color: var(--success);
-        }
-
-        .miembro-card .estado.inactivo {
-            color: var(--danger);
-        }
+        .miembro-card .estado.activo { color: var(--success); }
+        .miembro-card .estado.inactivo { color: var(--danger); }
 
         .ranking-pos {
             display: inline-flex;
@@ -839,12 +661,8 @@
             font-size: 0.85rem;
         }
 
-        /* Responsive */
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -858,26 +676,15 @@
                 display: none;
                 border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
+            nav.main-nav.open { display: flex; }
             nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
+            nav.main-nav .session-pill { width: 100%; }
             nav.main-nav .session-pill {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
             }
-
-            .dash-shell {
-                flex-direction: column;
-            }
-
+            .dash-shell { flex-direction: column; }
             .dash-sidebar {
                 width: 100%;
                 flex-direction: row;
@@ -887,40 +694,25 @@
                 top: 0;
                 height: auto;
             }
-
             .dash-sidebar .dash-user {
                 width: 100%;
                 border-bottom: none;
                 margin-bottom: 6px;
             }
-
             .dash-nav-item {
                 width: auto;
                 flex: 1;
                 justify-content: center;
             }
-
-            .dash-nav-item.logout {
-                margin-top: 0;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .dash-nav-item.logout { margin-top: 0; }
+            .form-grid { grid-template-columns: 1fr; }
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
             }
-
-            .expediente-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .miembros-comite {
-                flex-direction: column;
-            }
+            .expediente-grid { grid-template-columns: 1fr; }
+            .miembros-comite { flex-direction: column; }
         }
     </style>
 </head>
@@ -1116,7 +908,6 @@
     </div>
 
     <!-- MODALES -->
-
     <div id="modal-login" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-login')">×</button>
@@ -1212,21 +1003,6 @@
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================================
         const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-            visitas: 'becas_visitas',
-            convocatorias: 'becas_convocatorias',
-            apelaciones: 'becas_apelaciones',
-            miembros_comite: 'becas_miembros_comite',
-            votaciones: 'becas_votaciones',
-        };
-
         let filtroRankingActual = 'todos';
         let comStatsChartInstance = null;
 
@@ -1248,8 +1024,7 @@
         function badgeClassEstado(estado) {
             if (estado === 'Aprobada' || estado === 'Beneficio Activo' || estado === 'Elegible' || estado === 'Restaurada')
                 return 'badge-success';
-            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado ===
-                'Cancelada' || estado === 'Suspendida')
+            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado === 'Cancelada' || estado === 'Suspendida')
                 return 'badge-danger';
             if (estado === 'Pendiente subsanación' || estado === 'En revisión TS' || estado === 'Visita pendiente')
                 return 'badge-warning';
@@ -1297,7 +1072,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1306,8 +1080,8 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
@@ -1331,55 +1105,28 @@
             });
         }
 
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         function simularNotificacion(titulo, mensaje, expediente) {
-            registrarBitacora('Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50), expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Sistema',
+                rol: session ? session.rol : 'system',
+                accion: 'Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50),
+                expediente: expediente || '—'
+            });
             const notifModal = document.getElementById('modal-notificacion');
             if (notifModal) {
                 document.getElementById('notif-titulo').textContent = titulo;
                 document.getElementById('notif-mensaje').innerHTML = mensaje;
                 openModal('modal-notificacion');
             }
-        }
-
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = [
-                    { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                        min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
-                        requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
-                        activo: true },
-                    { id: 2, nombre: 'Excelencia Académica', icon: '🎓', desc: 'Para estudiantes con promedio destacado',
-                        min: 50, max: 100, rubros: ['Matrícula', 'Aranceles'],
-                        requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias'], activo: true },
-                    { id: 3, nombre: 'Deportiva', icon: '⚽', desc: 'Para estudiantes con alto rendimiento deportivo',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 4, nombre: 'Cultural', icon: '🎭', desc: 'Artes, música, teatro',
-                        min: 25, max: 75, rubros: ['Matrícula'], requisitos: ['Promedio mínimo 80'],
-                        activo: true },
-                    { id: 5, nombre: 'Investigación', icon: '🔬', desc: 'Para asistentes de investigación',
-                        min: 25, max: 75, rubros: ['Matrícula', 'Estipendio'],
-                        requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'], activo: true }
-                ];
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
         }
 
         // ============================================================
@@ -1402,7 +1149,7 @@
         }
 
         function goToDashboard() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 const dashMap = {
                     estudiante: 'view-dash-estudiante',
@@ -1417,18 +1164,24 @@
         }
 
         function cerrarSesion() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
-                registrarBitacora('Cierre de sesión', '—', session);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session.nombre,
+                    rol: session.rol,
+                    accion: 'Cierre de sesión',
+                    expediente: '—'
+                });
             }
-            localStorage.removeItem(STORAGE_KEYS.session);
-            notify('Sesión cerrada correctamente.');
+            StorageManager.session.clear();
+            notify('✅ Sesión cerrada correctamente.');
             window.location.href = 'index.html';
         }
 
         function renderHeaderNav() {
             const nav = document.getElementById('mainNav');
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 nav.innerHTML =
                     '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
@@ -1455,35 +1208,43 @@
             errorBox.textContent = '';
 
             if (!email || !password) {
-                errorBox.textContent = 'Por favor ingresa tu correo y contraseña.';
+                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
                 errorBox.className = 'login-error visible';
                 return;
             }
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuario = usuarios.find(u => u.email === email);
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
             if (!usuario) {
-                errorBox.textContent = 'Usuario no encontrado';
+                errorBox.textContent = '❌ Usuario no encontrado';
                 errorBox.className = 'login-error visible';
                 return;
             }
 
             if (password !== '123456') {
-                errorBox.textContent = 'Contraseña incorrecta.';
+                errorBox.textContent = '❌ Contraseña incorrecta.';
                 errorBox.className = 'login-error visible';
                 return;
             }
 
             const nuevaSesion = {
-                email,
+                email: usuario.email,
                 nombre: usuario.nombre,
                 rol: usuario.rol
             };
-            localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
-            registrarBitacora('Inicio de sesión', '—', nuevaSesion);
+            StorageManager.session.set(nuevaSesion);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: usuario.nombre,
+                rol: usuario.rol,
+                accion: 'Inicio de sesión',
+                expediente: '—'
+            });
+
             closeModal('modal-login');
             renderHeaderNav();
+            StorageManager.emit('session_actualizada', nuevaSesion);
 
             const dashMap = {
                 estudiante: 'view-dash-estudiante',
@@ -1494,14 +1255,14 @@
                 auditor: 'view-dash-auditor'
             };
             showView(dashMap[usuario.rol] || 'view-public');
-            notify('Bienvenido/a ' + usuario.nombre);
+            notify('✅ Bienvenido/a ' + usuario.nombre);
         }
 
         // ============================================================
         // DASHBOARD COMITÉ
         // ============================================================
         function renderDashboards() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (!session) return;
             if (session.rol === 'comite') renderComiteDashboard(session);
         }
@@ -1509,15 +1270,14 @@
         function renderComiteDashboard(session) {
             document.getElementById('com-nombre').textContent = session.nombre;
 
-            if (!localStorage.getItem(STORAGE_KEYS.miembros_comite)) {
+            // Inicializar miembros del comité si no existen
+            if (StorageManager.miembrosComite.getAll().length === 0) {
                 const miembrosIniciales = [
                     { id: 1, email: 'comite@becas.com', nombre: 'Dra. Ana Méndez', rol: 'Presidenta', activo: true },
-                    { id: 2, email: 'carlos.montero@becas.com', nombre: 'Dr. Carlos Montero', rol: 'Vocal',
-                    activo: true },
-                    { id: 3, email: 'laura.chaves@becas.com', nombre: 'Dra. Laura Chaves', rol: 'Vocal',
-                    activo: true }
+                    { id: 2, email: 'carlos.montero@becas.com', nombre: 'Dr. Carlos Montero', rol: 'Vocal', activo: true },
+                    { id: 3, email: 'laura.chaves@becas.com', nombre: 'Dra. Laura Chaves', rol: 'Vocal', activo: true }
                 ];
-                localStorage.setItem(STORAGE_KEYS.miembros_comite, JSON.stringify(miembrosIniciales));
+                miembrosIniciales.forEach(m => StorageManager.miembrosComite.save(m));
             }
 
             renderRanking();
@@ -1527,7 +1287,14 @@
             cargarUsuariosParaMiembro();
             actualizarEstadisticasComite();
             actualizarGraficoComite();
-            registrarBitacora('Consulta Comité', '—', session);
+
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session.nombre,
+                rol: session.rol,
+                accion: 'Consulta Comité',
+                expediente: '—'
+            });
         }
 
         // ============================================================
@@ -1539,7 +1306,7 @@
         }
 
         function renderRanking() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const tbody = document.getElementById('com-tabla-ranking');
             if (!tbody) return;
 
@@ -1558,9 +1325,9 @@
                 return;
             }
 
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const miembros = StorageManager.miembrosComite.getAll();
             const miembrosActivos = miembros.filter(m => m.activo);
-            const votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            const votaciones = StorageManager.votaciones.getAll();
 
             tbody.innerHTML = elegibles.map((s, index) => {
                 const votacion = votaciones.find(v => v.expediente === s.expediente && v.estado === 'En curso');
@@ -1574,19 +1341,15 @@
                 if (votacion) {
                     if (votosSi >= 2) {
                         estadoVotacion = 'Aprobada';
-                        resultado =
-                            '<span class="votacion-resultado aprobada">✅ Aprobada (' + votosSi + '/3 votos)</span>';
+                        resultado = '<span class="votacion-resultado aprobada">✅ Aprobada (' + votosSi + '/3 votos)</span>';
                     } else if (votosNo >= 2) {
                         estadoVotacion = 'Rechazada';
-                        resultado =
-                            '<span class="votacion-resultado rechazada">❌ Rechazada (' + votosNo + '/3 votos)</span>';
+                        resultado = '<span class="votacion-resultado rechazada">❌ Rechazada (' + votosNo + '/3 votos)</span>';
                     } else if (totalVotos >= 3 && (votosSi + votosNo) < 3) {
                         estadoVotacion = 'Pendiente';
-                        resultado = '<span class="votacion-resultado pendiente">⏳ En espera (' + totalVotos +
-                            '/3 votos)</span>';
+                        resultado = '<span class="votacion-resultado pendiente">⏳ En espera (' + totalVotos + '/3 votos)</span>';
                     } else {
-                        resultado = '<span class="votacion-resultado pendiente">⏳ En votación (' + totalVotos +
-                            '/3 votos)</span>';
+                        resultado = '<span class="votacion-resultado pendiente">⏳ En votación (' + totalVotos + '/3 votos)</span>';
                     }
                 } else {
                     resultado = '<span class="votacion-resultado pendiente">⏳ Sin votación</span>';
@@ -1594,16 +1357,13 @@
 
                 let acciones = '';
                 if (s.estado === 'En comité' || s.estado === 'Elegible') {
-                    acciones =
-                        `<button class="btn btn-small" onclick="verExpedienteComite('${s.expediente}')">Ver</button>`;
+                    acciones = `<button class="btn btn-small" onclick="verExpedienteComite('${s.expediente}')">Ver</button>`;
 
                     if (!votacion || votacion.estado !== 'Cerrada') {
-                        acciones +=
-                            `<button class="btn btn-small btn-primary" onclick="abrirVotacion('${s.expediente}')">Votar</button>`;
+                        acciones += `<button class="btn btn-small btn-primary" onclick="abrirVotacion('${s.expediente}')">Votar</button>`;
                     }
 
-                    acciones +=
-                        `<button class="btn btn-small btn-warning" onclick="devolverATS('${s.expediente}')">Devolver a TS</button>`;
+                    acciones += `<button class="btn btn-small btn-warning" onclick="devolverATS('${s.expediente}')">Devolver a TS</button>`;
                 }
 
                 let votacionHtml = resultado;
@@ -1632,7 +1392,7 @@
         // VOTACIONES
         // ============================================================
         function renderVotaciones() {
-            const votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            const votaciones = StorageManager.votaciones.getAll();
             const tbody = document.getElementById('com-tabla-votaciones');
             if (!tbody) return;
 
@@ -1643,7 +1403,7 @@
                 return;
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
 
             tbody.innerHTML = activas.map(v => {
                 const sol = solicitudes.find(s => s.expediente === v.expediente);
@@ -1669,8 +1429,7 @@
                     ' ⚪ (Total: ' + totalVotos + '/3)</td>' +
                     '<td><span class="badge ' + estadoClass + '">' + estado + '</span></td>' +
                     '<td>' +
-                    '<button class="btn btn-small" onclick="abrirVotacion(\'' + v.expediente +
-                    '\')">Ver votación</button>' +
+                    '<button class="btn btn-small" onclick="abrirVotacion(\'' + v.expediente + '\')">Ver votación</button>' +
                     '</td>' +
                     '</tr>';
             }).join('');
@@ -1680,11 +1439,11 @@
         // ABRIR VOTACIÓN
         // ============================================================
         function abrirVotacion(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
             const solicitud = solicitudes.find(s => s.expediente === expediente);
-            if (!solicitud) { notify('No se encontró la solicitud'); return; }
+            if (!solicitud) { notify('⚠️ No se encontró la solicitud'); return; }
 
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const miembros = StorageManager.miembrosComite.getAll();
             const miembrosActivos = miembros.filter(m => m.activo);
 
             if (miembrosActivos.length < 3) {
@@ -1692,7 +1451,7 @@
                 return;
             }
 
-            let votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            let votaciones = StorageManager.votaciones.getAll();
             let votacion = votaciones.find(v => v.expediente === expediente && v.estado === 'En curso');
 
             if (!votacion) {
@@ -1708,15 +1467,16 @@
                         observacion: ''
                     }))
                 };
-                votaciones.push(votacion);
-                localStorage.setItem(STORAGE_KEYS.votaciones, JSON.stringify(votaciones));
+                StorageManager.votaciones.save(votacion);
+                votaciones = StorageManager.votaciones.getAll();
+                votacion = votaciones.find(v => v.expediente === expediente && v.estado === 'En curso');
             }
 
-            const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
-            if (solIndex !== -1 && solicitudes[solIndex].estado !== 'En comité') {
-                solicitudes[solIndex].estado = 'En comité';
-                solicitudes[solIndex].progreso = 60;
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+            const solicitudActual = StorageManager.solicitudes.getByExpediente(expediente);
+            if (solicitudActual && solicitudActual.estado !== 'En comité') {
+                solicitudActual.estado = 'En comité';
+                solicitudActual.progreso = 60;
+                StorageManager.solicitudes.save(solicitudActual);
             }
 
             mostrarModalVotacion(votacion, solicitud, miembrosActivos);
@@ -1729,7 +1489,7 @@
 
             titulo.textContent = 'Votación - ' + solicitud.expediente;
 
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             const miembroActual = miembros.find(m => m.email === session?.email);
 
             let html = `
@@ -1839,7 +1599,7 @@
         // VOTAR
         // ============================================================
         function votar(expediente, miembroId, decision) {
-            let votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            let votaciones = StorageManager.votaciones.getAll();
             const votacionIndex = votaciones.findIndex(v => v.expediente === expediente && v.estado === 'En curso');
 
             if (votacionIndex === -1) {
@@ -1874,26 +1634,20 @@
                 votaciones[votacionIndex].fecha_cierre = new Date().toISOString();
                 votaciones[votacionIndex].resultado = estadoFinal;
 
-                const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-                const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
-                if (solIndex !== -1) {
-                    solicitudes[solIndex].estado = estadoFinal;
-                    solicitudes[solIndex].progreso = estadoFinal === 'Aprobada' ? 85 : 100;
+                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+                if (solicitud) {
+                    solicitud.estado = estadoFinal;
+                    solicitud.progreso = estadoFinal === 'Aprobada' ? 85 : 100;
                     if (estadoFinal === 'Aprobada') {
-                        solicitudes[solIndex].fechaAprobacion = new Date().toISOString().slice(0, 10);
-                        solicitudes[solIndex].porcentajeCobertura = '50%';
+                        solicitud.fechaAprobacion = new Date().toISOString().slice(0, 10);
+                        solicitud.porcentajeCobertura = '50%';
                     } else {
-                        solicitudes[solIndex].fechaRechazo = new Date().toISOString().slice(0, 10);
-                        solicitudes[solIndex].motivoRechazo = 'Rechazado por el Comité de Becas';
+                        solicitud.fechaRechazo = new Date().toISOString().slice(0, 10);
+                        solicitud.motivoRechazo = 'Rechazado por el Comité de Becas';
                     }
-                    localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
-                }
-
-                const sol = solicitudes[solIndex];
-                if (sol) {
+                    StorageManager.solicitudes.save(solicitud);
                     simularNotificacion(
-                        estadoFinal === 'Aprobada' ? 'Beca Aprobada por el Comité' :
-                        'Beca Rechazada por el Comité',
+                        estadoFinal === 'Aprobada' ? 'Beca Aprobada por el Comité' : 'Beca Rechazada por el Comité',
                         estadoFinal === 'Aprobada' ?
                         'Tu solicitud ha sido aprobada por el Comité de Becas. Pronto recibirás más información.' :
                         'Tu solicitud ha sido rechazada por el Comité de Becas. Puedes apelar esta decisión.',
@@ -1901,10 +1655,18 @@
                     );
                 }
 
-                registrarBitacora('Votación finalizada: ' + estadoFinal + ' - Expediente ' + expediente, expediente);
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Comité',
+                    rol: session ? session.rol : 'comite',
+                    accion: 'Votación finalizada: ' + estadoFinal + ' - Expediente ' + expediente,
+                    expediente: expediente
+                });
             }
 
-            localStorage.setItem(STORAGE_KEYS.votaciones, JSON.stringify(votaciones));
+            // Guardar votaciones actualizadas
+            StorageManager.votaciones.save(votaciones[votacionIndex]);
 
             renderRanking();
             renderVotaciones();
@@ -1912,11 +1674,13 @@
             actualizarEstadisticasComite();
             actualizarGraficoComite();
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const sol = solicitudes.find(s => s.expediente === expediente);
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+            const miembros = StorageManager.miembrosComite.getAll();
             const miembrosActivos = miembros.filter(m => m.activo);
-            mostrarModalVotacion(votaciones[votacionIndex], sol, miembrosActivos);
+            const votacionActualizada = StorageManager.votaciones.getAll().find(v => v.expediente === expediente && v.estado === 'En curso');
+            if (votacionActualizada) {
+                mostrarModalVotacion(votacionActualizada, solicitud, miembrosActivos);
+            }
 
             notify('✅ Voto registrado correctamente.');
         }
@@ -1960,41 +1724,45 @@
 
             if (!expediente) { notify('⚠️ No se encontró el expediente.'); return; }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solIndex = solicitudes.findIndex(s => s.expediente === expediente);
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+            if (!solicitud) { notify('⚠️ No se encontró la solicitud.'); return; }
 
-            if (solIndex === -1) { notify('⚠️ No se encontró la solicitud.'); return; }
-
-            solicitudes[solIndex].estado = 'Devuelta a TS';
-            solicitudes[solIndex].progreso = 35;
-            solicitudes[solIndex].observacionTS = (solicitudes[solIndex].observacionTS || '') +
+            solicitud.estado = 'Devuelta a TS';
+            solicitud.progreso = 35;
+            solicitud.observacionTS = (solicitud.observacionTS || '') +
                 '\n\n📌 DEVUELTA POR COMITÉ: ' + motivo +
                 (observacion ? '\nObservación: ' + observacion : '');
 
-            solicitudes[solIndex].historial = solicitudes[solIndex].historial || [];
-            solicitudes[solIndex].historial.push({
+            solicitud.historial = solicitud.historial || [];
+            solicitud.historial.push({
                 fecha: new Date().toISOString(),
                 accion: 'Devuelta a TS por Comité',
                 detalles: motivo + (observacion ? ' - ' + observacion : ''),
                 usuario: 'Comité de Becas'
             });
 
-            localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudes));
+            StorageManager.solicitudes.save(solicitud);
 
-            let votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            let votaciones = StorageManager.votaciones.getAll();
             const vIndex = votaciones.findIndex(v => v.expediente === expediente && v.estado === 'En curso');
             if (vIndex !== -1) {
                 votaciones[vIndex].estado = 'Cerrada';
                 votaciones[vIndex].resultado = 'Devuelta a TS';
-                localStorage.setItem(STORAGE_KEYS.votaciones, JSON.stringify(votaciones));
+                StorageManager.votaciones.save(votaciones[vIndex]);
             }
 
-            registrarBitacora('Solicitud devuelta a TS: ' + expediente + ' - Motivo: ' + motivo, expediente);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Comité',
+                rol: session ? session.rol : 'comite',
+                accion: 'Solicitud devuelta a TS: ' + expediente + ' - Motivo: ' + motivo,
+                expediente: expediente
+            });
 
-            const estudiante = solicitudes[solIndex];
             simularNotificacion('Solicitud devuelta a TS',
-                'Tu solicitud ha sido devuelta al Trabajador Social para revisión adicional. Motivo: ' +
-                motivo, expediente);
+                'Tu solicitud ha sido devuelta al Trabajador Social para revisión adicional. Motivo: ' + motivo,
+                expediente);
 
             closeModal('modal-devolver');
             closeModal('modal-votacion');
@@ -2010,8 +1778,7 @@
         // VER EXPEDIENTE
         // ============================================================
         function verExpedienteComite(expediente) {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
             if (solicitud) {
                 document.getElementById('modal-expediente-titulo').textContent = 'Expediente: ' + expediente;
                 document.getElementById('expediente-contenido').innerHTML = renderExpedienteCompleto(solicitud);
@@ -2035,8 +1802,7 @@
                 '<h4>Estado del expediente</h4>' +
                 '<div class="expediente-grid">' +
                 campo('N° Expediente', solicitud.expediente) +
-                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud
-                .estado + '</span>') +
+                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud.estado + '</span>') +
                 campo('Fecha de solicitud', solicitud.fecha) +
                 campo('Tipo de beca', solicitud.tipoBeca) +
                 campo('Progreso', (solicitud.progreso || 0) + '%') +
@@ -2053,8 +1819,7 @@
                 campo('Teléfono', d['f-telefono'] || solicitud.telefono) +
                 campo('Fecha de nacimiento', d['f-nacimiento']) +
                 '</div>' +
-                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] +
-                    '</p>' : '') +
+                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] + '</p>' : '') +
                 '</div>';
 
             html += '<div class="expediente-section">' +
@@ -2075,23 +1840,19 @@
                 campo('Dependientes económicos', d['f-dependientes']) +
                 campo('Miembros que trabajan', d['f-trabajadores']) +
                 campo('Tipo de vivienda', d['f-vivienda']) +
-                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() :
-                    '') +
+                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() : '') +
                 campo('Situación laboral', d['f-laboral']) +
                 campo('¿Posee discapacidad?', d['f-discapacidad']) +
                 '</div></div>';
 
             html += '<div class="expediente-section">' +
                 '<h4>Información Complementaria</h4>' +
-                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d[
-                    'f-extracurricular'] + '</p>' : '') +
-                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' :
-                '') +
+                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d['f-extracurricular'] + '</p>' : '') +
+                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' : '') +
                 campo('¿Beca anterior?', d['f-beca-anterior']) +
                 '<p style="margin-top:6px;"><strong>Justificación de mérito:</strong><br>' +
                 (d['f-merito'] || 'No disponible') + '</p>' +
-                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d[
-                    'f-motivacion'] + '</p>' : '') +
+                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d['f-motivacion'] + '</p>' : '') +
                 '</div>';
 
             const docKeys = Object.keys(docs);
@@ -2105,8 +1866,7 @@
                         const estadoDoc = doc.estado || 'Pendiente';
                         const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
                             (estadoDoc === 'Rechazado' ? 'badge-danger' :
-                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' :
-                                    'badge-neutral'));
+                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
                         return '<div class="doc-item">' +
                             '<div class="doc-item-info">' +
                             '<span class="doc-item-icon">📄</span>' +
@@ -2115,8 +1875,7 @@
                             '<div class="doc-item-meta">' + (doc.nombre || '') +
                             (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
                             '</div>' +
-                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion +
-                                '</div>' : '') +
+                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
@@ -2156,18 +1915,11 @@
             return html;
         }
 
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
         // ============================================================
         // MIEMBROS DEL COMITÉ
         // ============================================================
         function renderMiembros() {
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const miembros = StorageManager.miembrosComite.getAll();
             const container = document.getElementById('com-miembros-lista');
             if (!container) return;
 
@@ -2187,25 +1939,27 @@
                 '</div>' +
                 '<div style="margin-top:8px;display:flex;gap:4px;justify-content:center;">' +
                 (m.activo ?
-                    '<button class="btn btn-small btn-warning" onclick="toggleMiembro(' + m.id +
-                    ')">Desactivar</button>' :
-                    '<button class="btn btn-small btn-success" onclick="toggleMiembro(' + m.id +
-                    ')">Activar</button>') +
-                '<button class="btn btn-small btn-danger" onclick="eliminarMiembro(' + m.id +
-                ')">Eliminar</button>' +
+                    '<button class="btn btn-small btn-warning" onclick="toggleMiembro(' + m.id + ')">Desactivar</button>' :
+                    '<button class="btn btn-small btn-success" onclick="toggleMiembro(' + m.id + ')">Activar</button>') +
+                '<button class="btn btn-small btn-danger" onclick="eliminarMiembro(' + m.id + ')">Eliminar</button>' +
                 '</div>' +
                 '</div>'
             ).join('');
         }
 
         function toggleMiembro(id) {
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
-            const miembro = miembros.find(m => m.id === id);
+            const miembro = StorageManager.miembrosComite.getById(id);
             if (miembro) {
                 miembro.activo = !miembro.activo;
-                localStorage.setItem(STORAGE_KEYS.miembros_comite, JSON.stringify(miembros));
-                registrarBitacora('Miembro del comité ' + (miembro.activo ? 'activado' : 'desactivado') + ': ' + miembro
-                    .nombre, '—');
+                StorageManager.miembrosComite.save(miembro);
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Comité',
+                    rol: session ? session.rol : 'comite',
+                    accion: 'Miembro del comité ' + (miembro.activo ? 'activado' : 'desactivado') + ': ' + miembro.nombre,
+                    expediente: '—'
+                });
                 renderMiembros();
                 notify('✅ Miembro ' + (miembro.activo ? 'activado' : 'desactivado') + '.');
             }
@@ -2214,11 +1968,16 @@
         async function eliminarMiembro(id) {
             if (!(await customConfirm('¿Eliminar este miembro del comité?'))) return;
 
-            let miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
-            const miembro = miembros.find(m => m.id === id);
-            miembros = miembros.filter(m => m.id !== id);
-            localStorage.setItem(STORAGE_KEYS.miembros_comite, JSON.stringify(miembros));
-            registrarBitacora('Miembro del comité eliminado: ' + (miembro ? miembro.nombre : id), '—');
+            const miembro = StorageManager.miembrosComite.getById(id);
+            StorageManager.miembrosComite.delete(id);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Comité',
+                rol: session ? session.rol : 'comite',
+                accion: 'Miembro del comité eliminado: ' + (miembro ? miembro.nombre : id),
+                expediente: '—'
+            });
             renderMiembros();
             notify('✅ Miembro eliminado.');
         }
@@ -2227,8 +1986,8 @@
             const select = document.getElementById('com-miembro-usuario');
             if (!select) return;
 
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const usuarios = StorageManager.usuarios.getAll();
+            const miembros = StorageManager.miembrosComite.getAll();
             const emailsMiembros = miembros.map(m => m.email);
 
             const disponibles = usuarios.filter(u =>
@@ -2251,20 +2010,27 @@
 
             const [email, nombre] = valor.split('|');
 
-            const miembros = JSON.parse(localStorage.getItem(STORAGE_KEYS.miembros_comite) || '[]');
+            const miembros = StorageManager.miembrosComite.getAll();
             const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
 
-            miembros.push({
+            const nuevoMiembro = {
                 id: nuevoId,
                 email: email,
                 nombre: nombre,
                 rol: rol,
                 activo: true,
                 fecha_agregado: new Date().toISOString()
-            });
+            };
 
-            localStorage.setItem(STORAGE_KEYS.miembros_comite, JSON.stringify(miembros));
-            registrarBitacora('Miembro del comité agregado: ' + nombre, '—');
+            StorageManager.miembrosComite.save(nuevoMiembro);
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Comité',
+                rol: session ? session.rol : 'comite',
+                accion: 'Miembro del comité agregado: ' + nombre,
+                expediente: '—'
+            });
 
             select.value = '';
             document.getElementById('com-miembro-rol').value = 'Miembro';
@@ -2277,7 +2043,7 @@
         // HISTORIAL DE VOTACIONES
         // ============================================================
         function renderHistorial() {
-            const votaciones = JSON.parse(localStorage.getItem(STORAGE_KEYS.votaciones) || '[]');
+            const votaciones = StorageManager.votaciones.getAll();
             const tbody = document.getElementById('com-tabla-historial');
             if (!tbody) return;
 
@@ -2288,7 +2054,7 @@
                 return;
             }
 
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
 
             cerradas.sort((a, b) => new Date(b.fecha_cierre || b.fecha_inicio) - new Date(a.fecha_cierre || a.fecha_inicio));
 
@@ -2306,15 +2072,13 @@
                 return '<tr>' +
                     '<td><strong>' + v.expediente + '</strong></td>' +
                     '<td>' + (sol ? sol.nombres + ' ' + sol.apellidos : 'N/A') + '</td>' +
-                    '<td>' + votosSi + ' 👍 · ' + votosNo + ' 👎 · ' + (totalVotos - votosSi - votosNo) +
-                    ' ⚪</td>' +
+                    '<td>' + votosSi + ' 👍 · ' + votosNo + ' 👎 · ' + (totalVotos - votosSi - votosNo) + ' ⚪</td>' +
                     '<td><span class="badge ' + badgeClass + '">' + resultado + '</span></td>' +
                     '<td style="font-size:0.78rem;color:var(--muted);">' +
                     new Date(v.fecha_cierre || v.fecha_inicio).toLocaleDateString() +
                     ' ' + new Date(v.fecha_cierre || v.fecha_inicio).toLocaleTimeString() +
                     '</td>' +
-                    '<td><button class="btn btn-small" onclick="verExpedienteComite(\'' + v.expediente +
-                    '\')">Ver</button></td>' +
+                    '<td><button class="btn btn-small" onclick="verExpedienteComite(\'' + v.expediente + '\')">Ver</button></td>' +
                     '</tr>';
             }).join('');
         }
@@ -2323,7 +2087,7 @@
         // ESTADÍSTICAS COMITÉ
         // ============================================================
         function actualizarEstadisticasComite() {
-            const solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudes = StorageManager.solicitudes.getAll();
 
             const total = solicitudes.length;
             const aprobadas = solicitudes.filter(s =>
@@ -2381,9 +2145,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -2432,155 +2194,25 @@
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
-                        nombre: 'María Gómez' },
-                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez' },
-                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Ana Méndez' },
-                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
-                        nombre: 'Admin Sistema' },
-                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
-                        nombre: 'Luis Fernández' },
-                    { email: 'carlos.montero@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dr. Carlos Montero' },
-                    { email: 'laura.chaves@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Laura Chaves' }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([
-                    { expediente: 'BEC-2026-001', fecha: '2026-01-15',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María',
-                        apellidos: 'Gómez', cedula: '1-2345-6789', correo: 'estudiante@becas.com',
-                        tipoBeca: 'Excelencia Académica', estado: 'En comité', progreso: 60,
-                        puntaje: 95, promedio: 92, ingresoFamiliar: 450000, aceptado: false,
-                        observacionTS: 'Documentación completa. Se recomienda aprobación. Cumple con requisitos socioeconómicos.',
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Aprobado' }
-                        },
-                        historial: [
-                            { fecha: '2026-01-15T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' },
-                            { fecha: '2026-01-18T14:30:00', accion: 'Enviada a comité',
-                                detalles: 'Solicitud enviada para evaluación', usuario: 'Trabajador Social' }
-                        ]
-                    },
-                    { expediente: 'BEC-2026-002', fecha: '2026-01-18',
-                        estudianteEmail: 'estudiante2@becas.com', nombres: 'José',
-                        apellidos: 'Ramírez', cedula: '2-3456-7890', correo: 'estudiante2@becas.com',
-                        tipoBeca: 'Socioeconómica', estado: 'Elegible', progreso: 50,
-                        puntaje: 82, promedio: 85, ingresoFamiliar: 350000, aceptado: false,
-                        observacionTS: 'Verificar documento de ingresos. Pendiente visita domiciliaria.',
-                        documentos: {
-                            'f-cedula-f': { label: 'Copia de cédula (frontal)',
-                                nombre: 'cedula_frontal.pdf', estado: 'Aprobado' }
-                        },
-                        historial: [
-                            { fecha: '2026-01-18T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' }
-                        ]
-                    },
-                    { expediente: 'BEC-2026-003', fecha: '2026-01-20',
-                        estudianteEmail: 'estudiante3@becas.com', nombres: 'Ana',
-                        apellidos: 'López', cedula: '3-4567-8901', correo: 'estudiante3@becas.com',
-                        tipoBeca: 'Investigación', estado: 'Aprobada', progreso: 100,
-                        puntaje: 88, promedio: 86, ingresoFamiliar: 480000, aceptado: true,
-                        porcentajeCobertura: '50%', fechaAprobacion: '2026-01-22',
-                        observacionTS: 'Excelente perfil de investigación.',
-                        historial: [
-                            { fecha: '2026-01-20T10:00:00', accion: 'Solicitud creada',
-                                detalles: 'Nueva solicitud de beca', usuario: 'Estudiante' },
-                            { fecha: '2026-01-22T09:00:00', accion: 'Aprobada por comité',
-                                detalles: 'Aprobada con cobertura del 50%', usuario: 'Comité' }
-                        ]
-                    }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.miembros_comite)) {
-                localStorage.setItem(STORAGE_KEYS.miembros_comite, JSON.stringify([
-                    { id: 1, email: 'comite@becas.com', nombre: 'Dra. Ana Méndez', rol: 'Presidenta', activo: true },
-                    { id: 2, email: 'carlos.montero@becas.com', nombre: 'Dr. Carlos Montero', rol: 'Vocal',
-                    activo: true },
-                    { id: 3, email: 'laura.chaves@becas.com', nombre: 'Dra. Laura Chaves', rol: 'Vocal',
-                    activo: true }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.votaciones)) {
-                localStorage.setItem(STORAGE_KEYS.votaciones, JSON.stringify([
-                    {
-                        id: 1,
-                        expediente: 'BEC-2026-001',
-                        fecha_inicio: new Date(Date.now() - 3600000).toISOString(),
-                        estado: 'En curso',
-                        votos: [
-                            { miembro_id: 1, miembro_nombre: 'Dra. Ana Méndez', decision: 'A favor',
-                            observacion: '' },
-                            { miembro_id: 2, miembro_nombre: 'Dr. Carlos Montero', decision: null,
-                            observacion: '' },
-                            { miembro_id: 3, miembro_nombre: 'Dra. Laura Chaves', decision: null,
-                            observacion: '' }
-                        ]
-                    },
-                    {
-                        id: 2,
-                        expediente: 'BEC-2026-003',
-                        fecha_inicio: new Date(Date.now() - 86400000).toISOString(),
-                        fecha_cierre: new Date(Date.now() - 43200000).toISOString(),
-                        estado: 'Cerrada',
-                        resultado: 'Aprobada',
-                        votos: [
-                            { miembro_id: 1, miembro_nombre: 'Dra. Ana Méndez', decision: 'A favor',
-                            observacion: '' },
-                            { miembro_id: 2, miembro_nombre: 'Dr. Carlos Montero', decision: 'A favor',
-                            observacion: '' },
-                            { miembro_id: 3, miembro_nombre: 'Dra. Laura Chaves', decision: 'A favor',
-                            observacion: '' }
-                        ]
-                    }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
-                localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
-                    { fecha: new Date().toLocaleString(), usuario: 'Dra. Ana Méndez', rol: 'comite',
-                        accion: 'Inicio de sesión', expediente: '—' },
-                    { fecha: new Date(Date.now() - 3600000).toLocaleString(), usuario: 'Dr. Carlos Montero',
-                        rol: 'comite', accion: 'Voto emitido en BEC-2026-001', expediente: 'BEC-2026-001' }
-                ]));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.config)) {
-                localStorage.setItem(STORAGE_KEYS.config, JSON.stringify({
-                    socio: 40, academico: 35, vulnerabilidad: 15, meritos: 10,
-                    promedioMin: 80, ingresoMax: 500000,
-                    plazoSubsanacion: 5, plazoApelacion: 10, plazoRenovacion: 15,
-                    msgAprobacion: 'Felicidades, tu solicitud de beca ha sido APROBADA.',
-                    msgRechazo: 'Lamentamos informarte que tu solicitud ha sido RECHAZADA.',
-                    msgSubsanacion: 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.'
-                }));
-            }
-        }
-
         (function init() {
-            initData();
             renderHeaderNav();
 
-            const storedSession = localStorage.getItem(STORAGE_KEYS.session);
-            if (storedSession) {
-                const session = JSON.parse(storedSession);
-                if (session.rol === 'comite') {
-                    showView('view-dash-comite');
-                    renderDashboards();
-                } else {
-                    showView('view-public');
+            const storedSession = StorageManager.session.get();
+            if (storedSession && storedSession.rol === 'comite') {
+                showView('view-dash-comite');
+                renderDashboards();
+            } else if (storedSession) {
+                const dashMap = {
+                    estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
+                    trabajador_social: 'panel_trabajador_social.html',
+                    comite: 'panel_comite.html',
+                    admin: 'panel_admin.html',
+                    auditor: 'panel_auditor.html'
+                };
+                const target = dashMap[storedSession.rol];
+                if (target) {
+                    window.location.href = target;
                 }
             } else {
                 showView('view-public');
@@ -2590,8 +2222,12 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            document.getElementById('db-status').textContent = 'Conectado';
+            document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
+
+            StorageManager.on('session_actualizada', function() {
+                renderHeaderNav();
+            });
         })();
     </script>
 

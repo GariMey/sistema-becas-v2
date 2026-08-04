@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         /* ============================================================
            ESTILOS GENERALES
@@ -1174,13 +1175,12 @@
                 <span></span><span></span><span></span>
             </button>
             <nav class="main-nav" id="mainNav">
-                <a href="login.html" class="btn btn-outline">Ingresar</a>
-                <a href="registro.html" class="btn btn-primary">Registrarse</a>
+                <!-- Se renderiza dinámicamente con JavaScript -->
             </nav>
         </div>
     </header>
 
-    <!-- ===== VISTA PÚBLICA ===== -->
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <div id="view-public" class="view">
 
         <!-- ===== HERO ===== -->
@@ -1192,6 +1192,7 @@
                     <p class="lead">Miles de estudiantes ya han transformado su vida gracias a nuestros programas de apoyo académico y económico.</p>
                     <div class="hero-actions">
                         <a href="#tipos-beca" class="btn btn-primary">Conoce las becas</a>
+                        <button class="btn btn-outline" onclick="irASolicitud()" style="border-color:rgba(255,255,255,0.3);">Solicitar ahora</button>
                     </div>
                 </div>
                 <div class="hero-panel">
@@ -1335,19 +1336,6 @@
         // ============================================================
         // CONSTANTES
         // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            noticias: 'becas_noticias',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-            convocatorias: 'becas_convocatorias',
-            borrador: 'becas_borrador_solicitud',
-        };
-
         const TIPOS_BECA_DEFAULT = [
             { id: 1, nombre: 'Socioeconómica', icon: '💰', desc: 'Apoyo financiero para estudiantes con recursos limitados',
                 min: 25, max: 100, rubros: ['Matrícula', 'Aranceles', 'Materiales'],
@@ -1388,17 +1376,8 @@
         // ============================================================
         // UTILIDADES
         // ============================================================
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = TIPOS_BECA_DEFAULT;
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
-        }
-
         function getTiposBecaActivosLocal() {
-            return getTiposBecaLocal().filter(t => t.activo);
+            return StorageManager.tiposBeca.getActivos();
         }
 
         function rolLabel(rol) {
@@ -1413,21 +1392,18 @@
             return map[rol] || rol;
         }
 
-        function showToast(message, type) {
-            type = type || 'info';
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
+        function notify(message) {
             const colors = {
                 success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
                 error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
                 warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
                 info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
             };
+            const type = /^✅|correctamente/.test(message) ? 'success' :
+                /^⚠️|obligatori|debe tener/.test(message) ? 'warning' :
+                /^❌|error/.test(message) ? 'error' : 'info';
             const c = colors[type] || colors.info;
+            const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast-box';
             toast.style.background = c.bg;
@@ -1437,40 +1413,14 @@
                 '</span><span style="flex:1;">' + message +
                 '</span><button class="toast-close" aria-label="Cerrar">×</button>';
             container.appendChild(toast);
-
             const remove = () => {
                 toast.style.transition = 'opacity .3s ease, transform .3s ease';
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
-        }
-
-        function notify(message) {
-            let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
-            showToast(message, type);
-        }
-
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
         }
 
         function goHome(e) {
@@ -1479,54 +1429,38 @@
         }
 
         // ============================================================
-        // FUNCIÓN IR A SOLICITUD - Verifica login y convocatorias
+        // FUNCIÓN IR A SOLICITUD
         // ============================================================
         function irASolicitud() {
-            // Verificar si hay sesión activa
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
 
             if (!session) {
                 notify('⚠️ Debes iniciar sesión para solicitar una beca.');
-                // Redirigir a login.html
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Verificar si hay convocatorias activas
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const activas = convocatorias.filter(c =>
-                c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
-            );
+            const activas = StorageManager.convocatorias.getActivas();
 
             if (activas.length === 0) {
                 notify('⚠️ No hay convocatorias activas en este momento. No se pueden realizar solicitudes.');
                 return;
             }
 
-            // Verificar si el usuario puede solicitar becas
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const usuarioCompleto = usuarios.find(u => u.email === session.email);
-
+            const usuarioCompleto = StorageManager.usuarios.getByEmail(session.email);
             if (usuarioCompleto && usuarioCompleto.puedeSolicitar === false) {
                 notify('⚠️ Tu cuenta no tiene permisos para solicitar becas. Contacta al administrador.');
                 return;
             }
 
-            // Redirigir al formulario de solicitud
             window.location.href = 'formulario_solicitud.html';
         }
 
         // ============================================================
         // NAVEGACIÓN
         // ============================================================
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            const view = document.getElementById(viewId);
-            if (view) view.classList.remove('hidden');
-        }
-
         function goToDashboard() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
@@ -1546,17 +1480,24 @@
         }
 
         function logout() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            if (session) registrarBitacora('Cierre de sesión', '—', session);
-            localStorage.removeItem(STORAGE_KEYS.session);
+            const session = StorageManager.session.get();
+            if (session) {
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session.nombre,
+                    rol: session.rol,
+                    accion: 'Cierre de sesión',
+                    expediente: '—'
+                });
+            }
+            StorageManager.session.clear();
             renderHeaderNav();
-            showView('view-public');
             notify('👋 Sesión cerrada correctamente.');
         }
 
         function renderHeaderNav() {
             const nav = document.getElementById('mainNav');
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
 
             if (session) {
                 nav.innerHTML =
@@ -1575,180 +1516,128 @@
         }
 
         // ============================================================
-        // VISTA PÚBLICA
+        // FUNCIONES DE RENDERIZADO
         // ============================================================
-        function renderPublica() {
 
-            // ==========================================================
-            // 1. CONVOCATORIAS DESTACADAS
-            // ==========================================================
+        // 1. CONVOCATORIAS DESTACADAS
+        function renderConvocatorias() {
             const convGrid = document.getElementById('convocatorias-grid-destacadas');
-            const convocatorias = JSON.parse(localStorage.getItem(STORAGE_KEYS.convocatorias) || '[]');
-            const activas = convocatorias.filter(c =>
-                c.estado === 'Activa' && new Date(c.fechaCierre) >= new Date()
-            );
+            const activas = StorageManager.convocatorias.getActivas();
 
-            if (convGrid) {
-                if (activas.length > 0) {
-                    convGrid.innerHTML = activas.map((c, index) => {
-                        const tipoIcon = c.tipo === 'Socioeconómica' ? '💰' :
-                            c.tipo === 'Excelencia Académica' ? '🎓' :
-                            c.tipo === 'Deportiva' ? '⚽' :
-                            c.tipo === 'Cultural' ? '🎭' :
-                            c.tipo === 'Investigación' ? '🔬' : '📚';
+            if (!convGrid) return;
 
-                        const votos = Math.floor(Math.random() * 30) + 40;
-                        const diasRestantes = Math.floor(Math.random() * 20) + 1;
+            if (activas.length > 0) {
+                convGrid.innerHTML = activas.map((c) => {
+                    const tipoIcon = c.tipo === 'Socioeconómica' ? '💰' :
+                        c.tipo === 'Excelencia Académica' ? '🎓' :
+                        c.tipo === 'Deportiva' ? '⚽' :
+                        c.tipo === 'Cultural' ? '🎭' :
+                        c.tipo === 'Investigación' ? '🔬' : '📚';
 
-                        return `
-                            <div class="convocatoria-card-destacada">
-                                <span class="estado-badge">● Activa</span>
-                                <div class="card-header">
-                                    <div class="icon">${tipoIcon}</div>
-                                    <div>
-                                        <h3>${c.nombre}</h3>
-                                        <span class="tipo-beca">${c.tipo}</span>
-                                    </div>
-                                </div>
-                                <div class="detalles">
-                                    <div class="item">
-                                        <div class="numero">${c.cupos}</div>
-                                        <div class="label">Cupos</div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="numero">${votos}</div>
-                                        <div class="label">Postulantes</div>
-                                    </div>
-                                    <div class="item">
-                                        <div class="numero">${diasRestantes}</div>
-                                        <div class="label">Días restantes</div>
-                                    </div>
-                                </div>
-                                <div class="fechas">
-                                    <span>📅 Apertura: ${c.fechaApertura}</span>
-                                    <span>🔒 Cierre: ${c.fechaCierre}</span>
-                                </div>
-                                <button class="btn btn-primary" onclick="irASolicitud()">
-                                    📝 Solicitar ahora
-                                </button>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    convGrid.innerHTML = `
-                        <div class="sin-convocatorias">
-                            <div class="icon-grande">📅</div>
-                            <h3>No hay convocatorias activas</h3>
-                            <p>En este momento no hay convocatorias disponibles. Te invitamos a revisar los tipos de beca y estar atento a las próximas aperturas.</p>
-                            <a href="#tipos-beca" class="btn btn-primary">Ver tipos de beca</a>
-                        </div>
-                    `;
-                }
-            }
-
-            // ==========================================================
-            // 2. TIPOS DE BECA CON REQUISITOS VISIBLES
-            // ==========================================================
-            const grid = document.getElementById('becas-grid');
-            const tipos = getTiposBecaActivosLocal();
-
-            if (grid) {
-                grid.innerHTML = tipos.map((b, index) => {
-                    const cardId = 'beca-' + b.id + '-' + index;
-                    const requisitosHtml = b.requisitos && b.requisitos.length > 0 ?
-                        b.requisitos.map(r => `<li>${r}</li>`).join('') :
-                        '<li style="color:var(--muted);">No hay requisitos específicos</li>';
+                    const diasRestantes = Math.max(0, Math.ceil((new Date(c.fechaCierre) - new Date()) / (1000 * 60 * 60 * 24)));
+                    const postulantes = Math.floor(Math.random() * 30) + 40;
 
                     return `
-                        <div class="beca-card" id="${cardId}">
-                            <div class="beca-icon">${b.icon}</div>
-                            <h3>${b.nombre}</h3>
-                            <p class="desc">${b.desc}</p>
-                            <div class="beca-coverage">📊 Cobertura: ${b.min}% - ${b.max}%</div>
-                            <button class="btn-toggle-requisitos" onclick="toggleRequisitos('${cardId}')">
-                                <span class="icon">▼</span> Ver requisitos
-                            </button>
-                            <div class="requisitos-detalle-container" id="${cardId}-requisitos">
-                                <div class="requisitos-detalle">
-                                    <h4>Requisitos para ${b.nombre}</h4>
-                                    <ul>${requisitosHtml}</ul>
+                        <div class="convocatoria-card-destacada">
+                            <span class="estado-badge">● Activa</span>
+                            <div class="card-header">
+                                <div class="icon">${tipoIcon}</div>
+                                <div>
+                                    <h3>${c.nombre}</h3>
+                                    <span class="tipo-beca">${c.tipo}</span>
                                 </div>
                             </div>
+                            <div class="detalles">
+                                <div class="item">
+                                    <div class="numero">${c.cupos}</div>
+                                    <div class="label">Cupos</div>
+                                </div>
+                                <div class="item">
+                                    <div class="numero">${postulantes}</div>
+                                    <div class="label">Postulantes</div>
+                                </div>
+                                <div class="item">
+                                    <div class="numero">${diasRestantes}</div>
+                                    <div class="label">Días restantes</div>
+                                </div>
+                            </div>
+                            <div class="fechas">
+                                <span>📅 Apertura: ${c.fechaApertura}</span>
+                                <span>🔒 Cierre: ${c.fechaCierre}</span>
+                            </div>
+                            <button class="btn btn-primary" onclick="irASolicitud()">
+                                📝 Solicitar ahora
+                            </button>
                         </div>
                     `;
                 }).join('');
-            }
-
-            // ==========================================================
-            // 3. REQUISITOS GENERALES
-            // ==========================================================
-            const reqList = document.getElementById('req-list');
-            if (reqList) {
-                reqList.innerHTML = REQUISITOS_GENERALES.map(r =>
-                    `<div class="req-item">
-                        <div class="req-check">✓</div>
-                        <div>
-                            <h4>${r.texto}</h4>
-                            <p>${r.detalle}</p>
-                        </div>
-                    </div>`
-                ).join('');
-            }
-
-            // ==========================================================
-            // 4. STATS ANIMADOS
-            // ==========================================================
-            animateStats();
-
-            // ==========================================================
-            // 5. BOTÓN SOLICITAR (hero) - Actualizar estado
-            // ==========================================================
-            const btnSolicitar = document.querySelector('.hero-actions .btn-outline:last-child');
-            if (btnSolicitar) {
-                if (activas.length > 0) {
-                    btnSolicitar.disabled = false;
-                    btnSolicitar.textContent = 'Solicitar ahora';
-                } else {
-                    btnSolicitar.disabled = true;
-                    btnSolicitar.textContent = '⛔ No hay convocatorias';
-                }
-            }
-        }
-
-        // ============================================================
-        // FUNCIÓN: toggleRequisitos
-        // ============================================================
-        function toggleRequisitos(cardId) {
-            const container = document.getElementById(cardId + '-requisitos');
-            const card = document.getElementById(cardId);
-            const btn = card.querySelector('.btn-toggle-requisitos');
-            const icon = btn.querySelector('.icon');
-
-            if (container.classList.contains('visible')) {
-                container.classList.remove('visible');
-                btn.innerHTML = '<span class="icon">▼</span> Ver requisitos';
             } else {
-                container.classList.add('visible');
-                btn.innerHTML = '<span class="icon rotated">▼</span> Ocultar requisitos';
-
-                document.querySelectorAll('.requisitos-detalle-container.visible').forEach(el => {
-                    if (el.id !== container.id) {
-                        el.classList.remove('visible');
-                        const otherCard = el.closest('.beca-card');
-                        if (otherCard) {
-                            const otherBtn = otherCard.querySelector('.btn-toggle-requisitos');
-                            if (otherBtn) {
-                                otherBtn.innerHTML = '<span class="icon">▼</span> Ver requisitos';
-                            }
-                        }
-                    }
-                });
+                convGrid.innerHTML = `
+                    <div class="sin-convocatorias">
+                        <div class="icon-grande">📅</div>
+                        <h3>No hay convocatorias activas</h3>
+                        <p>En este momento no hay convocatorias disponibles. Te invitamos a revisar los tipos de beca y estar atento a las próximas aperturas.</p>
+                        <a href="#tipos-beca" class="btn btn-primary">Ver tipos de beca</a>
+                    </div>
+                `;
             }
         }
 
-        // ============================================================
-        // FUNCIÓN: animateStats
-        // ============================================================
+        // 2. TIPOS DE BECA
+        function renderTiposBeca() {
+            const grid = document.getElementById('becas-grid');
+            const tipos = getTiposBecaActivosLocal();
+
+            if (!grid) return;
+
+            if (tipos.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;color:var(--muted);grid-column:1/-1;padding:40px;">No hay tipos de beca disponibles.</p>';
+                return;
+            }
+
+            grid.innerHTML = tipos.map((b, index) => {
+                const cardId = 'beca-' + b.id + '-' + index;
+                const requisitosHtml = b.requisitos && b.requisitos.length > 0 ?
+                    b.requisitos.map(r => `<li>${r}</li>`).join('') :
+                    '<li style="color:var(--muted);">No hay requisitos específicos</li>';
+
+                return `
+                    <div class="beca-card" id="${cardId}">
+                        <div class="beca-icon">${b.icon || '🎓'}</div>
+                        <h3>${b.nombre}</h3>
+                        <p class="desc">${b.desc || ''}</p>
+                        <div class="beca-coverage">📊 Cobertura: ${b.min || 0}% - ${b.max || 100}%</div>
+                        <button class="btn-toggle-requisitos" onclick="toggleRequisitos('${cardId}')">
+                            <span class="icon">▼</span> Ver requisitos
+                        </button>
+                        <div class="requisitos-detalle-container" id="${cardId}-requisitos">
+                            <div class="requisitos-detalle">
+                                <h4>Requisitos para ${b.nombre}</h4>
+                                <ul>${requisitosHtml}</ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 3. REQUISITOS GENERALES
+        function renderRequisitosGenerales() {
+            const reqList = document.getElementById('req-list');
+            if (!reqList) return;
+
+            reqList.innerHTML = REQUISITOS_GENERALES.map(r =>
+                `<div class="req-item">
+                    <div class="req-check">✓</div>
+                    <div>
+                        <h4>${r.texto}</h4>
+                        <p>${r.detalle}</p>
+                    </div>
+                </div>`
+            ).join('');
+        }
+
+        // 4. STATS ANIMADOS
         function animateStats() {
             const counters = document.querySelectorAll('.stat-number');
             counters.forEach(counter => {
@@ -1770,67 +1659,93 @@
             });
         }
 
+        // 5. toggleRequisitos
+        function toggleRequisitos(cardId) {
+            const container = document.getElementById(cardId + '-requisitos');
+            const card = document.getElementById(cardId);
+            if (!container || !card) return;
+
+            const btn = card.querySelector('.btn-toggle-requisitos');
+            const icon = btn?.querySelector('.icon');
+
+            if (container.classList.contains('visible')) {
+                container.classList.remove('visible');
+                if (btn) btn.innerHTML = '<span class="icon">▼</span> Ver requisitos';
+            } else {
+                container.classList.add('visible');
+                if (btn) btn.innerHTML = '<span class="icon rotated">▼</span> Ocultar requisitos';
+
+                document.querySelectorAll('.requisitos-detalle-container.visible').forEach(el => {
+                    if (el.id !== container.id) {
+                        el.classList.remove('visible');
+                        const otherCard = el.closest('.beca-card');
+                        if (otherCard) {
+                            const otherBtn = otherCard.querySelector('.btn-toggle-requisitos');
+                            if (otherBtn) {
+                                otherBtn.innerHTML = '<span class="icon">▼</span> Ver requisitos';
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         // ============================================================
         // INICIALIZACIÓN
         // ============================================================
         function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
-                        nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante',
-                        nombre: 'Carlos Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
-                        nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
-                        nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false,
-                        aprobado: true, puedeSolicitar: false }
-                ]));
+            // Verificar que StorageManager esté disponible
+            if (typeof StorageManager === 'undefined') {
+                console.error('❌ StorageManager no está cargado. Verifica que storageManager.js esté en la ruta correcta.');
+                return;
             }
 
-            if (!localStorage.getItem(STORAGE_KEYS.tipos)) {
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(TIPOS_BECA_DEFAULT));
-            }
-
-            if (!localStorage.getItem(STORAGE_KEYS.convocatorias)) {
+            // Inicializar datos por defecto si no existen
+            if (StorageManager.convocatorias.getAll().length === 0) {
                 const hoy = new Date();
                 const fmt = (d) => d.toISOString().slice(0, 10);
                 const apertura = new Date(hoy.getTime() - 10 * 86400000);
                 const cierre = new Date(hoy.getTime() + 20 * 86400000);
-                localStorage.setItem(STORAGE_KEYS.convocatorias, JSON.stringify([
-                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica',
-                        cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
-                    { id: 3, nombre: 'Beca Deportiva II-2026', tipo: 'Deportiva', cupos: 8,
-                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' }
-                ]));
+                StorageManager.convocatorias.save({
+                    id: 1,
+                    nombre: 'Beca Socioeconómica 2026-I',
+                    tipo: 'Socioeconómica',
+                    cupos: 20,
+                    fechaApertura: fmt(apertura),
+                    fechaCierre: fmt(cierre),
+                    estado: 'Activa'
+                });
+                StorageManager.convocatorias.save({
+                    id: 2,
+                    nombre: 'Beca de Excelencia Académica 2026-I',
+                    tipo: 'Excelencia Académica',
+                    cupos: 10,
+                    fechaApertura: fmt(apertura),
+                    fechaCierre: fmt(cierre),
+                    estado: 'Activa'
+                });
+                StorageManager.convocatorias.save({
+                    id: 3,
+                    nombre: 'Beca Deportiva II-2026',
+                    tipo: 'Deportiva',
+                    cupos: 8,
+                    fechaApertura: fmt(apertura),
+                    fechaCierre: fmt(cierre),
+                    estado: 'Activa'
+                });
             }
 
-            if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([
-                    { expediente: 'BEC-2026-001', fecha: '2026-01-15',
-                        estudianteEmail: 'estudiante@becas.com', nombres: 'María', apellidos: 'Gómez',
-                        tipoBeca: 'Excelencia Académica', estado: 'Beneficio Activo', puntaje: 95,
-                        promedio: 92, aceptado: true, porcentajeCobertura: '75%' }
-                ]));
+            // Verificar tipos de beca
+            if (StorageManager.tiposBeca.getAll().length === 0) {
+                TIPOS_BECA_DEFAULT.forEach(t => StorageManager.tiposBeca.save(t));
             }
+        }
 
-            if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
-                localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
-                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system',
-                        accion: 'Sistema iniciado', expediente: '—' }
-                ]));
-            }
+        function renderPublica() {
+            renderConvocatorias();
+            renderTiposBeca();
+            renderRequisitosGenerales();
+            animateStats();
         }
 
         // ============================================================
@@ -1841,15 +1756,26 @@
             renderHeaderNav();
             renderPublica();
 
+            // Hamburger menu
             document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
+            // DB Status
             document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
 
-            // Verificar si hay sesión activa
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            // Escuchar eventos de StorageManager
+            StorageManager.on('session_actualizada', function() {
+                renderHeaderNav();
+            });
+
+            StorageManager.on('convocatoria_actualizada', function() {
+                renderConvocatorias();
+            });
+
+            // Verificar sesión activa
+            const session = StorageManager.session.get();
             if (session) {
                 renderHeaderNav();
             }

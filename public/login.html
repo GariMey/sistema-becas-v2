@@ -6,7 +6,7 @@
     <title>Login - Sistema de Becas Universitarias</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -679,7 +679,7 @@
 
                 <div class="form-field">
                     <label>Correo electrónico</label>
-                    <input type="email" id="login-email" class="form-control" placeholder="correo@ejemplo.com" value="admin@becas.com">
+                    <input type="email" id="login-email" class="form-control" placeholder="correo@ejemplo.com" value="estudiante@becas.com">
                 </div>
 
                 <div class="form-field">
@@ -768,7 +768,7 @@
 
             <div class="form-field">
                 <label>Correo electrónico</label>
-                <input type="email" id="login-email-modal" class="form-control" placeholder="correo@ejemplo.com" value="admin@becas.com">
+                <input type="email" id="login-email-modal" class="form-control" placeholder="correo@ejemplo.com" value="estudiante@becas.com">
             </div>
 
             <div class="form-field">
@@ -822,12 +822,7 @@
         // ============================================================
         // CONSTANTES
         // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            usuarios: 'becas_usuarios',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-        };
+        // No se usa cifrado - contraseñas en texto plano para facilitar pruebas
 
         // ============================================================
         // UTILIDADES
@@ -885,21 +880,10 @@
             showToast(message, type);
         }
 
-        function cifrarPassword(pwd) {
-            return CryptoJS.AES.encrypt(pwd, SECRET_KEY).toString();
-        }
-
-        function descifrarPassword(encrypted) {
-            try {
-                return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(CryptoJS.enc.Utf8);
-            } catch (e) {
-                return null;
-            }
-        }
-
         function rolLabel(rol) {
             const map = {
                 estudiante: 'Estudiante',
+                aspirante: 'Aspirante',
                 trabajador_social: 'Trab. Social',
                 comite: 'Comité',
                 admin: 'Administrador',
@@ -908,29 +892,13 @@
             return map[rol] || rol;
         }
 
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Visitante',
-                rol: session ? session.rol : 'visitante',
-                accion: accion,
-                expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
-        }
-
         function goHome(e) {
             if (e) e.preventDefault();
-            // Recarga la página o navega al inicio
-            window.location.href = window.location.pathname;
+            window.location.href = 'index.html';
         }
 
         // ============================================================
-        // LOGIN
+        // LOGIN USANDO STORAGE MANAGER - SIN CIFRADO
         // ============================================================
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -953,109 +921,40 @@
             // Mostrar estado de carga
             const textoOriginal = btnLogin.textContent;
             btnLogin.disabled = true;
-            btnLogin.textContent = '⏳ Iniciando sesión...';
+            btnLogin.textContent = '⏳ Verificando credenciales...';
 
             try {
-                // ===== INTENTAR CON API =====
-                const result = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, twoFactorCode })
-                });
-
-                if (result.status === 200) {
-                    const data = await result.json();
-
-                    // ===== SOLICITAR 2FA =====
-                    if (data.require2FA) {
-                        document.getElementById('login-2fa').className = 'login-2fa visible';
-                        errorBox.textContent = '🔐 Ingresa el código enviado a tu correo electrónico';
-                        errorBox.className = 'login-error visible';
-
-                        // Enviar código 2FA por email (simulado)
-                        try {
-                            await fetch('/api/auth/generar-2fa', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ email })
-                            });
-                        } catch (e) {
-                            console.warn('⚠️ No se pudo enviar código 2FA:', e);
-                        }
-
-                        btnLogin.disabled = false;
-                        btnLogin.textContent = textoOriginal;
-                        return;
-                    }
-
-                    // ===== LOGIN EXITOSO =====
-                    const nuevaSesion = {
-                        email: data.email,
-                        nombre: data.nombre,
-                        rol: data.rol
-                    };
-
-                    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
-
-                    // Notificar inicio de sesión
-                    try {
-                        await fetch('/api/auth/notificar-inicio-sesion', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: data.email, nombre: data.nombre })
-                        });
-                    } catch (e) {}
-
-                    registrarBitacora('Inicio de sesión', '—', nuevaSesion);
-                    closeModal('modal-login');
-                    notify('✅ Bienvenido/a ' + data.nombre);
-
-                    // Redirigir al panel correspondiente
-                    const dashMap = {
-                        estudiante: 'panel_estudiante.html',
-                        trabajador_social: 'panel_trabajador_social.html',
-                        comite: 'panel_comite.html',
-                        admin: 'panel_admin.html',
-                        auditor: 'panel_auditor.html'
-                    };
-                    window.location.href = dashMap[data.rol] || 'index.html';
-
-                    btnLogin.disabled = false;
-                    btnLogin.textContent = textoOriginal;
-                    return;
-
-                } else {
-                    const err = await result.json();
-                    errorBox.textContent = '❌ ' + (err.error || 'Error en el login');
-                    errorBox.className = 'login-error visible';
-                }
-
-            } catch (e) {
-                console.warn('API falló, usando localStorage:', e);
-
-                // ===== FALLBACK: LOCALSTORAGE =====
-                const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-                const usuario = usuarios.find(u => u.email === email);
+                // Obtener usuario de StorageManager
+                const usuario = StorageManager.usuarios.getByEmail(email);
 
                 if (!usuario) {
-                    errorBox.textContent = '❌ Usuario no encontrado';
+                    errorBox.textContent = '❌ Usuario no encontrado. Verifica tu correo.';
                     errorBox.className = 'login-error visible';
                     btnLogin.disabled = false;
                     btnLogin.textContent = textoOriginal;
                     return;
                 }
 
+                // Verificar si el usuario está bloqueado
                 if (usuario.bloqueado) {
-                    errorBox.textContent = '🔒 Usuario bloqueado. Contacta al administrador.';
+                    errorBox.textContent = '🔒 Usuario bloqueado por múltiples intentos fallidos. Contacta al administrador.';
                     errorBox.className = 'login-error visible';
                     btnLogin.disabled = false;
                     btnLogin.textContent = textoOriginal;
                     return;
                 }
 
-                const decryptedPass = descifrarPassword(usuario.password);
+                // ===== VERIFICAR CONTRASEÑA - SIN CIFRADO =====
+                // La contraseña se almacena en texto plano para facilitar pruebas
+                const passCorrecta = usuario.password === password;
 
-                if (decryptedPass !== password) {
+                console.log('🔍 Verificando contraseña:');
+                console.log('   - Ingresada:', password);
+                console.log('   - Almacenada:', usuario.password);
+                console.log('   - ¿Coinciden?', passCorrecta);
+
+                if (!passCorrecta) {
+                    // Incrementar intentos
                     usuario.intentos = (usuario.intentos || 0) + 1;
                     if (usuario.intentos >= 3) {
                         usuario.bloqueado = true;
@@ -1063,14 +962,14 @@
                     } else {
                         errorBox.textContent = '❌ Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
                     }
-                    localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+                    StorageManager.usuarios.save(usuario);
                     errorBox.className = 'login-error visible';
                     btnLogin.disabled = false;
                     btnLogin.textContent = textoOriginal;
                     return;
                 }
 
-                // ===== 2FA LOCALSTORAGE =====
+                // ===== 2FA =====
                 if (usuario.twoFactorEnabled && !twoFactorCode) {
                     document.getElementById('login-2fa').className = 'login-2fa visible';
                     errorBox.textContent = '🔐 Ingresa el código enviado a tu correo electrónico';
@@ -1088,31 +987,57 @@
                     return;
                 }
 
-                // ===== LOGIN EXITOSO (LOCAL) =====
+                // ===== LOGIN EXITOSO =====
                 usuario.intentos = 0;
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+                StorageManager.usuarios.save(usuario);
 
                 const nuevaSesion = {
-                    email,
+                    email: usuario.email,
                     nombre: usuario.nombre,
                     rol: usuario.rol
                 };
-                localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(nuevaSesion));
+                StorageManager.session.set(nuevaSesion);
 
-                registrarBitacora('Inicio de sesión (local)', '—', nuevaSesion);
+                // Registrar en bitácora
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: usuario.nombre,
+                    rol: usuario.rol,
+                    accion: 'Inicio de sesión exitoso',
+                    expediente: '—'
+                });
+
                 closeModal('modal-login');
                 notify('✅ Bienvenido/a ' + usuario.nombre);
+
+                // Emitir evento de sesión actualizada
+                StorageManager.emit('session_actualizada', nuevaSesion);
 
                 // Redirigir al panel correspondiente
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
                     trabajador_social: 'panel_trabajador_social.html',
                     comite: 'panel_comite.html',
                     admin: 'panel_admin.html',
                     auditor: 'panel_auditor.html'
                 };
-                window.location.href = dashMap[usuario.rol] || 'index.html';
+                const target = dashMap[usuario.rol];
+                if (target) {
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 500);
+                } else {
+                    window.location.href = 'index.html';
+                }
 
+                btnLogin.disabled = false;
+                btnLogin.textContent = textoOriginal;
+
+            } catch (error) {
+                console.error('❌ Error en login:', error);
+                errorBox.textContent = '❌ Error al iniciar sesión. Intenta nuevamente.';
+                errorBox.className = 'login-error visible';
                 btnLogin.disabled = false;
                 btnLogin.textContent = textoOriginal;
             }
@@ -1122,7 +1047,6 @@
         // LOGIN MODAL (alternativo)
         // ============================================================
         async function handleLoginModal() {
-            // Sincronizar campos del modal con los del panel principal
             const email = document.getElementById('login-email-modal').value.trim().toLowerCase();
             const password = document.getElementById('login-password-modal').value;
             const twoFactorCode = document.getElementById('login-2fa-code-modal')?.value || '';
@@ -1158,23 +1082,26 @@
                 return;
             }
 
-            // Verificar si existe el usuario
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
-            const existe = usuarios.some(u => u.email === email);
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
-            if (!existe) {
+            if (!usuario) {
                 notify('⚠️ No existe una cuenta asociada a este correo electrónico.');
                 return;
             }
 
-            registrarBitacora('Solicitud de recuperación de contraseña para ' + email, '—');
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: usuario.nombre,
+                rol: usuario.rol,
+                accion: 'Solicitud de recuperación de contraseña',
+                expediente: '—'
+            });
 
             document.getElementById('recuperacion-step1').classList.add('hidden');
             document.getElementById('recuperacion-step2').classList.remove('hidden');
 
             notify('📧 Se ha enviado un enlace de recuperación a tu correo electrónico.');
 
-            // Simular apertura del modal de reset después de 3 segundos
             setTimeout(() => {
                 closeModal('modal-recuperacion');
                 openModal('modal-reset-password');
@@ -1210,24 +1137,25 @@
                 return;
             }
 
-            // Simular actualización de contraseña
-            const usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]');
             const email = document.getElementById('recuperacion-email')?.value || '';
+            const usuario = StorageManager.usuarios.getByEmail(email);
 
-            if (email) {
-                const usuario = usuarios.find(u => u.email === email);
-                if (usuario) {
-                    usuario.password = cifrarPassword(nueva);
-                    localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
-                    registrarBitacora('Contraseña actualizada para ' + email, '—');
-                }
+            if (usuario) {
+                usuario.password = nueva; // Sin cifrar - texto plano
+                StorageManager.usuarios.save(usuario);
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: usuario.nombre,
+                    rol: usuario.rol,
+                    accion: 'Contraseña actualizada',
+                    expediente: '—'
+                });
             }
 
             closeModal('modal-reset-password');
             notify('✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
             openModal('modal-login');
 
-            // Limpiar campos
             document.getElementById('reset-nueva-password').value = '';
             document.getElementById('reset-confirmar-password').value = '';
         }
@@ -1236,36 +1164,50 @@
         // INICIALIZACIÓN
         // ============================================================
         function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.usuarios)) {
-                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([
-                    { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'María Gómez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
-                    { email: 'estudiante2@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
-                        nombre: 'José Ramírez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
-                    { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
-                        nombre: 'Carlos Rodríguez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
-                    { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
-                        nombre: 'Dra. Ana Méndez', intentos: 0, bloqueado: false, twoFactorEnabled: false },
-                    { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
-                        nombre: 'Admin Sistema', intentos: 0, bloqueado: false, twoFactorEnabled: false },
-                    { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
-                        nombre: 'Luis Fernández', intentos: 0, bloqueado: false, twoFactorEnabled: false }
-                ]));
+            // Verificar que StorageManager esté disponible
+            if (typeof StorageManager === 'undefined') {
+                console.error('❌ StorageManager no está disponible. Verifica la ruta del script.');
+                return;
             }
 
-            if (!localStorage.getItem(STORAGE_KEYS.bitacora)) {
-                localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify([
-                    { fecha: new Date().toLocaleString(), usuario: 'Sistema', rol: 'system',
-                        accion: 'Sistema iniciado', expediente: '—' }
-                ]));
+            // Crear usuarios de prueba - CONTRASEÑAS EN TEXTO PLANO
+            if (StorageManager.usuarios.getAll().length === 0) {
+                const usuarios = [
+                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
+                        nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: true },
+                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante',
+                        nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: true },
+                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
+                        nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
+                        nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
+                        nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: false },
+                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
+                        nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
+                        intentos: 0, bloqueado: false, twoFactorEnabled: false,
+                        aprobado: true, puedeSolicitar: false }
+                ];
+                usuarios.forEach(u => StorageManager.usuarios.save(u));
+                console.log('✅ Usuarios de prueba creados correctamente (contraseñas en texto plano).');
             }
 
             // Verificar si ya hay sesión activa
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
-                // Redirigir al panel correspondiente
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
+                    aspirante: 'panel_estudiante.html',
                     trabajador_social: 'panel_trabajador_social.html',
                     comite: 'panel_comite.html',
                     admin: 'panel_admin.html',

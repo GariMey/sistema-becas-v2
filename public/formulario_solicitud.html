@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitud de Beca - Sistema de Becas Universitarias</title>
+    <title>Formulario de Solicitud de Beca</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="storageManager.js"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -14,25 +15,23 @@
             --primary-dark: #102240;
             --accent: #c5a028;
             --accent-light: #e0c468;
-            --bg: #f6f7fb;
+            --bg: #f0f2f6;
             --paper: #ffffff;
             --text: #1f2733;
             --muted: #6b7585;
             --border: #e6e9f0;
             --radius: 12px;
+            --radius-lg: 16px;
             --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
             --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
+            --shadow-lg: 0 20px 50px -12px rgba(26,54,93,0.25);
             --danger: #c0392b;
             --success: #1e7e4f;
             --warning: #b07d12;
             --info: #2471a3;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -47,21 +46,13 @@
             letter-spacing: -0.01em;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; }
+        .hidden { display: none !important; }
 
-        button {
-            font-family: inherit;
-            cursor: pointer;
-            border: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
+        /* ================================================================
+           BOTONES
+           ================================================================ */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -74,38 +65,24 @@
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             white-space: nowrap;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
             background: var(--accent);
             color: var(--primary-dark);
             box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
         }
-
         .btn-primary:hover {
             background: var(--accent-light);
             box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
         }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-ghost {
             background: transparent;
             color: var(--primary);
             border: 1.5px solid var(--border);
             padding: 11px 22px;
         }
-
-        .btn-ghost:hover {
-            border-color: var(--primary);
-        }
-
+        .btn-ghost:hover { border-color: var(--primary); }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.85rem;
@@ -113,15 +90,8 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .btn-small:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
+        .btn-small:hover { background: var(--primary-light); }
+        .btn-block { width: 100%; }
         .btn-success {
             background: #e7f5ee;
             color: var(--success);
@@ -130,11 +100,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
-
-        .btn-success:hover {
-            background: #b9e3cb;
-        }
-
+        .btn-success:hover { background: #b9e3cb; }
         .btn-danger {
             background: #fdecea;
             color: var(--danger);
@@ -143,8 +109,11 @@
             font-size: 0.85rem;
             border-radius: 8px;
         }
+        .btn-danger:hover { background: #f6c6c0; }
 
-        /* HEADER */
+        /* ================================================================
+           HEADER
+           ================================================================ */
         header.site-header {
             position: sticky;
             top: 0;
@@ -152,7 +121,6 @@
             background: var(--primary-dark);
             box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
         }
-
         .header-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -161,14 +129,13 @@
             justify-content: space-between;
             padding: 16px 24px;
         }
-
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
             color: #fff;
+            cursor: pointer;
         }
-
         .brand-mark {
             width: 42px;
             height: 42px;
@@ -183,32 +150,27 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-
         .brand-text {
             display: flex;
             flex-direction: column;
             line-height: 1.15;
         }
-
         .brand-text strong {
             font-family: 'Sora', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
         }
-
         .brand-text span {
             font-size: 0.72rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-
         nav.main-nav {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .session-pill {
             display: flex;
             align-items: center;
@@ -216,7 +178,6 @@
             color: #fff;
             font-size: 0.88rem;
         }
-
         .session-pill .role-badge {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -228,7 +189,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -236,7 +196,6 @@
             background: transparent;
             padding: 6px;
         }
-
         .hamburger span {
             width: 24px;
             height: 2px;
@@ -245,19 +204,19 @@
             transition: .25s;
         }
 
-        /* FORMULARIO */
+        /* ================================================================
+           FORMULARIO
+           ================================================================ */
         .form-shell {
             max-width: 900px;
             margin: 0 auto;
             padding: 60px 24px 100px;
         }
-
         .section-head {
             text-align: center;
             max-width: 680px;
             margin: 0 auto 30px;
         }
-
         .section-tag {
             display: inline-block;
             color: var(--accent);
@@ -270,12 +229,10 @@
             text-transform: uppercase;
             margin-bottom: 14px;
         }
-
         .section-head h2 {
             font-size: clamp(1.6rem, 3.5vw, 2.3rem);
             margin-bottom: 12px;
         }
-
         .section-head p {
             color: var(--muted);
             font-size: 1rem;
@@ -288,14 +245,12 @@
             overflow-x: auto;
             gap: 4px;
         }
-
         .step-pill {
             flex: 1;
             text-align: center;
             position: relative;
             min-width: 60px;
         }
-
         .step-pill::before {
             content: "";
             position: absolute;
@@ -306,21 +261,11 @@
             background: var(--border);
             z-index: 0;
         }
-
-        .step-pill:first-child::before {
-            display: none;
-        }
-
+        .step-pill:first-child::before { display: none; }
         .step-pill.active~.step-pill::before,
-        .step-pill.done::before {
-            background: var(--border);
-        }
-
+        .step-pill.done::before { background: var(--border); }
         .step-pill.done::before,
-        .step-pill.active::before {
-            background: var(--accent);
-        }
-
+        .step-pill.active::before { background: var(--accent); }
         .step-circle {
             position: relative;
             z-index: 1;
@@ -338,32 +283,23 @@
             color: var(--muted);
             font-size: 0.9rem;
         }
-
         .step-pill.active .step-circle {
             border-color: var(--accent);
             color: var(--accent);
             background: #fff;
         }
-
         .step-pill.done .step-circle {
             border-color: var(--accent);
             background: var(--accent);
             color: var(--primary-dark);
         }
-
         .step-label {
             font-size: 0.78rem;
             color: var(--muted);
             font-weight: 600;
         }
-
-        .step-pill.active .step-label {
-            color: var(--primary);
-        }
-
-        .step-pill.done .step-label {
-            color: var(--accent);
-        }
+        .step-pill.active .step-label { color: var(--primary); }
+        .step-pill.done .step-label { color: var(--accent); }
 
         .form-card {
             background: var(--paper);
@@ -372,64 +308,36 @@
             padding: 32px;
             box-shadow: var(--shadow-sm);
         }
-
-        .form-card h3 {
-            margin-bottom: 6px;
-        }
-
+        .form-card h3 { margin-bottom: 6px; }
         .form-card .form-sub {
             color: var(--muted);
             font-size: 0.9rem;
             margin-bottom: 24px;
         }
 
-        .form-step {
-            display: block;
-        }
-
-        .form-step.hidden {
-            display: none;
-        }
+        .form-step { display: block; }
+        .form-step.hidden { display: none; }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 18px;
         }
-
-        .form-grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 14px;
-        }
-
         .form-field {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-field.full {
-            grid-column: 1/-1;
-        }
-
+        .form-field.full { grid-column: 1/-1; }
         .form-field label {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
         }
-
-        .form-field label .opt {
-            color: var(--muted);
-            font-weight: 400;
-            font-size: 0.78rem;
-        }
-
         .form-field label .required {
             color: var(--danger);
             margin-left: 2px;
         }
-
         .form-field input,
         .form-field select,
         .form-field textarea {
@@ -443,7 +351,6 @@
             transition: border-color .15s ease, box-shadow .15s ease;
             width: 100%;
         }
-
         .form-field input:focus,
         .form-field select:focus,
         .form-field textarea:focus {
@@ -451,43 +358,62 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
         }
-
         .form-field input.input-error,
         .form-field select.input-error,
         .form-field textarea.input-error {
             border-color: var(--danger);
             box-shadow: 0 0 0 3px rgba(192,57,43,0.08);
         }
-
         .form-field input[type="file"] {
             padding: 9px;
             font-size: 0.85rem;
             background: #fafbfd;
         }
-
-        .form-field input:disabled,
-        .form-field select:disabled {
-            background: #f1f3f7;
-            color: var(--muted);
-            cursor: not-allowed;
-        }
-
-        .field-error {
-            font-size: 0.78rem;
-            color: var(--danger);
-            min-height: 14px;
-        }
-
-        .field-hint {
-            font-size: 0.78rem;
+        .form-field .hint {
+            font-size: 0.75rem;
             color: var(--muted);
         }
-
         .field-check {
             display: inline-block;
             font-weight: 800;
             font-size: 0.85rem;
             margin-left: 4px;
+        }
+
+        /* File upload */
+        .file-upload-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafbfc;
+            transition: border-color 0.2s;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .file-upload-wrapper:hover { border-color: var(--primary); }
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-upload-wrapper .icon-upload { font-size: 2rem; color: var(--muted); }
+        .file-upload-wrapper .file-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 4px;
+            color: var(--text);
+            word-break: break-all;
+        }
+        .file-upload-wrapper .file-status { font-size: 0.75rem; margin-top: 2px; }
+        .file-upload-wrapper.loaded {
+            border-color: var(--success);
+            background: #e7f5ee;
         }
 
         .form-actions {
@@ -497,7 +423,6 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-
         .form-actions .left-actions,
         .form-actions .right-actions {
             display: flex;
@@ -514,7 +439,6 @@
             margin-bottom: 12px;
             position: relative;
         }
-
         .conviviente-item .btn-remove {
             position: absolute;
             top: 8px;
@@ -525,20 +449,9 @@
             padding: 4px 8px;
             border-radius: 4px;
         }
+        .conviviente-item .btn-remove:hover { background: #fdecea; }
 
-        .conviviente-item .btn-remove:hover {
-            background: #fdecea;
-        }
-
-        .conviviente-item .form-grid {
-            gap: 12px;
-        }
-
-        .conviviente-item .form-field {
-            margin-bottom: 0;
-        }
-
-        /* MODALES */
+        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -549,11 +462,7 @@
             z-index: 2000;
             padding: 20px;
         }
-
-        .modal-overlay.hidden {
-            display: none;
-        }
-
+        .modal-overlay.hidden { display: none; }
         .modal-box {
             background: var(--paper);
             border-radius: 16px;
@@ -565,11 +474,7 @@
             overflow-y: auto;
             position: relative;
         }
-
-        .modal-box.wide {
-            max-width: 680px;
-        }
-
+        .modal-box.wide { max-width: 680px; }
         .modal-close {
             position: absolute;
             top: 14px;
@@ -580,15 +485,8 @@
             line-height: 1;
             padding: 4px;
         }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-box h3 {
-            margin-bottom: 4px;
-        }
-
+        .modal-close:hover { color: var(--primary); }
+        .modal-box h3 { margin-bottom: 4px; }
         .modal-box .modal-sub {
             color: var(--muted);
             font-size: 0.88rem;
@@ -607,7 +505,6 @@
             font-size: 2rem;
             margin: 0 auto 16px;
         }
-
         .expediente-box {
             background: var(--primary-dark);
             color: #fff;
@@ -616,7 +513,6 @@
             text-align: center;
             margin: 18px 0;
         }
-
         .expediente-box .num {
             font-family: 'Sora', sans-serif;
             font-size: 1.4rem;
@@ -636,26 +532,23 @@
             font-size: 0.88rem;
             margin-bottom: 10px;
         }
-
         .alert-box.info {
             background: #e6effa;
             border-color: #b8d0e8;
             color: var(--info);
         }
-
         .alert-box.success {
             background: #e7f5ee;
             border-color: #b9e3cb;
             color: var(--success);
         }
-
         .alert-box.danger {
             background: #fdecea;
             border-color: #f6c6c0;
             color: var(--danger);
         }
 
-        /* TOAST */
+        /* Toast */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -666,7 +559,6 @@
             gap: 10px;
             max-width: 380px;
         }
-
         .toast-box {
             padding: 14px 18px;
             border-radius: 10px;
@@ -679,23 +571,11 @@
             animation: toastIn .25s ease;
             white-space: pre-line;
         }
-
         @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(24px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        .toast-icon {
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
+        .toast-icon { font-weight: 700; flex-shrink: 0; }
         .toast-close {
             background: transparent;
             border: none;
@@ -706,10 +586,7 @@
             line-height: 1;
             padding: 0 0 0 6px;
         }
-
-        .toast-close:hover {
-            opacity: 1;
-        }
+        .toast-close:hover { opacity: 1; }
 
         #db-status {
             position: fixed;
@@ -724,39 +601,23 @@
             color: #1a365d;
             border: 1px solid #d0d7e0;
         }
-
         #db-status.online {
             background: #e7f5ee;
             color: #1e7e4f;
             border-color: #b9e3cb;
         }
-
         #db-status.offline {
             background: #fdecea;
             color: #c0392b;
             border-color: #f6c6c0;
         }
 
-        /* RESPONSIVE */
+        /* Responsive */
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid-3 {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .conviviente-item .form-grid {
-                grid-template-columns: 1fr;
-            }
+            .form-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 680px) {
-            .hamburger {
-                display: flex;
-            }
-
+            .hamburger { display: flex; }
             nav.main-nav {
                 position: absolute;
                 top: 100%;
@@ -770,88 +631,38 @@
                 display: none;
                 border-top: 1px solid rgba(255,255,255,0.08);
             }
-
-            nav.main-nav.open {
-                display: flex;
-            }
-
+            nav.main-nav.open { display: flex; }
             nav.main-nav .btn,
-            nav.main-nav .session-pill {
-                width: 100%;
-            }
-
+            nav.main-nav .session-pill { width: 100%; }
             nav.main-nav .session-pill {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
             }
-
-            .form-shell {
-                padding: 40px 16px 80px;
-            }
-
-            .form-card {
-                padding: 20px;
-            }
-
-            .steps-indicator {
-                gap: 4px;
-            }
-
-            .step-label {
-                font-size: 0.65rem;
-            }
-
-            .step-circle {
-                width: 28px;
-                height: 28px;
-                font-size: 0.75rem;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
+            .form-shell { padding: 40px 16px 80px; }
+            .form-card { padding: 20px; }
+            .steps-indicator { gap: 4px; }
+            .step-label { font-size: 0.65rem; }
+            .step-circle { width: 28px; height: 28px; font-size: 0.75rem; }
+            .form-actions { flex-direction: column; }
             .form-actions .left-actions,
             .form-actions .right-actions {
                 width: 100%;
                 justify-content: center;
             }
-
-            .form-actions .btn {
-                flex: 1;
-                min-width: 100px;
-            }
-
-            .form-grid-3 {
-                grid-template-columns: 1fr;
-            }
+            .form-actions .btn { flex: 1; min-width: 100px; }
         }
-
         @media (max-width: 480px) {
-            .header-inner {
-                padding: 12px 16px;
-            }
-
-            .brand-text strong {
-                font-size: 0.9rem;
-            }
-
-            .brand-text span {
-                font-size: 0.6rem;
-            }
-
-            .brand-mark {
-                width: 34px;
-                height: 34px;
-                font-size: 1rem;
-            }
+            .header-inner { padding: 12px 16px; }
+            .brand-text strong { font-size: 0.9rem; }
+            .brand-text span { font-size: 0.6rem; }
+            .brand-mark { width: 34px; height: 34px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- TOAST CONTAINER -->
+    <!-- TOAST -->
     <div id="toast-container"></div>
 
     <!-- DB STATUS -->
@@ -909,7 +720,7 @@
                 <div class="form-grid" id="step3-fields"></div>
             </div>
 
-            <!-- STEP 4: Datos complementarios (varía según tipo de beca) -->
+            <!-- STEP 4: Datos complementarios -->
             <div class="form-step hidden" data-step="4" id="step-4">
                 <h3>Datos complementarios</h3>
                 <p class="form-sub" id="step4-subtitulo">Estos campos varían según el tipo de beca seleccionado.</p>
@@ -937,7 +748,7 @@
         </form>
     </div>
 
-    <!-- MODAL DE ÉXITO -->
+    <!-- MODAL ÉXITO -->
     <div id="modal-success" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-success')">×</button>
@@ -954,7 +765,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ADVERTENCIA -->
+    <!-- MODAL ADVERTENCIA -->
     <div id="modal-warning" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-warning')">×</button>
@@ -965,7 +776,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE SUBSANACIÓN -->
+    <!-- MODAL SUBSANACIÓN -->
     <div id="modal-subsanacion" class="modal-overlay hidden">
         <div class="modal-box wide">
             <button class="modal-close" onclick="closeModal('modal-subsanacion')">×</button>
@@ -996,40 +807,34 @@
             'Socioeconómica': {
                 icon: '💰',
                 desc: 'Apoyo financiero para estudiantes con recursos limitados',
-                min: 25,
-                max: 100,
+                min: 25, max: 100,
                 rubros: ['Matrícula', 'Aranceles', 'Materiales'],
                 requisitos: ['Promedio mínimo 80', 'Ingreso familiar máximo 2 salarios mínimos'],
                 camposPersonalizados: [
                     { id: 'f-tipo-vivienda', label: 'Tipo de vivienda', type: 'select', req: true,
                         options: ['Propia', 'Alquilada', 'Prestada', 'Familiar', 'En construcción'] },
-                    { id: 'f-servicios-basicos', label: 'Servicios básicos disponibles', type: 'select',
-                        req: true, options: ['Todos', 'Electricidad y agua', 'Solo electricidad',
-                            'Solo agua', 'Ninguno'
-                        ] },
-                    { id: 'f-gastos-medicos', label: 'Gastos médicos mensuales (₡)', type: 'number',
-                        req: false, placeholder: 'Ej: 50000' },
+                    { id: 'f-servicios-basicos', label: 'Servicios básicos disponibles', type: 'select', req: true,
+                        options: ['Todos', 'Electricidad y agua', 'Solo electricidad', 'Solo agua', 'Ninguno'] },
+                    { id: 'f-gastos-medicos', label: 'Gastos médicos mensuales (₡)', type: 'number', req: false,
+                        placeholder: 'Ej: 50000' },
                     { id: 'f-deudas', label: '¿Tiene deudas?', type: 'select', req: false,
                         options: ['No', 'Sí, menos de ₡500,000', 'Sí, más de ₡500,000'] }
                 ],
-                documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-constancia', 'f-recibo', 'f-recibo-agua',
-                    'f-declaracion-jurada'
-                ]
+                documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-constancia', 'f-recibo', 'f-recibo-agua', 'f-declaracion-jurada']
             },
             'Excelencia Académica': {
                 icon: '🎓',
                 desc: 'Para estudiantes con promedio destacado',
-                min: 50,
-                max: 100,
+                min: 50, max: 100,
                 rubros: ['Matrícula', 'Aranceles'],
                 requisitos: ['Promedio mínimo 90', 'Sin sanciones disciplinarias', 'Carga mínima 12 créditos'],
                 camposPersonalizados: [
-                    { id: 'f-publicaciones', label: 'Publicaciones o investigaciones', type: 'textarea',
-                        req: false, placeholder: 'Lista de publicaciones o investigaciones realizadas' },
+                    { id: 'f-publicaciones', label: 'Publicaciones o investigaciones', type: 'textarea', req: false,
+                        placeholder: 'Lista de publicaciones o investigaciones realizadas' },
                     { id: 'f-proyectos', label: 'Proyectos de investigación', type: 'textarea', req: false,
                         placeholder: 'Proyectos de investigación en los que ha participado' },
-                    { id: 'f-reconocimientos', label: 'Reconocimientos académicos', type: 'textarea',
-                        req: false, placeholder: 'Premios, menciones honoríficas, etc.' },
+                    { id: 'f-reconocimientos', label: 'Reconocimientos académicos', type: 'textarea', req: false,
+                        placeholder: 'Premios, menciones honoríficas, etc.' },
                     { id: 'f-carta-recomendacion', label: 'Carta de recomendación', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-recomendacion']
@@ -1037,8 +842,7 @@
             'Deportiva': {
                 icon: '⚽',
                 desc: 'Para estudiantes con alto rendimiento deportivo',
-                min: 25,
-                max: 75,
+                min: 25, max: 75,
                 rubros: ['Matrícula'],
                 requisitos: ['Promedio mínimo 80', 'Representación universitaria'],
                 camposPersonalizados: [
@@ -1048,33 +852,29 @@
                         options: ['Local', 'Regional', 'Nacional', 'Internacional'] },
                     { id: 'f-logros-deportivos', label: 'Logros deportivos', type: 'textarea', req: true,
                         placeholder: 'Principales logros y reconocimientos' },
-                    { id: 'f-carta-coordinacion', label: 'Carta de la coordinación deportiva', type: 'file',
-                        req: true }
+                    { id: 'f-carta-coordinacion', label: 'Carta de la coordinación deportiva', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-coordinacion']
             },
             'Cultural': {
                 icon: '🎭',
                 desc: 'Artes, música, teatro',
-                min: 25,
-                max: 75,
+                min: 25, max: 75,
                 rubros: ['Matrícula'],
                 requisitos: ['Promedio mínimo 80', 'Portafolio artístico'],
                 camposPersonalizados: [
                     { id: 'f-disciplina', label: 'Disciplina artística', type: 'text', req: true,
                         placeholder: 'Ej: Teatro, Música, Danza' },
-                    { id: 'f-portafolio', label: 'Descripción del portafolio artístico', type: 'textarea',
-                        req: true, placeholder: 'Describa su portafolio artístico' },
-                    { id: 'f-carta-cultural', label: 'Carta de la coordinación cultural', type: 'file',
-                        req: true }
+                    { id: 'f-portafolio', label: 'Descripción del portafolio artístico', type: 'textarea', req: true,
+                        placeholder: 'Describa su portafolio artístico' },
+                    { id: 'f-carta-cultural', label: 'Carta de la coordinación cultural', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-cultural']
             },
             'Investigación': {
                 icon: '🔬',
                 desc: 'Para asistentes de investigación',
-                min: 25,
-                max: 75,
+                min: 25, max: 75,
                 rubros: ['Matrícula', 'Estipendio'],
                 requisitos: ['Promedio mínimo 85', 'Proyecto de investigación activo'],
                 camposPersonalizados: [
@@ -1082,8 +882,7 @@
                         placeholder: 'Ej: Biología Molecular, Inteligencia Artificial' },
                     { id: 'f-proyecto-investigacion', label: 'Nombre del proyecto', type: 'text', req: true,
                         placeholder: 'Nombre del proyecto de investigación' },
-                    { id: 'f-carta-director', label: 'Carta del director del proyecto', type: 'file',
-                        req: true }
+                    { id: 'f-carta-director', label: 'Carta del director del proyecto', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-director']
             }
@@ -1097,57 +896,46 @@
                 { id: 'f-nombres', label: 'Nombres', type: 'text', req: true, placeholder: 'Ej: María José' },
                 { id: 'f-apellidos', label: 'Apellidos', type: 'text', req: true, placeholder: 'Ej: González Mora' },
                 { id: 'f-cedula', label: 'Cédula', type: 'text', req: true, placeholder: '1-2345-6789' },
-                { id: 'f-correo', label: 'Correo electrónico', type: 'email', req: true,
-                    placeholder: 'correo@ejemplo.com' },
+                { id: 'f-correo', label: 'Correo electrónico', type: 'email', req: true, placeholder: 'correo@ejemplo.com' },
                 { id: 'f-telefono', label: 'Teléfono', type: 'tel', req: false, placeholder: '8888-9999' },
                 { id: 'f-nacimiento', label: 'Fecha de nacimiento', type: 'date', req: true },
                 { id: 'f-direccion', label: 'Dirección completa', type: 'text', req: true,
                     placeholder: 'Provincia, cantón, distrito, señas', full: true },
-                { id: 'f-tipo-beca', label: 'Tipo de beca a solicitar', type: 'select-dynamic', req: true,
-                    full: true }
+                { id: 'f-tipo-beca', label: 'Tipo de beca a solicitar', type: 'select-dynamic', req: true, full: true }
             ],
             2: [
                 { id: 'f-carrera', label: 'Carrera', type: 'select', req: true,
                     options: ['Ingeniería en Sistemas', 'Medicina', 'Derecho', 'Administración', 'Arquitectura',
                         'Psicología', 'Enfermería', 'Educación', 'Ingeniería Civil', 'Ingeniería Industrial',
-                        'Comunicación', 'Diseño Gráfico', 'Otra'
-                    ] },
+                        'Comunicación', 'Diseño Gráfico', 'Otra'] },
                 { id: 'f-sede', label: 'Sede', type: 'select', req: true,
                     options: ['Central', 'Occidente', 'Atlántica', 'Brunca', 'Chorotega'] },
                 { id: 'f-facultad', label: 'Facultad', type: 'select', req: true,
                     options: ['Ingeniería', 'Ciencias de la Salud', 'Ciencias Sociales', 'Arquitectura y Diseño',
-                        'Artes', 'Educación', 'Ciencias Básicas', 'Agronomía'
-                    ] },
+                        'Artes', 'Educación', 'Ciencias Básicas', 'Agronomía'] },
                 { id: 'f-anio', label: 'Año de ingreso', type: 'select', req: true,
                     options: ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'] },
                 { id: 'f-promedio', label: 'Promedio ponderado (0-100)', type: 'number', req: true,
                     placeholder: 'Ej: 85.5', min: 0, max: 100 },
-                { id: 'f-avance', label: 'Avance curricular (%)', type: 'number', req: false,
-                    placeholder: 'Ej: 45' },
-                { id: 'f-historial', label: 'Historial académico (PDF, máx 5MB)', type: 'file', req: true,
-                    full: true }
+                { id: 'f-avance', label: 'Avance curricular (%)', type: 'number', req: false, placeholder: 'Ej: 45' },
+                { id: 'f-historial', label: 'Historial académico (PDF, máx 5MB)', type: 'file', req: true, full: true }
             ],
             3: [
                 { id: 'f-ingreso', label: 'Ingreso familiar mensual (₡)', type: 'number', req: true,
                     placeholder: 'Ej: 500000' },
-                { id: 'f-dependientes', label: 'Dependientes económicos', type: 'number', req: true,
-                    placeholder: '0' },
-                { id: 'f-trabajadores', label: 'Miembros que trabajan', type: 'number', req: true,
-                    placeholder: '0' },
+                { id: 'f-dependientes', label: 'Dependientes económicos', type: 'number', req: true, placeholder: '0' },
+                { id: 'f-trabajadores', label: 'Miembros que trabajan', type: 'number', req: true, placeholder: '0' },
                 { id: 'f-vivienda', label: 'Tipo de vivienda', type: 'select', req: true,
                     options: ['Propia', 'Alquilada', 'Prestada', 'Familiar'] },
                 { id: 'f-gastos', label: 'Gastos mensuales aproximados (₡)', type: 'number', req: true,
                     placeholder: 'Ej: 400000' },
                 { id: 'f-laboral', label: 'Situación laboral actual', type: 'select', req: true,
                     options: ['Empleado tiempo completo', 'Empleado medio tiempo', 'Desempleado',
-                        'Trabajo informal', 'Solo estudio'
-                    ] },
+                        'Trabajo informal', 'Solo estudio'] },
                 { id: 'f-discapacidad', label: '¿Posee alguna discapacidad?', type: 'select', req: true,
                     options: ['No', 'Sí'] },
                 { id: 'f-transporte', label: 'Medio de transporte', type: 'select', req: true,
-                    options: ['Bus público', 'Bus universitario', 'Vehículo propio', 'Bicicleta', 'Caminando',
-                        'Otro'
-                    ] }
+                    options: ['Bus público', 'Bus universitario', 'Vehículo propio', 'Bicicleta', 'Caminando', 'Otro'] }
             ],
             5: [
                 { id: 'f-cedula-f', label: 'Copia de cédula (frontal)', type: 'file', req: true },
@@ -1166,8 +954,7 @@
             { id: 'conv-edad', label: 'Edad', type: 'number', req: true, placeholder: 'Ej: 25', min: 0, max: 120 },
             { id: 'conv-estudia', label: '¿Estudia?', type: 'select', req: true, options: ['Sí', 'No'] },
             { id: 'conv-trabaja', label: '¿Trabaja?', type: 'select', req: true, options: ['Sí', 'No'] },
-            { id: 'conv-transporte', label: '¿Tiene transporte propio?', type: 'select', req: true,
-                options: ['Sí', 'No'] }
+            { id: 'conv-transporte', label: '¿Tiene transporte propio?', type: 'select', req: true, options: ['Sí', 'No'] }
         ];
 
         // ============================================================
@@ -1177,7 +964,6 @@
         const STEP_LABELS = ['Personales', 'Académicos', 'Socioeconómicos', 'Complementarios', 'Documentos'];
         let camposActualesPaso4 = [];
         let convivientes = [];
-        let convivienteEditIndex = null;
         let timeoutConsultaPadron = null;
         let ultimaCedulaConsultada = '';
         let esAspirante = false;
@@ -1253,7 +1039,6 @@
                 toast.style.transform = 'translateX(24px)';
                 setTimeout(() => toast.remove(), 300);
             };
-
             toast.querySelector('.toast-close').addEventListener('click', remove);
             setTimeout(remove, 4500);
         }
@@ -1262,8 +1047,8 @@
             let type = 'info';
             if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
                 type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(
-                message)) type = 'warning';
+            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
+                type = 'warning';
             showToast(message, type);
         }
 
@@ -1275,26 +1060,15 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        function registrarBitacora(accion, expediente, sessionOverride) {
-            const session = sessionOverride || JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
-            const entrada = {
+        function registrarBitacora(accion, expediente) {
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
                 fecha: new Date().toLocaleString(),
                 usuario: session ? session.nombre : 'Visitante',
                 rol: session ? session.rol : 'visitante',
                 accion: accion,
                 expediente: expediente || '—'
-            };
-            const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
-            bitacora.unshift(entrada);
-            localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
-            return entrada;
-        }
-
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            });
         }
 
         function goHome(e) {
@@ -1302,20 +1076,25 @@
             window.location.href = 'index.html';
         }
 
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
         // ============================================================
         // CARGA DE DATOS DEL USUARIO LOGUEADO
         // ============================================================
         function cargarDatosUsuario() {
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 datosUsuarioLogueado = session;
-
-                // Buscar datos completos del usuario en la lista de usuarios
-                const usuarios = JSON.parse(localStorage.getItem('becas_usuarios') || '[]');
-                const usuarioCompleto = usuarios.find(u => u.email === session.email);
+                const usuarioCompleto = StorageManager.usuarios.getByEmail(session.email);
 
                 if (usuarioCompleto) {
-                    // Cargar datos del usuario en el formulario
                     const nombresEl = document.getElementById('f-nombres');
                     const apellidosEl = document.getElementById('f-apellidos');
                     const cedulaEl = document.getElementById('f-cedula');
@@ -1323,7 +1102,6 @@
                     const telefonoEl = document.getElementById('f-telefono');
                     const direccionEl = document.getElementById('f-direccion');
 
-                    // Separar nombre completo en nombre y apellidos
                     const nombreCompleto = usuarioCompleto.nombre || '';
                     const partes = nombreCompleto.split(' ');
                     if (partes.length >= 2) {
@@ -1332,16 +1110,12 @@
                     } else {
                         if (nombresEl) nombresEl.value = nombreCompleto;
                     }
-
                     if (cedulaEl) cedulaEl.value = usuarioCompleto.cedula || '';
                     if (correoEl) correoEl.value = usuarioCompleto.email || '';
                     if (telefonoEl) telefonoEl.value = usuarioCompleto.telefono || '';
                     if (direccionEl) direccionEl.value = usuarioCompleto.direccion || '';
 
-                    // Verificar si es aspirante
                     esAspirante = usuarioCompleto.rol === 'aspirante';
-
-                    // Si es aspirante, mostrar campos de convivientes
                     if (esAspirante) {
                         document.getElementById('step4-subtitulo').textContent =
                             'Como aspirante, debes completar información sobre las personas que viven contigo.';
@@ -1400,7 +1174,6 @@
             const container = document.getElementById('convivientes-container');
             if (!container) return;
 
-            // Crear formulario para agregar conviviente
             const formHTML = `
                 <div class="conviviente-item" id="conviviente-form">
                     <div class="form-grid">
@@ -1424,8 +1197,6 @@
                     </div>
                 </div>
             `;
-
-            // Reemplazar el contenido con el formulario
             container.innerHTML = formHTML;
         }
 
@@ -1478,7 +1249,6 @@
                 return !f.req || (el.files && el.files.length > 0);
             }
             const valor = (el.value || '').trim();
-
             if (!f.req && valor === '') return true;
 
             if (f.type === 'email') {
@@ -1506,8 +1276,7 @@
             const checkEl = document.getElementById('check-' + f.id);
             if (!checkEl) return;
             const el = document.getElementById(f.id);
-            const tieneValor = f.type === 'file' ? !!(el && el.files && el.files.length > 0) : !!(el && el.value && el
-                .value.trim().length > 0);
+            const tieneValor = f.type === 'file' ? !!(el && el.files && el.files.length > 0) : !!(el && el.value && el.value.trim().length > 0);
             if (!tieneValor && !f.req) { checkEl.textContent = ''; return; }
             const valido = campoEsValido(f);
             checkEl.textContent = valido ? '✓' : '✕';
@@ -1525,7 +1294,6 @@
             const campos = mapaCampos[currentStep] || [];
             const todoValido = campos.filter(f => f.req).every(f => campoEsValido(f));
 
-            // Validar convivientes si es aspirante y está en el paso 4
             if (currentStep === 4 && esAspirante) {
                 const convivientesValidos = convivientes.length > 0;
                 const btnSiguiente = document.getElementById('btnSiguiente');
@@ -1573,21 +1341,17 @@
             if (checkCedula) { checkCedula.textContent = '⏳';
                 checkCedula.style.color = 'var(--muted)'; }
 
-            // Simulación de consulta al padrón
             setTimeout(() => {
                 if (digitos === '123456789') {
                     const nombresEl = document.getElementById('f-nombres');
                     const apellidosEl = document.getElementById('f-apellidos');
                     const direccionEl = document.getElementById('f-direccion');
-
                     if (nombresEl) nombresEl.value = 'María José';
                     if (apellidosEl) apellidosEl.value = 'González Mora';
-                    if (direccionEl) direccionEl.value = 'San José, Montes de Oca, Sabanilla, ';
-
+                    if (direccionEl) direccionEl.value = 'San José, Montes de Oca, Sabanilla';
                     [nombresEl, apellidosEl, direccionEl].forEach(el => {
                         if (el) el.dispatchEvent(new Event('input'));
                     });
-
                     if (checkCedula) { checkCedula.textContent = '✓';
                         checkCedula.style.color = 'var(--success)'; }
                     notify('✅ Datos del padrón cargados automáticamente.');
@@ -1603,7 +1367,22 @@
             const carreraEl = document.getElementById('f-carrera');
             const facultadEl = document.getElementById('f-facultad');
             if (!carreraEl || !facultadEl) return;
-            const facultad = CARRERA_FACULTAD[carreraEl.value];
+            const facultadMap = {
+                'Ingeniería en Sistemas': 'Ingeniería',
+                'Ingeniería Civil': 'Ingeniería',
+                'Ingeniería Industrial': 'Ingeniería',
+                'Medicina': 'Ciencias de la Salud',
+                'Enfermería': 'Ciencias de la Salud',
+                'Derecho': 'Ciencias Sociales',
+                'Psicología': 'Ciencias Sociales',
+                'Comunicación': 'Ciencias Sociales',
+                'Administración': 'Ciencias Sociales',
+                'Arquitectura': 'Arquitectura y Diseño',
+                'Diseño Gráfico': 'Arquitectura y Diseño',
+                'Artes': 'Artes',
+                'Educación': 'Educación'
+            };
+            const facultad = facultadMap[carreraEl.value];
             if (facultad) {
                 facultadEl.value = facultad;
                 facultadEl.disabled = true;
@@ -1634,11 +1413,9 @@
                         input =
                             `<select id="${f.id}" class="form-control" ${reqAttr} onchange="actualizarCamposComplementarios()"><option value="">Seleccione...</option>${tipos.map(t => `<option value="${t.nombre}">${t.icon} ${t.nombre} (${t.min}%-${t.max}%)</option>`).join('')}</select>`;
                     } else if (f.type === 'textarea') {
-                        input =
-                            `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
+                        input = `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
                     } else if (f.type === 'file') {
-                        input =
-                            `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                     } else {
                         const onblurExtra = f.id === 'f-cedula' ?
                             ' oninput="debounceConsultarPadron()" onblur="consultarPadronPorCedula()"' : '';
@@ -1659,13 +1436,11 @@
                     const fullStyle = f.full ? 'style="grid-column:1/-1;"' : '';
                     let input = '';
                     if (f.type === 'select') {
-                        const onchangeExtra = f.id === 'f-carrera' ? ' onchange="actualizarFacultadAutomatica()"' :
-                            '';
+                        const onchangeExtra = f.id === 'f-carrera' ? ' onchange="actualizarFacultadAutomatica()"' : '';
                         input =
                             `<select id="${f.id}" class="form-control" ${reqAttr}${onchangeExtra}><option value="">Seleccione...</option>${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
                     } else if (f.type === 'file') {
-                        input =
-                            `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                     } else {
                         input =
                             `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
@@ -1710,12 +1485,10 @@
                         input =
                             `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
                         if (f.id === 'f-motivacion') {
-                            input +=
-                                `<div class="field-hint" style="margin-top:4px;">Máximo 500 caracteres</div>`;
+                            input += `<div class="hint" style="margin-top:4px;">Máximo 500 caracteres</div>`;
                         }
                     } else if (f.type === 'file') {
-                        input =
-                            `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                     } else {
                         input =
                             `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
@@ -1725,24 +1498,22 @@
                 adjuntarValidacionCampos(FORM_FIELDS_BASE[5]);
             }
 
-            // Cargar datos del usuario logueado
             cargarDatosUsuario();
 
-            // Cargar borrador si existe
+            // Cargar borrador
             const borrador = JSON.parse(localStorage.getItem(STORAGE_KEYS.borrador) || '{}');
             Object.keys(borrador).forEach(id => {
                 const el = document.getElementById(id);
                 if (el && el.type !== 'file') el.value = borrador[id];
             });
 
-            // Actualizar checks
-            [...FORM_FIELDS_BASE[1], ...FORM_FIELDS_BASE[2], ...FORM_FIELDS_BASE[3], ...camposActualesPaso4, ...FORM_FIELDS_BASE[
-                5]].forEach(f => actualizarCheckCampo(f));
+            [...FORM_FIELDS_BASE[1], ...FORM_FIELDS_BASE[2], ...FORM_FIELDS_BASE[3], ...camposActualesPaso4, ...FORM_FIELDS_BASE[5]]
+                .forEach(f => actualizarCheckCampo(f));
             actualizarEstadoBotonesPaso();
         }
 
         // ============================================================
-        // CAMPOS COMPLEMENTARIOS (Paso 4) - Personalizados por tipo de beca
+        // CAMPOS COMPLEMENTARIOS (Paso 4)
         // ============================================================
         function actualizarCamposComplementarios() {
             const tipoSelect = document.getElementById('f-tipo-beca');
@@ -1753,19 +1524,17 @@
             const config = getConfigBeca(tipoSeleccionado);
             const campos = config && config.camposPersonalizados ? config.camposPersonalizados : [];
 
-            // Campos base del paso 4
             const camposBase = [
                 { id: 'f-extracurricular', label: 'Actividades extracurriculares', type: 'textarea', req: false,
                     full: true },
                 { id: 'f-premios', label: 'Premios o reconocimientos', type: 'textarea', req: false, full: true },
-                { id: 'f-beca-anterior', label: '¿Ha recibido otra beca anteriormente?', type: 'select',
-                    req: true, options: ['No', 'Sí'] },
+                { id: 'f-beca-anterior', label: '¿Ha recibido otra beca anteriormente?', type: 'select', req: true,
+                    options: ['No', 'Sí'] },
                 { id: 'f-merito', label: '¿Por qué merece esta beca?', type: 'textarea', req: true, full: true }
             ];
 
             let todosCampos = [...camposBase, ...campos];
 
-            // Si es aspirante, agregar sección de convivientes
             if (esAspirante) {
                 todosCampos.push({
                     id: 'convivientes-section',
@@ -1778,21 +1547,19 @@
 
             camposActualesPaso4 = todosCampos;
 
-            // Generar HTML
             let html = '';
             todosCampos.forEach(f => {
                 if (f.type === 'custom-convivientes') {
                     html += `
                         <div class="form-field full">
                             <label>${f.label} <span class="required">*</span></label>
-                            <div class="field-hint">Agrega las personas que viven contigo (mínimo 1).</div>
+                            <div class="hint">Agrega las personas que viven contigo (mínimo 1).</div>
                             <div id="convivientes-container"></div>
                             <button type="button" class="btn btn-small" onclick="agregarConviviente()" style="margin-top:8px;">+ Agregar conviviente</button>
                         </div>
                     `;
                     return;
                 }
-
                 const reqAttr = f.req ? 'required' : '';
                 const reqMark = f.req ? ' <span class="required">*</span>' : '';
                 const fullStyle = f.full ? 'style="grid-column:1/-1;"' : '';
@@ -1804,8 +1571,7 @@
                     input =
                         `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
                 } else if (f.type === 'file') {
-                    input =
-                        `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                    input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                 } else {
                     input =
                         `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
@@ -1815,16 +1581,13 @@
 
             container.innerHTML = html;
 
-            // Renderizar convivientes si es aspirante
             if (esAspirante) {
                 renderizarConvivientes();
             }
 
-            // Adjuntar validaciones
             const camposParaValidar = todosCampos.filter(f => f.type !== 'custom-convivientes');
             adjuntarValidacionCampos(camposParaValidar);
 
-            // Cargar valores del borrador
             const borrador = JSON.parse(localStorage.getItem(STORAGE_KEYS.borrador) || '{}');
             camposParaValidar.forEach(f => {
                 const el = document.getElementById(f.id);
@@ -1868,7 +1631,6 @@
 
             renderStepsIndicator();
             actualizarEstadoBotonesPaso();
-
             document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -1884,7 +1646,6 @@
                 const campos = mapaCampos[currentStep] || [];
                 const invalidos = campos.filter(f => f.req && !campoEsValido(f));
 
-                // Validar convivientes si es aspirante y está en paso 4
                 if (currentStep === 4 && esAspirante && convivientes.length === 0) {
                     mostrarAdvertencia('Convivientes requeridos',
                         'Como aspirante, debes agregar al menos una persona que viva contigo.');
@@ -1917,7 +1678,6 @@
         // ============================================================
         function guardarBorrador() {
             const datos = recolectarDatosFormulario();
-            // Guardar también los convivientes
             datos._convivientes = convivientes;
             localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify(datos));
             registrarBitacora('Borrador guardado', '—');
@@ -1940,17 +1700,13 @@
                 }
             });
 
-            // Agregar convivientes
             datos._convivientes = convivientes;
-
             return datos;
         }
 
         async function recolectarDocumentosFormulario(documentosPrevios) {
             const documentos = Object.assign({}, documentosPrevios || {});
             const camposArchivo = [...Object.values(FORM_FIELDS_BASE).flat().filter(f => f.type === 'file')];
-
-            // Agregar campos de archivo del paso 4 (complementarios)
             camposActualesPaso4.forEach(f => {
                 if (f.type === 'file') {
                     camposArchivo.push(f);
@@ -1961,12 +1717,7 @@
                 const el = document.getElementById(f.id);
                 if (el && el.files && el.files[0]) {
                     const file = el.files[0];
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
+                    const base64 = await fileToBase64(file);
                     documentos[f.id] = {
                         label: f.label,
                         nombre: file.name,
@@ -1998,7 +1749,6 @@
                 }
             });
 
-            // Verificar si hay información faltante en los datos personales
             const datosPersonales = ['f-nombres', 'f-apellidos', 'f-cedula', 'f-correo', 'f-direccion'];
             const datosFaltantes = datosPersonales.filter(id => {
                 const el = document.getElementById(id);
@@ -2007,13 +1757,7 @@
 
             const necesitaSubsanacion = docsFaltantes.length > 0 || docsIncompletos.length > 0 || datosFaltantes.length > 0;
 
-            return {
-                necesitaSubsanacion,
-                docsFaltantes,
-                docsIncompletos,
-                datosFaltantes,
-                docsRequeridos
-            };
+            return { necesitaSubsanacion, docsFaltantes, docsIncompletos, datosFaltantes, docsRequeridos };
         }
 
         function mostrarModalSubsanacion(resultado) {
@@ -2040,8 +1784,7 @@
                         <strong>📎 Documentos faltantes:</strong>
                         <ul style="margin:8px 0 0 20px;color:var(--danger);">
                             ${resultado.docsFaltantes.map(id => {
-                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || 
-                                             camposActualesPaso4.find(f => f.id === id);
+                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
                                 return `<li>${field ? field.label : id}</li>`;
                             }).join('')}
                         </ul>
@@ -2055,8 +1798,7 @@
                         <strong>📎 Documentos con correcciones pendientes:</strong>
                         <ul style="margin:8px 0 0 20px;color:var(--warning);">
                             ${resultado.docsIncompletos.map(id => {
-                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || 
-                                             camposActualesPaso4.find(f => f.id === id);
+                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
                                 return `<li>${field ? field.label : id}</li>`;
                             }).join('')}
                         </ul>
@@ -2081,40 +1823,33 @@
             const datos = recolectarDatosFormulario();
 
             // Validaciones de cada paso
-            if (!datos['f-nombres'] || !datos['f-apellidos'] || !datos['f-cedula'] || !datos['f-correo'] || !datos[
-                    'f-tipo-beca']) {
-                mostrarAdvertencia('Datos incompletos',
-                    'Completa todos los datos personales obligatorios (Paso 1).');
+            if (!datos['f-nombres'] || !datos['f-apellidos'] || !datos['f-cedula'] || !datos['f-correo'] || !datos['f-tipo-beca']) {
+                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos personales obligatorios (Paso 1).');
                 goToStep(1);
                 return;
             }
 
             if (!datos['f-carrera'] || !datos['f-sede'] || !datos['f-promedio']) {
-                mostrarAdvertencia('Datos incompletos',
-                    'Completa todos los datos académicos obligatorios (Paso 2).');
+                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos académicos obligatorios (Paso 2).');
                 goToStep(2);
                 return;
             }
 
             if (!datos['f-ingreso'] || !datos['f-dependientes'] || !datos['f-trabajadores'] || !datos['f-vivienda'] ||
                 !datos['f-gastos'] || !datos['f-laboral']) {
-                mostrarAdvertencia('Datos incompletos',
-                    'Completa todos los datos socioeconómicos obligatorios (Paso 3).');
+                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos socioeconómicos obligatorios (Paso 3).');
                 goToStep(3);
                 return;
             }
 
             if (!datos['f-merito'] || !datos['f-merito'].trim()) {
-                mostrarAdvertencia('Datos incompletos',
-                    'Completa la justificación de mérito (Paso 4).');
+                mostrarAdvertencia('Datos incompletos', 'Completa la justificación de mérito (Paso 4).');
                 goToStep(4);
                 return;
             }
 
-            // Verificar convivientes si es aspirante
             if (esAspirante && convivientes.length === 0) {
-                mostrarAdvertencia('Convivientes requeridos',
-                    'Como aspirante, debes agregar al menos una persona que viva contigo.');
+                mostrarAdvertencia('Convivientes requeridos', 'Como aspirante, debes agregar al menos una persona que viva contigo.');
                 goToStep(4);
                 return;
             }
@@ -2127,19 +1862,15 @@
             const resultadoSubsanacion = verificarSubsanacion(documentos, tipoBeca);
 
             if (resultadoSubsanacion.necesitaSubsanacion) {
-                // Marcar la solicitud como "Pendiente subsanación" automáticamente
                 mostrarModalSubsanacion(resultadoSubsanacion);
 
-                // Generar expediente pero guardar en estado de subsanación
                 const anio = new Date().getFullYear();
-                const solicitudesExistentes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
-                const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`))
-                    .length + 1;
+                const solicitudesExistentes = StorageManager.solicitudes.getAll();
+                const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`)).length + 1;
                 const expediente = `BEC-${anio}-${String(numero).padStart(3, '0')}`;
 
-                const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+                const session = StorageManager.session.get();
 
-                // Marcar documentos que faltan o están incompletos
                 Object.keys(documentos).forEach(key => {
                     if (resultadoSubsanacion.docsFaltantes.includes(key)) {
                         documentos[key] = {
@@ -2176,32 +1907,25 @@
                     observacionTS: 'Requiere subsanación de documentos o información faltante.'
                 };
 
-                solicitudesExistentes.push(nuevaSolicitud);
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudesExistentes));
-
-                // Limpiar borrador
+                StorageManager.solicitudes.save(nuevaSolicitud);
                 localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify({}));
-
                 registrarBitacora('Solicitud creada (Pendiente subsanación)', expediente);
 
-                // Mostrar mensaje de subsanación en lugar de éxito
                 document.getElementById('modal-success-titulo').textContent = '¡Solicitud registrada!';
                 document.getElementById('expediente-numero').textContent = expediente;
                 document.getElementById('modal-success-expediente').innerHTML +=
                     `<p style="color:var(--warning);font-size:0.85rem;margin-top:8px;">⚠️ Requiere subsanación de documentos.</p>`;
                 openModal('modal-success');
-
                 return;
             }
 
             // Si no necesita subsanación, proceder con el envío normal
-            // Generar expediente
             const anio = new Date().getFullYear();
-            const solicitudesExistentes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+            const solicitudesExistentes = StorageManager.solicitudes.getAll();
             const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`)).length + 1;
             const expediente = `BEC-${anio}-${String(numero).padStart(3, '0')}`;
 
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
 
             const nuevaSolicitud = {
                 expediente,
@@ -2226,22 +1950,20 @@
                 observacionTS: 'Pendiente de revisión por trabajador social.'
             };
 
-            solicitudesExistentes.push(nuevaSolicitud);
-            localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify(solicitudesExistentes));
-
-            // Limpiar borrador
+            StorageManager.solicitudes.save(nuevaSolicitud);
             localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify({}));
-
             registrarBitacora('Solicitud creada', expediente);
 
             document.getElementById('modal-success-titulo').textContent = '¡Solicitud enviada!';
             document.getElementById('expediente-numero').textContent = expediente;
             openModal('modal-success');
+
+            // Emitir evento para notificar a otros paneles
+            StorageManager.emit('solicitud_creada', { expediente, tipoBeca });
         }
 
         function getLabelDocumento(id) {
-            const field = FORM_FIELDS_BASE[5].find(f => f.id === id) ||
-                camposActualesPaso4.find(f => f.id === id);
+            const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
             return field ? field.label : id;
         }
 
@@ -2312,7 +2034,7 @@
                 document.getElementById('mainNav').classList.toggle('open');
             });
 
-            const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+            const session = StorageManager.session.get();
             if (session) {
                 const nav = document.getElementById('mainNav');
                 const sessionPill = document.createElement('div');
@@ -2325,7 +2047,6 @@
                 }
             }
 
-            // Enter key para navegar
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.target.closest('.form-step')) {
                     const btnSiguiente = document.getElementById('btnSiguiente');
@@ -2348,6 +2069,5 @@
             }
         });
     </script>
-
 </body>
 </html>
