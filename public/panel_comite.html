@@ -718,8 +718,6 @@
 </head>
 <body>
 
-    <div id="db-status" class="online">Conectado</div>
-
     <!-- HEADER -->
     <header class="site-header">
         <div class="header-inner">
@@ -759,7 +757,6 @@
                 </div>
                 <button class="dash-nav-item active" onclick="showDashTab('com','com-ranking',this)">Ranking</button>
                 <button class="dash-nav-item" onclick="showDashTab('com','com-votaciones',this)">Votaciones</button>
-                <button class="dash-nav-item" onclick="showDashTab('com','com-miembros',this)">Miembros</button>
                 <button class="dash-nav-item" onclick="showDashTab('com','com-historial',this)">Historial</button>
                 <button class="dash-nav-item" onclick="showDashTab('com','com-estadisticas',this)">Estadísticas</button>
                 <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
@@ -822,34 +819,6 @@
                             </thead>
                             <tbody id="com-tabla-votaciones"></tbody>
                         </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Miembros -->
-                <div class="dash-tab" id="com-miembros">
-                    <div class="card-box">
-                        <h3>Miembros del Comité</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Los miembros del comité tienen derecho a votar en las solicitudes.
-                            Se requieren 3 miembros activos para realizar votaciones.
-                        </p>
-                        <div class="miembros-comite" id="com-miembros-lista"></div>
-                    </div>
-                    <div class="card-box">
-                        <h3>Agregar miembro del comité</h3>
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <label>Usuario (email)</label>
-                                <select id="com-miembro-usuario" class="form-control">
-                                    <option value="">Seleccionar usuario</option>
-                                </select>
-                            </div>
-                            <div class="form-field">
-                                <label>Rol en el comité</label>
-                                <input type="text" id="com-miembro-rol" class="form-control" placeholder="Ej: Presidente" value="Miembro">
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" onclick="agregarMiembroComite()">Agregar miembro</button>
                     </div>
                 </div>
 
@@ -1915,130 +1884,7 @@
             return html;
         }
 
-        // ============================================================
-        // MIEMBROS DEL COMITÉ
-        // ============================================================
-        function renderMiembros() {
-            const miembros = StorageManager.miembrosComite.getAll();
-            const container = document.getElementById('com-miembros-lista');
-            if (!container) return;
-
-            if (miembros.length === 0) {
-                container.innerHTML = '<p style="color:var(--muted);">No hay miembros registrados en el comité.</p>';
-                return;
-            }
-
-            container.innerHTML = miembros.map(m =>
-                '<div class="miembro-card">' +
-                '<div class="avatar">👤</div>' +
-                '<div class="nombre">' + m.nombre + '</div>' +
-                '<div style="font-size:0.78rem;color:var(--muted);">' + (m.rol || 'Miembro') + '</div>' +
-                '<div style="font-size:0.7rem;color:var(--muted);">' + m.email + '</div>' +
-                '<div class="estado ' + (m.activo ? 'activo' : 'inactivo') + '">' +
-                (m.activo ? '✅ Activo' : '❌ Inactivo') +
-                '</div>' +
-                '<div style="margin-top:8px;display:flex;gap:4px;justify-content:center;">' +
-                (m.activo ?
-                    '<button class="btn btn-small btn-warning" onclick="toggleMiembro(' + m.id + ')">Desactivar</button>' :
-                    '<button class="btn btn-small btn-success" onclick="toggleMiembro(' + m.id + ')">Activar</button>') +
-                '<button class="btn btn-small btn-danger" onclick="eliminarMiembro(' + m.id + ')">Eliminar</button>' +
-                '</div>' +
-                '</div>'
-            ).join('');
-        }
-
-        function toggleMiembro(id) {
-            const miembro = StorageManager.miembrosComite.getById(id);
-            if (miembro) {
-                miembro.activo = !miembro.activo;
-                StorageManager.miembrosComite.save(miembro);
-                const session = StorageManager.session.get();
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session ? session.nombre : 'Comité',
-                    rol: session ? session.rol : 'comite',
-                    accion: 'Miembro del comité ' + (miembro.activo ? 'activado' : 'desactivado') + ': ' + miembro.nombre,
-                    expediente: '—'
-                });
-                renderMiembros();
-                notify('✅ Miembro ' + (miembro.activo ? 'activado' : 'desactivado') + '.');
-            }
-        }
-
-        async function eliminarMiembro(id) {
-            if (!(await customConfirm('¿Eliminar este miembro del comité?'))) return;
-
-            const miembro = StorageManager.miembrosComite.getById(id);
-            StorageManager.miembrosComite.delete(id);
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Comité',
-                rol: session ? session.rol : 'comite',
-                accion: 'Miembro del comité eliminado: ' + (miembro ? miembro.nombre : id),
-                expediente: '—'
-            });
-            renderMiembros();
-            notify('✅ Miembro eliminado.');
-        }
-
-        function cargarUsuariosParaMiembro() {
-            const select = document.getElementById('com-miembro-usuario');
-            if (!select) return;
-
-            const usuarios = StorageManager.usuarios.getAll();
-            const miembros = StorageManager.miembrosComite.getAll();
-            const emailsMiembros = miembros.map(m => m.email);
-
-            const disponibles = usuarios.filter(u =>
-                !emailsMiembros.includes(u.email) &&
-                (u.rol === 'comite' || u.rol === 'admin')
-            );
-
-            select.innerHTML = '<option value="">Seleccionar usuario</option>' +
-                disponibles.map(u =>
-                    '<option value="' + u.email + '|' + u.nombre + '">' + u.nombre + ' (' + u.email + ')</option>'
-                ).join('');
-        }
-
-        function agregarMiembroComite() {
-            const select = document.getElementById('com-miembro-usuario');
-            const valor = select.value;
-            const rol = document.getElementById('com-miembro-rol').value.trim() || 'Miembro';
-
-            if (!valor) { notify('⚠️ Selecciona un usuario.'); return; }
-
-            const [email, nombre] = valor.split('|');
-
-            const miembros = StorageManager.miembrosComite.getAll();
-            const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
-
-            const nuevoMiembro = {
-                id: nuevoId,
-                email: email,
-                nombre: nombre,
-                rol: rol,
-                activo: true,
-                fecha_agregado: new Date().toISOString()
-            };
-
-            StorageManager.miembrosComite.save(nuevoMiembro);
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Comité',
-                rol: session ? session.rol : 'comite',
-                accion: 'Miembro del comité agregado: ' + nombre,
-                expediente: '—'
-            });
-
-            select.value = '';
-            document.getElementById('com-miembro-rol').value = 'Miembro';
-            renderMiembros();
-            cargarUsuariosParaMiembro();
-            notify('✅ Miembro agregado correctamente.');
-        }
-
+    
         // ============================================================
         // HISTORIAL DE VOTACIONES
         // ============================================================

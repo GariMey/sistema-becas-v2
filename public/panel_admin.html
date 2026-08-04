@@ -650,6 +650,79 @@
             flex-wrap: wrap;
         }
 
+        /* Estilos para la sección de miembros del comité */
+        .miembro-comite-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f8f9fc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .miembro-comite-card .info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .miembro-comite-card .info .avatar {
+            font-size: 1.8rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .miembro-comite-card .info .nombre {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .miembro-comite-card .info .email {
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .miembro-comite-card .info .rol {
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .miembro-comite-card .info .estado {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 999px;
+        }
+
+        .miembro-comite-card .info .estado.activo {
+            background: #e7f5ee;
+            color: var(--success);
+        }
+
+        .miembro-comite-card .info .estado.inactivo {
+            background: #fdecea;
+            color: var(--danger);
+        }
+
+        .miembro-comite-card .acciones {
+            display: flex;
+            gap: 6px;
+        }
+
+        .miembro-comite-card .acciones .btn-small {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+        }
+
         @media (max-width: 680px) {
             .hamburger { display: flex; }
             nav.main-nav {
@@ -704,6 +777,17 @@
             .filter-bar { justify-content: center; }
             .view-public h1 { font-size: 1.8rem; }
             .view-public .hero-sub { font-size: 1rem; }
+            .miembro-comite-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .miembro-comite-card .info {
+                justify-content: center;
+            }
+            .miembro-comite-card .acciones {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -754,13 +838,14 @@
                 </div>
                 <button class="dash-nav-item active" onclick="showDashTab('adm','adm-usuarios',this)">Usuarios</button>
                 <button class="dash-nav-item" onclick="showDashTab('adm','adm-tipos',this)">Tipos de beca</button>
+                <button class="dash-nav-item" onclick="showDashTab('adm','adm-miembros-comite',this)">Miembros Comité</button>
                 <button class="dash-nav-item" onclick="showDashTab('adm','adm-config',this)">Configuración</button>
                 <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
             </aside>
 
             <main class="dash-main">
                 <h2>Administrador del Sistema</h2>
-                <p class="dash-sub">Gestiona usuarios, tipos de beca y configuración del sistema.</p>
+                <p class="dash-sub">Gestiona usuarios, tipos de beca, miembros del comité y configuración del sistema.</p>
 
                 <!-- TAB: Usuarios -->
                 <div class="dash-tab active" id="adm-usuarios">
@@ -815,6 +900,27 @@
                             </thead>
                             <tbody id="adm-tabla-tipos"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- TAB: Miembros del Comité -->
+                <div class="dash-tab" id="adm-miembros-comite">
+                    <div class="card-box">
+                        <h3>Gestionar Miembros del Comité</h3>
+                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
+                            Desde aquí puedes agregar, activar, desactivar o eliminar miembros del comité de becas.
+                            Solo los miembros activos pueden participar en las votaciones.
+                        </p>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                            <div>
+                                <span class="badge badge-success" id="miembros-activos-count">0 activos</span>
+                                <span class="badge badge-neutral" id="miembros-inactivos-count">0 inactivos</span>
+                            </div>
+                            <button class="btn btn-small" onclick="abrirModalAgregarMiembroComite()">+ Agregar miembro</button>
+                        </div>
+
+                        <div id="lista-miembros-comite"></div>
                     </div>
                 </div>
 
@@ -1104,6 +1210,30 @@
 
             <button class="btn btn-primary btn-block" onclick="guardarUsuario()">Guardar usuario</button>
             <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal('modal-usuario')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR MIEMBRO COMITÉ -->
+    <div id="modal-agregar-miembro-comite" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('modal-agregar-miembro-comite')">×</button>
+            <h3>Agregar miembro al Comité</h3>
+            <p class="modal-sub">Selecciona un usuario existente para agregarlo como miembro del comité.</p>
+
+            <div class="form-field">
+                <label>Usuario <span class="required">*</span></label>
+                <select id="admin-miembro-usuario" class="form-control">
+                    <option value="">Seleccionar usuario...</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label>Rol en el comité</label>
+                <input type="text" id="admin-miembro-rol" class="form-control" placeholder="Ej: Presidente, Vocal, Secretario" value="Miembro">
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="agregarMiembroComiteAdmin()">Agregar miembro</button>
+            <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal('modal-agregar-miembro-comite')">Cancelar</button>
         </div>
     </div>
 
@@ -1656,6 +1786,8 @@
 
             renderTablaUsuarios();
             renderTablaTiposBeca();
+            renderMiembrosComiteAdmin();
+            cargarUsuariosParaMiembroAdmin();
             cargarConfigEnFormulario();
 
             StorageManager.bitacora.save({
@@ -2024,6 +2156,154 @@
         }
 
         // ============================================================
+        // MIEMBROS DEL COMITÉ - ADMIN
+        // ============================================================
+        function renderMiembrosComiteAdmin() {
+            const miembros = StorageManager.miembrosComite.getAll();
+            const container = document.getElementById('lista-miembros-comite');
+            if (!container) return;
+
+            const activos = miembros.filter(m => m.activo).length;
+            const inactivos = miembros.filter(m => !m.activo).length;
+
+            document.getElementById('miembros-activos-count').textContent = activos + ' activos';
+            document.getElementById('miembros-inactivos-count').textContent = inactivos + ' inactivos';
+
+            if (miembros.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-box info" style="text-align:center;padding:30px;">
+                        <div style="font-size:2rem;margin-bottom:8px;">👤</div>
+                        <p>No hay miembros registrados en el comité.</p>
+                        <p style="font-size:0.85rem;color:var(--muted);">Agrega miembros usando el botón "+ Agregar miembro".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = miembros.map(m =>
+                `<div class="miembro-comite-card">
+                    <div class="info">
+                        <span class="avatar">👤</span>
+                        <span class="nombre">${m.nombre}</span>
+                        <span class="email">${m.email}</span>
+                        <span class="rol">${m.rol || 'Miembro'}</span>
+                        <span class="estado ${m.activo ? 'activo' : 'inactivo'}">${m.activo ? '✅ Activo' : '❌ Inactivo'}</span>
+                    </div>
+                    <div class="acciones">
+                        <button class="btn btn-small ${m.activo ? 'btn-warning' : 'btn-success'}" onclick="toggleMiembroAdmin(${m.id})">
+                            ${m.activo ? 'Desactivar' : 'Activar'}
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="eliminarMiembroAdmin(${m.id})">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cargarUsuariosParaMiembroAdmin() {
+            const select = document.getElementById('admin-miembro-usuario');
+            if (!select) return;
+
+            const usuarios = StorageManager.usuarios.getAll();
+            const miembros = StorageManager.miembrosComite.getAll();
+            const emailsMiembros = miembros.map(m => m.email);
+
+            const disponibles = usuarios.filter(u =>
+                !emailsMiembros.includes(u.email) &&
+                (u.rol === 'comite' || u.rol === 'admin' || u.rol === 'trabajador_social')
+            );
+
+            select.innerHTML = '<option value="">Seleccionar usuario...</option>' +
+                disponibles.map(u =>
+                    '<option value="' + u.email + '|' + u.nombre + '">' + u.nombre + ' (' + u.email + ')</option>'
+                ).join('');
+
+            if (disponibles.length === 0) {
+                select.innerHTML = '<option value="">No hay usuarios disponibles para agregar</option>';
+            }
+        }
+
+        function abrirModalAgregarMiembroComite() {
+            cargarUsuariosParaMiembroAdmin();
+            openModal('modal-agregar-miembro-comite');
+        }
+
+        function agregarMiembroComiteAdmin() {
+            const select = document.getElementById('admin-miembro-usuario');
+            const valor = select.value;
+            const rol = document.getElementById('admin-miembro-rol').value.trim() || 'Miembro';
+
+            if (!valor) { notify('⚠️ Selecciona un usuario.'); return; }
+
+            const [email, nombre] = valor.split('|');
+
+            const miembros = StorageManager.miembrosComite.getAll();
+            const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
+
+            const nuevoMiembro = {
+                id: nuevoId,
+                email: email,
+                nombre: nombre,
+                rol: rol,
+                activo: true,
+                fecha_agregado: new Date().toISOString()
+            };
+
+            StorageManager.miembrosComite.save(nuevoMiembro);
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Admin Sistema',
+                rol: session ? session.rol : 'admin',
+                accion: 'Miembro del comité agregado: ' + nombre,
+                expediente: '—'
+            });
+
+            closeModal('modal-agregar-miembro-comite');
+            renderMiembrosComiteAdmin();
+            cargarUsuariosParaMiembroAdmin();
+            notify('✅ Miembro ' + nombre + ' agregado al comité correctamente.');
+        }
+
+        function toggleMiembroAdmin(id) {
+            const miembro = StorageManager.miembrosComite.getById(id);
+            if (miembro) {
+                miembro.activo = !miembro.activo;
+                StorageManager.miembrosComite.save(miembro);
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Admin Sistema',
+                    rol: session ? session.rol : 'admin',
+                    accion: 'Miembro del comité ' + (miembro.activo ? 'activado' : 'desactivado') + ': ' + miembro.nombre,
+                    expediente: '—'
+                });
+                renderMiembrosComiteAdmin();
+                notify('✅ Miembro ' + (miembro.activo ? 'activado' : 'desactivado') + '.');
+            }
+        }
+
+        async function eliminarMiembroAdmin(id) {
+            if (!(await customConfirm('¿Eliminar este miembro del comité? Esta acción no se puede deshacer.'))) return;
+
+            const miembro = StorageManager.miembrosComite.getById(id);
+            StorageManager.miembrosComite.delete(id);
+
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Admin Sistema',
+                rol: session ? session.rol : 'admin',
+                accion: 'Miembro del comité eliminado: ' + (miembro ? miembro.nombre : id),
+                expediente: '—'
+            });
+
+            renderMiembrosComiteAdmin();
+            cargarUsuariosParaMiembroAdmin();
+            notify('✅ Miembro eliminado correctamente.');
+        }
+
+        // ============================================================
         // TIPOS DE BECA
         // ============================================================
         function renderTablaTiposBeca() {
@@ -2267,6 +2547,10 @@
 
             if (tabId === 'adm-usuarios') renderTablaUsuarios();
             if (tabId === 'adm-tipos') renderTablaTiposBeca();
+            if (tabId === 'adm-miembros-comite') {
+                renderMiembrosComiteAdmin();
+                cargarUsuariosParaMiembroAdmin();
+            }
         }
 
         // ============================================================
@@ -2280,7 +2564,6 @@
                 showView('view-dash-admin');
                 renderDashboards();
             } else if (storedSession) {
-                // Redirigir a su panel correspondiente
                 const dashMap = {
                     estudiante: 'panel_estudiante.html',
                     aspirante: 'panel_estudiante.html',
@@ -2305,7 +2588,6 @@
             document.getElementById('db-status').textContent = '🟢 Conectado';
             document.getElementById('db-status').className = 'online';
 
-            // Escuchar eventos de StorageManager
             StorageManager.on('session_actualizada', function() {
                 renderHeaderNav();
             });

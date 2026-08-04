@@ -6,9 +6,11 @@
     <title>Registro - Sistema de Becas Universitarias</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <script src="storageManager.js"></script>
     <style>
+        /* ============================================================
+           ESTILOS COMPLETOS
+           ============================================================ */
         :root {
             --primary: #1a365d;
             --primary-light: #2c4a7c;
@@ -31,7 +33,11 @@
             --info: #2471a3;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -674,13 +680,11 @@
                         <div class="icono">⏳</div>
                         <div class="contenido">
                             <h4>Tu panel se habilitará cuando el administrador lo permita</h4>
-                            <p>Como empleado, necesitas la aprobación del administrador para acceder a tu panel de trabajo.
-                            Mientras tanto, puedes explorar la vista general del sitio.</p>
+                            <p>Como empleado, necesitas la aprobación del administrador para acceder a tu panel de trabajo.</p>
                         </div>
                     </div>
                     <div class="alert-box info">
-                        ℹ️ Los empleados (Trabajador Social, Comité, Auditor) deben ser aprobados por el administrador
-                        para poder acceder a sus paneles y funcionalidades específicas.
+                        ℹ️ Los empleados (Trabajador Social, Comité, Auditor) deben ser aprobados por el administrador.
                     </div>
                     <div class="form-row">
                         <div class="form-field">
@@ -785,7 +789,6 @@
         // ============================================================
         // CONSTANTES
         // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
         const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
 
         // ============================================================
@@ -842,17 +845,13 @@
             showToast(message, type);
         }
 
-        function cifrarPassword(pwd) {
-            return CryptoJS.AES.encrypt(pwd, SECRET_KEY).toString();
-        }
-
         function goHome(e) {
             if (e) e.preventDefault();
             window.location.href = 'index.html';
         }
 
         // ============================================================
-        // CONSULTA AL PADRÓN ELECTORAL
+        // CONSULTA AL PADRÓN
         // ============================================================
         function consultarPadron() {
             const cedulaEl = document.getElementById('reg-cedula');
@@ -994,36 +993,19 @@
 
             if (tipo === 'estudiante') {
                 camposEstudiante.classList.add('visible');
-                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
-                    .forEach(el => {
-                        if (el.tagName === 'SELECT' && el.id !== 'reg-anio-ingreso') {
-                            el.required = true;
-                        } else if (el.type !== 'text' || el.id !== 'reg-telefono') {
-                            el.required = true;
-                        }
-                    });
             } else if (tipo === 'aspirante') {
                 camposAspirante.classList.add('visible');
-                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
-                    .forEach(el => { el.required = false; });
-                document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
-                    .forEach(el => { el.required = false; });
             } else if (tipo === 'empleado') {
                 camposEmpleado.classList.add('visible');
-                document.querySelectorAll('#campos-empleado .form-field input, #campos-empleado .form-field select')
-                    .forEach(el => { el.required = true; });
-                document.querySelectorAll('#campos-estudiante .form-field input, #campos-estudiante .form-field select')
-                    .forEach(el => { el.required = false; });
             }
         }
 
         // ============================================================
-        // REGISTRO PRINCIPAL USANDO STORAGEMANAGER
+        // REGISTRO PRINCIPAL - USANDO STORAGEMANAGER
         // ============================================================
         function handleRegistro() {
             const tipo = document.getElementById('reg-tipo-usuario').value;
 
-            // Campos comunes
             const nombreCompleto = document.getElementById('reg-nombre-completo').value.trim();
             const email = document.getElementById('reg-email').value.trim().toLowerCase();
             const cedula = document.getElementById('reg-cedula').value.trim();
@@ -1032,11 +1014,9 @@
             const confirmar = document.getElementById('reg-confirmar').value;
             const direccion = document.getElementById('reg-direccion').value.trim();
 
-            // Campos de empleado
             const cargo = document.getElementById('reg-cargo')?.value || '';
             const departamento = document.getElementById('reg-departamento')?.value || '';
 
-            // Campos de estudiante
             const carrera = document.getElementById('reg-carrera')?.value || '';
             const facultad = document.getElementById('reg-facultad')?.value || '';
             const fechaIngreso = document.getElementById('reg-fecha-ingreso')?.value || '';
@@ -1047,9 +1027,7 @@
             errorBox.className = 'login-error';
             errorBox.textContent = '';
 
-            // ==========================================================
-            // VALIDACIONES COMUNES
-            // ==========================================================
+            // VALIDACIONES
             if (!nombreCompleto || !email || !cedula || !password) {
                 errorBox.textContent = '❌ Todos los campos marcados con * son obligatorios.';
                 errorBox.className = 'login-error visible';
@@ -1081,9 +1059,7 @@
                 return;
             }
 
-            // ==========================================================
             // VALIDACIONES ESPECÍFICAS
-            // ==========================================================
             let rol = tipo;
             let datosAdicionales = {};
             let aprobado = true;
@@ -1095,13 +1071,7 @@
                     errorBox.className = 'login-error visible';
                     return;
                 }
-                datosAdicionales = {
-                    carrera: carrera,
-                    facultad: facultad,
-                    fechaIngreso: fechaIngreso,
-                    sede: sede,
-                    anioIngreso: anioIngreso || ''
-                };
+                datosAdicionales = { carrera, facultad, fechaIngreso, sede, anioIngreso: anioIngreso || '' };
                 rol = 'estudiante';
                 aprobado = true;
                 puedeSolicitar = true;
@@ -1118,26 +1088,18 @@
                 }
 
                 const cargoLower = cargo.toLowerCase();
-                if (cargoLower.includes('trabajador social') || cargoLower === 'trabajador social') {
-                    rol = 'trabajador_social';
-                } else if (cargoLower.includes('comité') || cargoLower.includes('miembro del comité')) {
-                    rol = 'comite';
-                } else if (cargoLower.includes('auditor')) {
-                    rol = 'auditor';
-                } else if (cargoLower.includes('administrador')) {
-                    rol = 'admin';
-                } else {
-                    rol = 'empleado';
-                }
+                if (cargoLower.includes('trabajador social')) rol = 'trabajador_social';
+                else if (cargoLower.includes('comité') || cargoLower.includes('miembro del comité')) rol = 'comite';
+                else if (cargoLower.includes('auditor')) rol = 'auditor';
+                else if (cargoLower.includes('administrador')) rol = 'admin';
+                else rol = 'empleado';
 
-                datosAdicionales = { cargo: cargo, departamento: departamento };
+                datosAdicionales = { cargo, departamento };
                 aprobado = false;
                 puedeSolicitar = false;
             }
 
-            // ==========================================================
-            // VERIFICAR SI EL CORREO YA ESTÁ REGISTRADO
-            // ==========================================================
+            // VERIFICAR SI EL CORREO YA EXISTE
             const usuarioExistente = StorageManager.usuarios.getByEmail(email);
             if (usuarioExistente) {
                 errorBox.textContent = '❌ Este correo electrónico ya está registrado.';
@@ -1145,12 +1107,10 @@
                 return;
             }
 
-            // ==========================================================
-            // CREAR NUEVO USUARIO
-            // ==========================================================
+            // CREAR NUEVO USUARIO - CONTRASEÑA EN TEXTO PLANO
             const nuevoUsuario = {
                 email: email,
-                password: cifrarPassword(password),
+                password: password, // ¡Texto plano! Para que coincida con el login
                 rol: rol,
                 nombre: nombreCompleto,
                 cedula: cedula,
@@ -1163,7 +1123,8 @@
                 datosAcademicos: datosAdicionales,
                 aprobado: aprobado,
                 puedeSolicitar: puedeSolicitar,
-                esEmpleado: tipo === 'empleado'
+                esEmpleado: tipo === 'empleado',
+                activo: true
             };
 
             if (tipo === 'empleado') {
@@ -1181,9 +1142,7 @@
                 expediente: '—'
             });
 
-            // ==========================================================
             // LIMPIAR CAMPOS
-            // ==========================================================
             document.getElementById('reg-nombre-completo').value = '';
             document.getElementById('reg-email').value = '';
             document.getElementById('reg-cedula').value = '';
@@ -1203,9 +1162,7 @@
                 `<span class="info">🔍 Ingresa tu cédula para verificar tus datos</span>`;
             ultimaCedulaConsultada = '';
 
-            // ==========================================================
             // NOTIFICACIÓN Y REDIRECCIÓN
-            // ==========================================================
             if (tipo === 'empleado') {
                 notify('✅ ¡Cuenta creada exitosamente! Tu panel se habilitará cuando el administrador lo apruebe.');
             } else if (tipo === 'aspirante') {
@@ -1227,7 +1184,7 @@
             // Solo verificamos que existan usuarios de prueba
             if (StorageManager.usuarios.getAll().length === 0) {
                 const usuarios = [
-                    { email: 'estudiante@becas.com', password: cifrarPassword('123456'), rol: 'estudiante',
+                    { email: 'estudiante@becas.com', password: '123456', rol: 'estudiante',
                         nombre: 'María Gómez', cedula: '1-2345-6789', telefono: '8888-1111',
                         direccion: 'San José, Montes de Oca, Sabanilla',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
@@ -1239,57 +1196,41 @@
                             fechaIngreso: '2022-01-10',
                             anioIngreso: '2022'
                         },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'aspirante@becas.com', password: cifrarPassword('123456'), rol: 'aspirante',
+                        aprobado: true, puedeSolicitar: true, activo: true },
+                    { email: 'aspirante@becas.com', password: '123456', rol: 'aspirante',
                         nombre: 'Carlos Fernández', cedula: '2-3456-7890', telefono: '8888-2222',
                         direccion: 'Alajuela, San Ramón',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
                         datosAcademicos: { esAspirante: true },
-                        aprobado: true, puedeSolicitar: true },
-                    { email: 'social@becas.com', password: cifrarPassword('123456'), rol: 'trabajador_social',
+                        aprobado: true, puedeSolicitar: true, activo: true },
+                    { email: 'social@becas.com', password: '123456', rol: 'trabajador_social',
                         nombre: 'Carlos Rodríguez', cedula: '3-4567-8901', telefono: '8888-3333',
                         direccion: 'Heredia, San Pablo',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'comite@becas.com', password: cifrarPassword('123456'), rol: 'comite',
+                        aprobado: true, puedeSolicitar: false, activo: true },
+                    { email: 'comite@becas.com', password: '123456', rol: 'comite',
                         nombre: 'Dra. Ana Méndez', cedula: '4-5678-9012', telefono: '8888-4444',
                         direccion: 'Cartago, Paraíso',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'admin@becas.com', password: cifrarPassword('123456'), rol: 'admin',
+                        aprobado: true, puedeSolicitar: false, activo: true },
+                    { email: 'admin@becas.com', password: '123456', rol: 'admin',
                         nombre: 'Admin Sistema', cedula: '5-6789-0123', telefono: '8888-5555',
                         direccion: 'San José, Centro',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false },
-                    { email: 'auditor@becas.com', password: cifrarPassword('123456'), rol: 'auditor',
+                        aprobado: true, puedeSolicitar: false, activo: true },
+                    { email: 'auditor@becas.com', password: '123456', rol: 'auditor',
                         nombre: 'Luis Fernández', cedula: '6-7890-1234', telefono: '8888-6666',
                         direccion: 'Puntarenas, Esparza',
                         intentos: 0, bloqueado: false, twoFactorEnabled: false,
                         fechaRegistro: new Date().toISOString(),
-                        aprobado: true, puedeSolicitar: false }
+                        aprobado: true, puedeSolicitar: false, activo: true }
                 ];
                 usuarios.forEach(u => StorageManager.usuarios.save(u));
-            }
-
-            // Verificar sesión activa
-            const session = StorageManager.session.get();
-            if (session) {
-                const dashMap = {
-                    estudiante: 'panel_estudiante.html',
-                    aspirante: 'panel_estudiante.html',
-                    trabajador_social: 'panel_trabajador_social.html',
-                    comite: 'panel_comite.html',
-                    admin: 'panel_admin.html',
-                    auditor: 'panel_auditor.html'
-                };
-                const target = dashMap[session.rol];
-                if (target && window.location.pathname.indexOf(target) === -1) {
-                    window.location.href = target;
-                }
+                console.log('✅ Usuarios de prueba creados correctamente.');
             }
         }
 

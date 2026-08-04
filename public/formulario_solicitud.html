@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Solicitud de Beca</title>
+    <title>Solicitud de Beca - Sistema de Becas Universitarias</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <script src="storageManager.js"></script>
     <style>
         :root {
@@ -15,16 +14,14 @@
             --primary-dark: #102240;
             --accent: #c5a028;
             --accent-light: #e0c468;
-            --bg: #f0f2f6;
+            --bg: #f6f7fb;
             --paper: #ffffff;
             --text: #1f2733;
             --muted: #6b7585;
             --border: #e6e9f0;
             --radius: 12px;
-            --radius-lg: 16px;
             --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
             --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
-            --shadow-lg: 0 20px 50px -12px rgba(26,54,93,0.25);
             --danger: #c0392b;
             --success: #1e7e4f;
             --warning: #b07d12;
@@ -50,9 +47,6 @@
         button { font-family: inherit; cursor: pointer; border: none; }
         .hidden { display: none !important; }
 
-        /* ================================================================
-           BOTONES
-           ================================================================ */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -111,9 +105,7 @@
         }
         .btn-danger:hover { background: #f6c6c0; }
 
-        /* ================================================================
-           HEADER
-           ================================================================ */
+        /* HEADER */
         header.site-header {
             position: sticky;
             top: 0;
@@ -204,9 +196,7 @@
             transition: .25s;
         }
 
-        /* ================================================================
-           FORMULARIO
-           ================================================================ */
+        /* FORMULARIO */
         .form-shell {
             max-width: 900px;
             margin: 0 auto;
@@ -236,6 +226,54 @@
         .section-head p {
             color: var(--muted);
             font-size: 1rem;
+        }
+
+        .convocatoria-selector {
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .convocatoria-selector h3 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .convocatoria-selector .sub {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        .convocatoria-selector select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .convocatoria-selector select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
+        }
+        .convocatoria-selector .info-beca {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.88rem;
+            color: var(--muted);
+            display: none;
+        }
+        .convocatoria-selector .info-beca.visible {
+            display: block;
+        }
+        .convocatoria-selector .info-beca strong {
+            color: var(--text);
         }
 
         .steps-indicator {
@@ -308,7 +346,9 @@
             padding: 32px;
             box-shadow: var(--shadow-sm);
         }
-        .form-card h3 { margin-bottom: 6px; }
+        .form-card h3 {
+            margin-bottom: 6px;
+        }
         .form-card .form-sub {
             color: var(--muted);
             font-size: 0.9rem;
@@ -337,6 +377,11 @@
         .form-field label .required {
             color: var(--danger);
             margin-left: 2px;
+        }
+        .form-field label .opt {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 0.78rem;
         }
         .form-field input,
         .form-field select,
@@ -380,42 +425,6 @@
             margin-left: 4px;
         }
 
-        /* File upload */
-        .file-upload-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            background: #fafbfc;
-            transition: border-color 0.2s;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .file-upload-wrapper:hover { border-color: var(--primary); }
-        .file-upload-wrapper input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .file-upload-wrapper .icon-upload { font-size: 2rem; color: var(--muted); }
-        .file-upload-wrapper .file-name {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 4px;
-            color: var(--text);
-            word-break: break-all;
-        }
-        .file-upload-wrapper .file-status { font-size: 0.75rem; margin-top: 2px; }
-        .file-upload-wrapper.loaded {
-            border-color: var(--success);
-            background: #e7f5ee;
-        }
-
         .form-actions {
             display: flex;
             justify-content: space-between;
@@ -450,8 +459,10 @@
             border-radius: 4px;
         }
         .conviviente-item .btn-remove:hover { background: #fdecea; }
+        .conviviente-item .form-grid { gap: 12px; }
+        .conviviente-item .form-field { margin-bottom: 0; }
 
-        /* Modal */
+        /* MODALES */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -548,7 +559,7 @@
             color: var(--danger);
         }
 
-        /* Toast */
+        /* TOAST */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -612,9 +623,9 @@
             border-color: #f6c6c0;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
+            .conviviente-item .form-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 680px) {
             .hamburger { display: flex; }
@@ -662,7 +673,7 @@
 </head>
 <body>
 
-    <!-- TOAST -->
+    <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
     <!-- DB STATUS -->
@@ -693,7 +704,17 @@
         <div class="section-head">
             <span class="section-tag">Solicitud de beca</span>
             <h2>Formulario de solicitud</h2>
-            <p>Completa los pasos según el tipo de beca que deseas solicitar.</p>
+            <p>Selecciona la convocatoria y completa los pasos según el tipo de beca.</p>
+        </div>
+
+        <!-- Selector de Convocatoria -->
+        <div class="convocatoria-selector">
+            <h3>📢 Selecciona la convocatoria</h3>
+            <p class="sub">Elige la convocatoria activa a la que deseas postularte.</p>
+            <select id="convocatoria-select" onchange="cambiarConvocatoria()">
+                <option value="">-- Selecciona una convocatoria --</option>
+            </select>
+            <div id="info-beca" class="info-beca"></div>
         </div>
 
         <div class="steps-indicator" id="steps-indicator"></div>
@@ -720,10 +741,10 @@
                 <div class="form-grid" id="step3-fields"></div>
             </div>
 
-            <!-- STEP 4: Datos complementarios -->
+            <!-- STEP 4: Datos específicos según tipo de beca -->
             <div class="form-step hidden" data-step="4" id="step-4">
-                <h3>Datos complementarios</h3>
-                <p class="form-sub" id="step4-subtitulo">Estos campos varían según el tipo de beca seleccionado.</p>
+                <h3 id="step4-titulo">Datos específicos</h3>
+                <p class="form-sub" id="step4-subtitulo">Campos específicos según el tipo de beca seleccionado.</p>
                 <div id="step4-fields"></div>
             </div>
 
@@ -748,7 +769,7 @@
         </form>
     </div>
 
-    <!-- MODAL ÉXITO -->
+    <!-- MODALES -->
     <div id="modal-success" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-success')">×</button>
@@ -765,7 +786,6 @@
         </div>
     </div>
 
-    <!-- MODAL ADVERTENCIA -->
     <div id="modal-warning" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-warning')">×</button>
@@ -776,7 +796,6 @@
         </div>
     </div>
 
-    <!-- MODAL SUBSANACIÓN -->
     <div id="modal-subsanacion" class="modal-overlay hidden">
         <div class="modal-box wide">
             <button class="modal-close" onclick="closeModal('modal-subsanacion')">×</button>
@@ -790,18 +809,10 @@
         // ============================================================
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        const STORAGE_KEYS = {
-            tipos: 'becas_tipos',
-            solicitudes: 'becas_solicitudes',
-            config: 'becas_config',
-            session: 'becas_session',
-            bitacora: 'becas_bitacora',
-            borrador: 'becas_borrador_solicitud',
-        };
+        // StorageManager ya está cargado desde el script
 
         // ============================================================
-        // TIPOS DE BECA CON FORMULARIOS PERSONALIZADOS
+        // DEFINICIÓN DE TIPOS DE BECA CON CAMPOS PERSONALIZADOS
         // ============================================================
         const TIPOS_BECA_CONFIG = {
             'Socioeconómica': {
@@ -818,7 +829,9 @@
                     { id: 'f-gastos-medicos', label: 'Gastos médicos mensuales (₡)', type: 'number', req: false,
                         placeholder: 'Ej: 50000' },
                     { id: 'f-deudas', label: '¿Tiene deudas?', type: 'select', req: false,
-                        options: ['No', 'Sí, menos de ₡500,000', 'Sí, más de ₡500,000'] }
+                        options: ['No', 'Sí, menos de ₡500,000', 'Sí, más de ₡500,000'] },
+                    { id: 'f-nucleo-familiar', label: 'Composición del núcleo familiar', type: 'textarea', req: true,
+                        placeholder: 'Lista de miembros (Nombre, Edad, Parentesco, Ocupación)', full: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-constancia', 'f-recibo', 'f-recibo-agua', 'f-declaracion-jurada']
             },
@@ -835,7 +848,9 @@
                         placeholder: 'Proyectos de investigación en los que ha participado' },
                     { id: 'f-reconocimientos', label: 'Reconocimientos académicos', type: 'textarea', req: false,
                         placeholder: 'Premios, menciones honoríficas, etc.' },
-                    { id: 'f-carta-recomendacion', label: 'Carta de recomendación', type: 'file', req: true }
+                    { id: 'f-carta-recomendacion', label: 'Carta de recomendación', type: 'file', req: true },
+                    { id: 'f-creditos-cursados', label: 'Créditos cursados', type: 'number', req: true,
+                        placeholder: 'Ej: 60' }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-recomendacion']
             },
@@ -852,6 +867,8 @@
                         options: ['Local', 'Regional', 'Nacional', 'Internacional'] },
                     { id: 'f-logros-deportivos', label: 'Logros deportivos', type: 'textarea', req: true,
                         placeholder: 'Principales logros y reconocimientos' },
+                    { id: 'f-posicion', label: 'Posición / Categoría', type: 'text', req: false,
+                        placeholder: 'Ej: Delantero, Categoría Sub-20' },
                     { id: 'f-carta-coordinacion', label: 'Carta de la coordinación deportiva', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-coordinacion']
@@ -867,6 +884,8 @@
                         placeholder: 'Ej: Teatro, Música, Danza' },
                     { id: 'f-portafolio', label: 'Descripción del portafolio artístico', type: 'textarea', req: true,
                         placeholder: 'Describa su portafolio artístico' },
+                    { id: 'f-experiencia', label: 'Experiencia artística previa', type: 'textarea', req: false,
+                        placeholder: 'Formación, talleres, presentaciones' },
                     { id: 'f-carta-cultural', label: 'Carta de la coordinación cultural', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-cultural']
@@ -882,6 +901,8 @@
                         placeholder: 'Ej: Biología Molecular, Inteligencia Artificial' },
                     { id: 'f-proyecto-investigacion', label: 'Nombre del proyecto', type: 'text', req: true,
                         placeholder: 'Nombre del proyecto de investigación' },
+                    { id: 'f-rol-investigacion', label: 'Rol en el proyecto', type: 'select', req: true,
+                        options: ['Asistente', 'Colaborador', 'Investigador principal'] },
                     { id: 'f-carta-director', label: 'Carta del director del proyecto', type: 'file', req: true }
                 ],
                 documentosRequeridos: ['f-cedula-f', 'f-cedula-p', 'f-historial', 'f-carta-director']
@@ -900,8 +921,7 @@
                 { id: 'f-telefono', label: 'Teléfono', type: 'tel', req: false, placeholder: '8888-9999' },
                 { id: 'f-nacimiento', label: 'Fecha de nacimiento', type: 'date', req: true },
                 { id: 'f-direccion', label: 'Dirección completa', type: 'text', req: true,
-                    placeholder: 'Provincia, cantón, distrito, señas', full: true },
-                { id: 'f-tipo-beca', label: 'Tipo de beca a solicitar', type: 'select-dynamic', req: true, full: true }
+                    placeholder: 'Provincia, cantón, distrito, señas', full: true }
             ],
             2: [
                 { id: 'f-carrera', label: 'Carrera', type: 'select', req: true,
@@ -917,8 +937,7 @@
                     options: ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'] },
                 { id: 'f-promedio', label: 'Promedio ponderado (0-100)', type: 'number', req: true,
                     placeholder: 'Ej: 85.5', min: 0, max: 100 },
-                { id: 'f-avance', label: 'Avance curricular (%)', type: 'number', req: false, placeholder: 'Ej: 45' },
-                { id: 'f-historial', label: 'Historial académico (PDF, máx 5MB)', type: 'file', req: true, full: true }
+                { id: 'f-avance', label: 'Avance curricular (%)', type: 'number', req: false, placeholder: 'Ej: 45' }
             ],
             3: [
                 { id: 'f-ingreso', label: 'Ingreso familiar mensual (₡)', type: 'number', req: true,
@@ -936,13 +955,6 @@
                     options: ['No', 'Sí'] },
                 { id: 'f-transporte', label: 'Medio de transporte', type: 'select', req: true,
                     options: ['Bus público', 'Bus universitario', 'Vehículo propio', 'Bicicleta', 'Caminando', 'Otro'] }
-            ],
-            5: [
-                { id: 'f-cedula-f', label: 'Copia de cédula (frontal)', type: 'file', req: true },
-                { id: 'f-cedula-p', label: 'Copia de cédula (posterior)', type: 'file', req: true },
-                { id: 'f-constancia', label: 'Constancia de ingresos familiares', type: 'file', req: true },
-                { id: 'f-recibo', label: 'Recibo de servicios públicos reciente', type: 'file', req: true },
-                { id: 'f-motivacion', label: 'Carta de motivación', type: 'textarea', req: true, full: true }
             ]
         };
 
@@ -961,41 +973,19 @@
         // VARIABLES GLOBALES
         // ============================================================
         let currentStep = 1;
-        const STEP_LABELS = ['Personales', 'Académicos', 'Socioeconómicos', 'Complementarios', 'Documentos'];
+        const STEP_LABELS = ['Personales', 'Académicos', 'Socioeconómicos', 'Específicos', 'Documentos'];
         let camposActualesPaso4 = [];
         let convivientes = [];
         let timeoutConsultaPadron = null;
         let ultimaCedulaConsultada = '';
         let esAspirante = false;
         let datosUsuarioLogueado = null;
+        let convocatoriaSeleccionada = null;
+        let tipoBecaSeleccionada = null;
 
         // ============================================================
         // UTILIDADES
         // ============================================================
-        function getTiposBecaLocal() {
-            let tipos = JSON.parse(localStorage.getItem(STORAGE_KEYS.tipos) || 'null');
-            if (!tipos) {
-                tipos = Object.keys(TIPOS_BECA_CONFIG).map((nombre, index) => ({
-                    id: index + 1,
-                    nombre: nombre,
-                    icon: TIPOS_BECA_CONFIG[nombre].icon,
-                    desc: TIPOS_BECA_CONFIG[nombre].desc,
-                    min: TIPOS_BECA_CONFIG[nombre].min,
-                    max: TIPOS_BECA_CONFIG[nombre].max,
-                    rubros: TIPOS_BECA_CONFIG[nombre].rubros,
-                    requisitos: TIPOS_BECA_CONFIG[nombre].requisitos,
-                    activo: true,
-                    camposPersonalizados: TIPOS_BECA_CONFIG[nombre].camposPersonalizados || []
-                }));
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            return tipos;
-        }
-
-        function getTiposBecaActivosLocal() {
-            return getTiposBecaLocal().filter(t => t.activo);
-        }
-
         function getConfigBeca(nombre) {
             return TIPOS_BECA_CONFIG[nombre] || null;
         }
@@ -1062,18 +1052,27 @@
 
         function registrarBitacora(accion, expediente) {
             const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
+            const entrada = {
                 fecha: new Date().toLocaleString(),
                 usuario: session ? session.nombre : 'Visitante',
                 rol: session ? session.rol : 'visitante',
                 accion: accion,
                 expediente: expediente || '—'
-            });
+            };
+            StorageManager.bitacora.save(entrada);
+            return entrada;
         }
 
         function goHome(e) {
             if (e) e.preventDefault();
             window.location.href = 'index.html';
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         function fileToBase64(file) {
@@ -1083,6 +1082,153 @@
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = (error) => reject(error);
             });
+        }
+
+        // ============================================================
+        // CONVOCATORIAS
+        // ============================================================
+        function cargarConvocatorias() {
+            const select = document.getElementById('convocatoria-select');
+            if (!select) return;
+
+            const convocatorias = StorageManager.convocatorias.getActivas();
+
+            select.innerHTML = '<option value="">-- Selecciona una convocatoria --</option>';
+            if (convocatorias.length === 0) {
+                select.innerHTML += '<option value="" disabled>No hay convocatorias activas</option>';
+                return;
+            }
+
+            convocatorias.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.nombre} (${c.tipo}) - Cupos: ${c.cupos}`;
+                opt.dataset.tipo = c.tipo;
+                opt.dataset.nombre = c.nombre;
+                opt.dataset.cupos = c.cupos;
+                opt.dataset.fechaApertura = c.fechaApertura;
+                opt.dataset.fechaCierre = c.fechaCierre;
+                select.appendChild(opt);
+            });
+        }
+
+        function cambiarConvocatoria() {
+            const select = document.getElementById('convocatoria-select');
+            const infoDiv = document.getElementById('info-beca');
+            const selected = select.options[select.selectedIndex];
+
+            if (!selected || !selected.value) {
+                infoDiv.classList.remove('visible');
+                infoDiv.innerHTML = '';
+                convocatoriaSeleccionada = null;
+                tipoBecaSeleccionada = null;
+                document.querySelectorAll('.form-step input, .form-step select, .form-step textarea')
+                    .forEach(el => el.disabled = true);
+                document.getElementById('btnSiguiente').disabled = true;
+                document.getElementById('btnEnviar').disabled = true;
+                return;
+            }
+
+            convocatoriaSeleccionada = {
+                id: selected.value,
+                nombre: selected.dataset.nombre,
+                tipo: selected.dataset.tipo,
+                cupos: selected.dataset.cupos,
+                fechaApertura: selected.dataset.fechaApertura,
+                fechaCierre: selected.dataset.fechaCierre
+            };
+
+            tipoBecaSeleccionada = selected.dataset.tipo;
+
+            const config = getConfigBeca(tipoBecaSeleccionada);
+            infoDiv.innerHTML = `
+                <strong>📋 ${convocatoriaSeleccionada.nombre}</strong><br>
+                <span>Tipo: ${tipoBecaSeleccionada} ${config ? config.icon : ''}</span><br>
+                <span>Cupos disponibles: ${convocatoriaSeleccionada.cupos}</span><br>
+                <span>Periodo: ${convocatoriaSeleccionada.fechaApertura} - ${convocatoriaSeleccionada.fechaCierre}</span>
+                ${config ? `<br><span>Descripción: ${config.desc}</span>` : ''}
+                ${config && config.requisitos ? `<br><span>Requisitos: ${config.requisitos.join(', ')}</span>` : ''}
+            `;
+            infoDiv.classList.add('visible');
+
+            document.querySelectorAll('.form-step input, .form-step select, .form-step textarea')
+                .forEach(el => el.disabled = false);
+            document.getElementById('btnSiguiente').disabled = false;
+
+            actualizarCamposComplementarios();
+            actualizarDocumentosRequeridos();
+
+            document.getElementById('step4-titulo').textContent = `Datos específicos - ${tipoBecaSeleccionada}`;
+            document.getElementById('step4-subtitulo').textContent =
+                `Completa los campos específicos para la beca ${tipoBecaSeleccionada}.`;
+
+            if (currentStep > 1) {
+                goToStep(1);
+            }
+
+            notify(`✅ Convocatoria "${convocatoriaSeleccionada.nombre}" seleccionada. Completa el formulario.`);
+        }
+
+        // ============================================================
+        // DOCUMENTOS REQUERIDOS SEGÚN TIPO DE BECA
+        // ============================================================
+        function actualizarDocumentosRequeridos() {
+            const container = document.getElementById('step5-fields');
+            if (!container) return;
+
+            const docsRequeridos = getDocumentosRequeridos(tipoBecaSeleccionada);
+
+            const docLabels = {
+                'f-cedula-f': 'Copia de cédula (frontal)',
+                'f-cedula-p': 'Copia de cédula (posterior)',
+                'f-constancia': 'Constancia de ingresos familiares',
+                'f-recibo': 'Recibo de servicios públicos reciente',
+                'f-historial': 'Historial académico oficial',
+                'f-carta-recomendacion': 'Carta de recomendación',
+                'f-carta-coordinacion': 'Carta de la coordinación deportiva',
+                'f-carta-cultural': 'Carta de la coordinación cultural',
+                'f-carta-director': 'Carta del director del proyecto',
+                'f-recibo-agua': 'Recibo de agua',
+                'f-declaracion-jurada': 'Declaración jurada',
+                'f-motivacion': 'Carta de motivación'
+            };
+
+            let html = '';
+            docsRequeridos.forEach(docKey => {
+                const label = docLabels[docKey] || docKey;
+                html += `
+                    <div class="form-field">
+                        <label>${label} <span class="required">*</span></label>
+                        <input type="file" id="${docKey}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <span class="hint">Formatos: PDF, JPG, PNG. Máximo 5MB.</span>
+                        <span class="field-check" id="check-${docKey}"></span>
+                    </div>
+                `;
+            });
+
+            if (!docsRequeridos.includes('f-motivacion')) {
+                html += `
+                    <div class="form-field full">
+                        <label>Carta de motivación <span class="required">*</span></label>
+                        <textarea id="f-motivacion" class="form-control" rows="4" placeholder="Explica por qué deseas obtener esta beca y cómo te ayudará en tu formación académica..."></textarea>
+                        <span class="hint">Máximo 500 caracteres</span>
+                        <span class="field-check" id="check-f-motivacion"></span>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            const camposDocs = docsRequeridos.map(key => ({
+                id: key,
+                label: docLabels[key] || key,
+                type: 'file',
+                req: true
+            }));
+            if (!docsRequeridos.includes('f-motivacion')) {
+                camposDocs.push({ id: 'f-motivacion', label: 'Carta de motivación', type: 'textarea', req: true, full: true });
+            }
+            adjuntarValidacionCampos(camposDocs);
         }
 
         // ============================================================
@@ -1276,7 +1422,8 @@
             const checkEl = document.getElementById('check-' + f.id);
             if (!checkEl) return;
             const el = document.getElementById(f.id);
-            const tieneValor = f.type === 'file' ? !!(el && el.files && el.files.length > 0) : !!(el && el.value && el.value.trim().length > 0);
+            const tieneValor = f.type === 'file' ? !!(el && el.files && el.files.length > 0) : !!(el && el.value && el.value
+                .trim().length > 0);
             if (!tieneValor && !f.req) { checkEl.textContent = ''; return; }
             const valido = campoEsValido(f);
             checkEl.textContent = valido ? '✓' : '✕';
@@ -1289,7 +1436,13 @@
                 2: FORM_FIELDS_BASE[2],
                 3: FORM_FIELDS_BASE[3],
                 4: camposActualesPaso4,
-                5: FORM_FIELDS_BASE[5]
+                5: document.querySelectorAll('#step5-fields .form-field').length > 0 ?
+                    Array.from(document.querySelectorAll('#step5-fields .form-field')).map(el => ({
+                        id: el.querySelector('input, textarea, select')?.id,
+                        req: el.querySelector('.required') !== null,
+                        type: el.querySelector('input[type="file"]') ? 'file' : 'text'
+                    })).filter(f => f.id) :
+                    []
             };
             const campos = mapaCampos[currentStep] || [];
             const todoValido = campos.filter(f => f.req).every(f => campoEsValido(f));
@@ -1313,8 +1466,7 @@
             fields.forEach(f => {
                 const el = document.getElementById(f.id);
                 if (!el) return;
-                const evento = (f.type === 'file' || f.type === 'select' || f.type === 'select-dynamic') ?
-                    'change' : 'input';
+                const evento = (f.type === 'file' || f.type === 'select') ? 'change' : 'input';
                 el.addEventListener(evento, () => { actualizarCheckCampo(f);
                     actualizarEstadoBotonesPaso(); });
                 actualizarCheckCampo(f);
@@ -1407,15 +1559,14 @@
                     const fullStyle = f.full ? 'style="grid-column:1/-1;"' : '';
                     let input = '';
                     if (f.type === 'select') {
-                        input = `<select id="${f.id}" class="form-control" ${reqAttr}><option value="">Seleccione...</option>${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
-                    } else if (f.type === 'select-dynamic') {
-                        const tipos = getTiposBecaActivosLocal();
                         input =
-                            `<select id="${f.id}" class="form-control" ${reqAttr} onchange="actualizarCamposComplementarios()"><option value="">Seleccione...</option>${tipos.map(t => `<option value="${t.nombre}">${t.icon} ${t.nombre} (${t.min}%-${t.max}%)</option>`).join('')}</select>`;
+                            `<select id="${f.id}" class="form-control" ${reqAttr}><option value="">Seleccione...</option>${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
                     } else if (f.type === 'textarea') {
-                        input = `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
+                        input =
+                            `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
                     } else if (f.type === 'file') {
-                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                        input =
+                            `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                     } else {
                         const onblurExtra = f.id === 'f-cedula' ?
                             ' oninput="debounceConsultarPadron()" onblur="consultarPadronPorCedula()"' : '';
@@ -1439,8 +1590,6 @@
                         const onchangeExtra = f.id === 'f-carrera' ? ' onchange="actualizarFacultadAutomatica()"' : '';
                         input =
                             `<select id="${f.id}" class="form-control" ${reqAttr}${onchangeExtra}><option value="">Seleccione...</option>${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
-                    } else if (f.type === 'file') {
-                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                     } else {
                         input =
                             `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
@@ -1470,70 +1619,49 @@
                 adjuntarValidacionCampos(FORM_FIELDS_BASE[3]);
             }
 
-            // Paso 4 (se actualiza dinámicamente)
+            // Paso 4 - se actualiza dinámicamente
             actualizarCamposComplementarios();
 
-            // Paso 5
-            const container5 = document.getElementById('step5-fields');
-            if (container5) {
-                container5.innerHTML = FORM_FIELDS_BASE[5].map(f => {
-                    const reqAttr = f.req ? 'required' : '';
-                    const reqMark = f.req ? ' <span class="required">*</span>' : '';
-                    const fullStyle = f.full ? 'style="grid-column:1/-1;"' : '';
-                    let input = '';
-                    if (f.type === 'textarea') {
-                        input =
-                            `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
-                        if (f.id === 'f-motivacion') {
-                            input += `<div class="hint" style="margin-top:4px;">Máximo 500 caracteres</div>`;
-                        }
-                    } else if (f.type === 'file') {
-                        input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
-                    } else {
-                        input =
-                            `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
-                    }
-                    return `<div class="form-field" ${fullStyle}><label>${f.label}${reqMark}</label>${input}<span class="field-check" id="check-${f.id}"></span></div>`;
-                }).join('');
-                adjuntarValidacionCampos(FORM_FIELDS_BASE[5]);
-            }
+            // Paso 5 - se actualiza cuando se selecciona convocatoria
+            actualizarDocumentosRequeridos();
 
             cargarDatosUsuario();
 
             // Cargar borrador
-            const borrador = JSON.parse(localStorage.getItem(STORAGE_KEYS.borrador) || '{}');
+            const borrador = JSON.parse(localStorage.getItem('becas_borrador_solicitud') || '{}');
             Object.keys(borrador).forEach(id => {
                 const el = document.getElementById(id);
                 if (el && el.type !== 'file') el.value = borrador[id];
             });
 
-            [...FORM_FIELDS_BASE[1], ...FORM_FIELDS_BASE[2], ...FORM_FIELDS_BASE[3], ...camposActualesPaso4, ...FORM_FIELDS_BASE[5]]
+            // Actualizar checks
+            [...FORM_FIELDS_BASE[1], ...FORM_FIELDS_BASE[2], ...FORM_FIELDS_BASE[3], ...camposActualesPaso4]
                 .forEach(f => actualizarCheckCampo(f));
             actualizarEstadoBotonesPaso();
         }
 
         // ============================================================
-        // CAMPOS COMPLEMENTARIOS (Paso 4)
+        // CAMPOS COMPLEMENTARIOS (Paso 4) - Según tipo de beca
         // ============================================================
         function actualizarCamposComplementarios() {
-            const tipoSelect = document.getElementById('f-tipo-beca');
             const container = document.getElementById('step4-fields');
-            if (!tipoSelect || !container) return;
+            if (!container) return;
 
-            const tipoSeleccionado = tipoSelect.value;
-            const config = getConfigBeca(tipoSeleccionado);
+            if (!tipoBecaSeleccionada) {
+                container.innerHTML = `
+                    <div class="alert-box info" style="text-align:center;padding:30px;">
+                        <p style="font-size:1.2rem;margin-bottom:8px;">📋</p>
+                        <p>Selecciona una convocatoria para ver los campos específicos.</p>
+                        <p style="font-size:0.85rem;color:var(--muted);">Los campos se cargarán automáticamente según el tipo de beca.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const config = getConfigBeca(tipoBecaSeleccionada);
             const campos = config && config.camposPersonalizados ? config.camposPersonalizados : [];
 
-            const camposBase = [
-                { id: 'f-extracurricular', label: 'Actividades extracurriculares', type: 'textarea', req: false,
-                    full: true },
-                { id: 'f-premios', label: 'Premios o reconocimientos', type: 'textarea', req: false, full: true },
-                { id: 'f-beca-anterior', label: '¿Ha recibido otra beca anteriormente?', type: 'select', req: true,
-                    options: ['No', 'Sí'] },
-                { id: 'f-merito', label: '¿Por qué merece esta beca?', type: 'textarea', req: true, full: true }
-            ];
-
-            let todosCampos = [...camposBase, ...campos];
+            let todosCampos = [...campos];
 
             if (esAspirante) {
                 todosCampos.push({
@@ -1571,7 +1699,8 @@
                     input =
                         `<textarea id="${f.id}" class="form-control" rows="3" placeholder="${f.placeholder || ''}" ${reqAttr}></textarea>`;
                 } else if (f.type === 'file') {
-                    input = `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
+                    input =
+                        `<input type="file" id="${f.id}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" ${reqAttr}>`;
                 } else {
                     input =
                         `<input type="${f.type}" id="${f.id}" class="form-control" placeholder="${f.placeholder || ''}" ${reqAttr}>`;
@@ -1588,7 +1717,7 @@
             const camposParaValidar = todosCampos.filter(f => f.type !== 'custom-convivientes');
             adjuntarValidacionCampos(camposParaValidar);
 
-            const borrador = JSON.parse(localStorage.getItem(STORAGE_KEYS.borrador) || '{}');
+            const borrador = JSON.parse(localStorage.getItem('becas_borrador_solicitud') || '{}');
             camposParaValidar.forEach(f => {
                 const el = document.getElementById(f.id);
                 if (el && el.type !== 'file' && borrador[f.id] !== undefined) {
@@ -1631,17 +1760,30 @@
 
             renderStepsIndicator();
             actualizarEstadoBotonesPaso();
+
             document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function nextStep() {
+            if (!convocatoriaSeleccionada) {
+                mostrarAdvertencia('Selecciona una convocatoria',
+                    'Primero debes seleccionar una convocatoria activa para continuar.');
+                return;
+            }
+
             if (currentStep < 5) {
                 const mapaCampos = {
                     1: FORM_FIELDS_BASE[1],
                     2: FORM_FIELDS_BASE[2],
                     3: FORM_FIELDS_BASE[3],
                     4: camposActualesPaso4,
-                    5: FORM_FIELDS_BASE[5]
+                    5: document.querySelectorAll('#step5-fields .form-field').length > 0 ?
+                        Array.from(document.querySelectorAll('#step5-fields .form-field')).map(el => ({
+                            id: el.querySelector('input, textarea, select')?.id,
+                            req: el.querySelector('.required') !== null,
+                            type: el.querySelector('input[type="file"]') ? 'file' : 'text'
+                        })).filter(f => f.id) :
+                        []
                 };
                 const campos = mapaCampos[currentStep] || [];
                 const invalidos = campos.filter(f => f.req && !campoEsValido(f));
@@ -1653,7 +1795,7 @@
                 }
 
                 if (invalidos.length > 0) {
-                    const nombres = invalidos.map(f => f.label).join(', ');
+                    const nombres = invalidos.map(f => f.label || f.id).join(', ');
                     mostrarAdvertencia('Campos incompletos',
                         `Por favor completa los siguientes campos obligatorios: ${nombres}`);
                     const primerInvalido = document.getElementById(invalidos[0].id);
@@ -1677,9 +1819,15 @@
         // GUARDAR BORRADOR
         // ============================================================
         function guardarBorrador() {
+            if (!convocatoriaSeleccionada) {
+                notify('⚠️ Selecciona una convocatoria antes de guardar el borrador.');
+                return;
+            }
             const datos = recolectarDatosFormulario();
             datos._convivientes = convivientes;
-            localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify(datos));
+            datos._convocatoria = convocatoriaSeleccionada;
+            datos._tipoBeca = tipoBecaSeleccionada;
+            localStorage.setItem('becas_borrador_solicitud', JSON.stringify(datos));
             registrarBitacora('Borrador guardado', '—');
             notify('💾 Borrador guardado en este dispositivo. Podrás continuar más tarde.');
         }
@@ -1713,20 +1861,32 @@
                 }
             });
 
+            const docsPaso5 = document.querySelectorAll('#step5-fields input[type="file"]');
+            docsPaso5.forEach(el => {
+                if (el.id && !camposArchivo.find(f => f.id === el.id)) {
+                    camposArchivo.push({ id: el.id, label: el.closest('.form-field')?.querySelector('label')?.textContent ||
+                            el.id, type: 'file' });
+                }
+            });
+
             for (const f of camposArchivo) {
                 const el = document.getElementById(f.id);
                 if (el && el.files && el.files[0]) {
                     const file = el.files[0];
-                    const base64 = await fileToBase64(file);
-                    documentos[f.id] = {
-                        label: f.label,
-                        nombre: file.name,
-                        tipo: file.type,
-                        tamano: file.size,
-                        fecha: new Date().toISOString(),
-                        datos: base64,
-                        estado: 'Pendiente'
-                    };
+                    try {
+                        const base64 = await fileToBase64(file);
+                        documentos[f.id] = {
+                            label: f.label || f.id,
+                            nombre: file.name,
+                            tipo: file.type,
+                            tamano: file.size,
+                            fecha: new Date().toISOString(),
+                            datos: base64,
+                            estado: 'Pendiente'
+                        };
+                    } catch (e) {
+                        console.warn('⚠️ Error leyendo archivo:', f.id, e);
+                    }
                 }
             }
             return documentos;
@@ -1735,8 +1895,8 @@
         // ============================================================
         // SUBSANACIÓN AUTOMÁTICA
         // ============================================================
-        function verificarSubsanacion(documentos, tipoBeca) {
-            const docsRequeridos = getDocumentosRequeridos(tipoBeca);
+        function verificarSubsanacion(documentos) {
+            const docsRequeridos = getDocumentosRequeridos(tipoBecaSeleccionada);
             const docsFaltantes = [];
             const docsIncompletos = [];
 
@@ -1784,7 +1944,7 @@
                         <strong>📎 Documentos faltantes:</strong>
                         <ul style="margin:8px 0 0 20px;color:var(--danger);">
                             ${resultado.docsFaltantes.map(id => {
-                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
+                                const field = FORM_FIELDS_BASE[5]?.find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
                                 return `<li>${field ? field.label : id}</li>`;
                             }).join('')}
                         </ul>
@@ -1798,7 +1958,7 @@
                         <strong>📎 Documentos con correcciones pendientes:</strong>
                         <ul style="margin:8px 0 0 20px;color:var(--warning);">
                             ${resultado.docsIncompletos.map(id => {
-                                const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
+                                const field = FORM_FIELDS_BASE[5]?.find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
                                 return `<li>${field ? field.label : id}</li>`;
                             }).join('')}
                         </ul>
@@ -1820,36 +1980,49 @@
         // ENVIAR SOLICITUD
         // ============================================================
         async function enviarSolicitud() {
+            if (!convocatoriaSeleccionada) {
+                mostrarAdvertencia('Selecciona una convocatoria',
+                    'Primero debes seleccionar una convocatoria activa para enviar tu solicitud.');
+                return;
+            }
+
             const datos = recolectarDatosFormulario();
 
             // Validaciones de cada paso
-            if (!datos['f-nombres'] || !datos['f-apellidos'] || !datos['f-cedula'] || !datos['f-correo'] || !datos['f-tipo-beca']) {
-                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos personales obligatorios (Paso 1).');
+            if (!datos['f-nombres'] || !datos['f-apellidos'] || !datos['f-cedula'] || !datos['f-correo']) {
+                mostrarAdvertencia('Datos incompletos',
+                    'Completa todos los datos personales obligatorios (Paso 1).');
                 goToStep(1);
                 return;
             }
 
             if (!datos['f-carrera'] || !datos['f-sede'] || !datos['f-promedio']) {
-                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos académicos obligatorios (Paso 2).');
+                mostrarAdvertencia('Datos incompletos',
+                    'Completa todos los datos académicos obligatorios (Paso 2).');
                 goToStep(2);
                 return;
             }
 
             if (!datos['f-ingreso'] || !datos['f-dependientes'] || !datos['f-trabajadores'] || !datos['f-vivienda'] ||
                 !datos['f-gastos'] || !datos['f-laboral']) {
-                mostrarAdvertencia('Datos incompletos', 'Completa todos los datos socioeconómicos obligatorios (Paso 3).');
+                mostrarAdvertencia('Datos incompletos',
+                    'Completa todos los datos socioeconómicos obligatorios (Paso 3).');
                 goToStep(3);
                 return;
             }
 
-            if (!datos['f-merito'] || !datos['f-merito'].trim()) {
-                mostrarAdvertencia('Datos incompletos', 'Completa la justificación de mérito (Paso 4).');
+            const camposPaso4Invalidos = camposActualesPaso4.filter(f => f.req && !campoEsValido(f));
+            if (camposPaso4Invalidos.length > 0) {
+                const nombres = camposPaso4Invalidos.map(f => f.label).join(', ');
+                mostrarAdvertencia('Campos incompletos',
+                    `Completa los siguientes campos específicos: ${nombres}`);
                 goToStep(4);
                 return;
             }
 
             if (esAspirante && convivientes.length === 0) {
-                mostrarAdvertencia('Convivientes requeridos', 'Como aspirante, debes agregar al menos una persona que viva contigo.');
+                mostrarAdvertencia('Convivientes requeridos',
+                    'Como aspirante, debes agregar al menos una persona que viva contigo.');
                 goToStep(4);
                 return;
             }
@@ -1858,18 +2031,17 @@
             const documentos = await recolectarDocumentosFormulario();
 
             // Verificar subsanación
-            const tipoBeca = datos['f-tipo-beca'];
-            const resultadoSubsanacion = verificarSubsanacion(documentos, tipoBeca);
+            const resultadoSubsanacion = verificarSubsanacion(documentos);
+
+            const anio = new Date().getFullYear();
+            const solicitudesExistentes = StorageManager.solicitudes.getAll();
+            const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`)).length + 1;
+            const expediente = `BEC-${anio}-${String(numero).padStart(3, '0')}`;
+
+            const session = StorageManager.session.get();
 
             if (resultadoSubsanacion.necesitaSubsanacion) {
                 mostrarModalSubsanacion(resultadoSubsanacion);
-
-                const anio = new Date().getFullYear();
-                const solicitudesExistentes = StorageManager.solicitudes.getAll();
-                const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`)).length + 1;
-                const expediente = `BEC-${anio}-${String(numero).padStart(3, '0')}`;
-
-                const session = StorageManager.session.get();
 
                 Object.keys(documentos).forEach(key => {
                     if (resultadoSubsanacion.docsFaltantes.includes(key)) {
@@ -1893,7 +2065,9 @@
                     cedula: datos['f-cedula'],
                     correo: datos['f-correo'],
                     telefono: datos['f-telefono'] || '',
-                    tipoBeca: tipoBeca,
+                    tipoBeca: tipoBecaSeleccionada,
+                    convocatoriaId: convocatoriaSeleccionada.id,
+                    convocatoriaNombre: convocatoriaSeleccionada.nombre,
                     estado: 'Pendiente subsanación',
                     progreso: 30,
                     puntaje: 0,
@@ -1908,7 +2082,7 @@
                 };
 
                 StorageManager.solicitudes.save(nuevaSolicitud);
-                localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify({}));
+                localStorage.setItem('becas_borrador_solicitud', JSON.stringify({}));
                 registrarBitacora('Solicitud creada (Pendiente subsanación)', expediente);
 
                 document.getElementById('modal-success-titulo').textContent = '¡Solicitud registrada!';
@@ -1920,13 +2094,6 @@
             }
 
             // Si no necesita subsanación, proceder con el envío normal
-            const anio = new Date().getFullYear();
-            const solicitudesExistentes = StorageManager.solicitudes.getAll();
-            const numero = solicitudesExistentes.filter(s => s.expediente && s.expediente.includes(`BEC-${anio}`)).length + 1;
-            const expediente = `BEC-${anio}-${String(numero).padStart(3, '0')}`;
-
-            const session = StorageManager.session.get();
-
             const nuevaSolicitud = {
                 expediente,
                 fecha: new Date().toISOString().slice(0, 10),
@@ -1936,7 +2103,9 @@
                 cedula: datos['f-cedula'],
                 correo: datos['f-correo'],
                 telefono: datos['f-telefono'] || '',
-                tipoBeca: tipoBeca,
+                tipoBeca: tipoBecaSeleccionada,
+                convocatoriaId: convocatoriaSeleccionada.id,
+                convocatoriaNombre: convocatoriaSeleccionada.nombre,
                 estado: 'Enviada',
                 progreso: 10,
                 puntaje: 0,
@@ -1951,19 +2120,16 @@
             };
 
             StorageManager.solicitudes.save(nuevaSolicitud);
-            localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify({}));
+            localStorage.setItem('becas_borrador_solicitud', JSON.stringify({}));
             registrarBitacora('Solicitud creada', expediente);
 
             document.getElementById('modal-success-titulo').textContent = '¡Solicitud enviada!';
             document.getElementById('expediente-numero').textContent = expediente;
             openModal('modal-success');
-
-            // Emitir evento para notificar a otros paneles
-            StorageManager.emit('solicitud_creada', { expediente, tipoBeca });
         }
 
         function getLabelDocumento(id) {
-            const field = FORM_FIELDS_BASE[5].find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
+            const field = FORM_FIELDS_BASE[5]?.find(f => f.id === id) || camposActualesPaso4.find(f => f.id === id);
             return field ? field.label : id;
         }
 
@@ -1985,36 +2151,23 @@
         // INICIALIZACIÓN
         // ============================================================
         function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.tipos)) {
-                const tipos = Object.keys(TIPOS_BECA_CONFIG).map((nombre, index) => ({
-                    id: index + 1,
-                    nombre: nombre,
-                    icon: TIPOS_BECA_CONFIG[nombre].icon,
-                    desc: TIPOS_BECA_CONFIG[nombre].desc,
-                    min: TIPOS_BECA_CONFIG[nombre].min,
-                    max: TIPOS_BECA_CONFIG[nombre].max,
-                    rubros: TIPOS_BECA_CONFIG[nombre].rubros,
-                    requisitos: TIPOS_BECA_CONFIG[nombre].requisitos,
-                    activo: true,
-                    camposPersonalizados: TIPOS_BECA_CONFIG[nombre].camposPersonalizados || []
-                }));
-                localStorage.setItem(STORAGE_KEYS.tipos, JSON.stringify(tipos));
-            }
-            if (!localStorage.getItem(STORAGE_KEYS.solicitudes)) {
-                localStorage.setItem(STORAGE_KEYS.solicitudes, JSON.stringify([]));
-            }
-            if (!localStorage.getItem(STORAGE_KEYS.borrador)) {
-                localStorage.setItem(STORAGE_KEYS.borrador, JSON.stringify({}));
-            }
-            if (!localStorage.getItem(STORAGE_KEYS.config)) {
-                localStorage.setItem(STORAGE_KEYS.config, JSON.stringify({
-                    socio: 40,
-                    academico: 35,
-                    vulnerabilidad: 15,
-                    meritos: 10,
-                    promedioMin: 80,
-                    ingresoMax: 500000
-                }));
+            // Inicializar convocatorias si no existen
+            if (StorageManager.convocatorias.getAll().length === 0) {
+                const hoy = new Date();
+                const fmt = (d) => d.toISOString().slice(0, 10);
+                const apertura = new Date(hoy.getTime() - 10 * 86400000);
+                const cierre = new Date(hoy.getTime() + 20 * 86400000);
+                const convocatorias = [
+                    { id: 1, nombre: 'Beca Socioeconómica 2026-I', tipo: 'Socioeconómica', cupos: 20,
+                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
+                    { id: 2, nombre: 'Beca de Excelencia Académica 2026-I', tipo: 'Excelencia Académica',
+                        cupos: 10, fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
+                    { id: 3, nombre: 'Beca Deportiva II-2026', tipo: 'Deportiva', cupos: 8,
+                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' },
+                    { id: 4, nombre: 'Beca Cultural 2026', tipo: 'Cultural', cupos: 5,
+                        fechaApertura: fmt(apertura), fechaCierre: fmt(cierre), estado: 'Activa' }
+                ];
+                convocatorias.forEach(c => StorageManager.convocatorias.save(c));
             }
         }
 
@@ -2023,6 +2176,7 @@
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             initData();
+            cargarConvocatorias();
             renderFormFields();
             goToStep(1);
             renderStepsIndicator();
@@ -2060,14 +2214,42 @@
             });
 
             // Cargar convivientes del borrador
-            const borrador = JSON.parse(localStorage.getItem(STORAGE_KEYS.borrador) || '{}');
+            const borrador = JSON.parse(localStorage.getItem('becas_borrador_solicitud') || '{}');
             if (borrador._convivientes && Array.isArray(borrador._convivientes)) {
                 convivientes = borrador._convivientes;
                 if (esAspirante) {
                     setTimeout(() => renderizarConvivientes(), 100);
                 }
             }
+            if (borrador._convocatoria) {
+                convocatoriaSeleccionada = borrador._convocatoria;
+                tipoBecaSeleccionada = borrador._tipoBeca;
+                const select = document.getElementById('convocatoria-select');
+                if (select) {
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value == borrador._convocatoria.id) {
+                            select.selectedIndex = i;
+                            cambiarConvocatoria();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Escuchar eventos de StorageManager
+            StorageManager.on('session_actualizada', function() {
+                const session = StorageManager.session.get();
+                if (session) {
+                    const nav = document.getElementById('mainNav');
+                    const sessionPill = nav.querySelector('.session-pill');
+                    if (sessionPill) {
+                        sessionPill.innerHTML =
+                            `<span>${session.nombre}</span><span class="role-badge">${session.rol}</span>`;
+                    }
+                }
+            });
         });
     </script>
+
 </body>
 </html>

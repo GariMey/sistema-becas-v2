@@ -489,6 +489,75 @@
             margin-bottom: 20px;
         }
 
+        /* Estilos para previsualización de documentos */
+        .modal-preview-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(16,34,64,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+        .modal-preview-overlay.hidden { display: none; }
+        .modal-preview-box {
+            background: var(--paper);
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            padding: 24px;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-preview-box .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: transparent;
+            font-size: 1.6rem;
+            color: var(--muted);
+            line-height: 1;
+            padding: 4px 8px;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .modal-preview-box .modal-close:hover { color: var(--primary); }
+        .preview-content {
+            background: #fafbfc;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-content img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+        }
+        .preview-content iframe {
+            width: 100%;
+            height: 65vh;
+            border: none;
+            border-radius: 8px;
+        }
+        .preview-content .placeholder {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            width: 100%;
+        }
+        .preview-content .placeholder .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
         .login-error {
             background: #fdecea;
             color: var(--danger);
@@ -1274,6 +1343,20 @@
         </div>
     </div>
 
+    <!-- Modal de previsualización de documentos -->
+    <div id="modal-preview" class="modal-preview-overlay hidden">
+        <div class="modal-preview-box">
+            <button class="modal-close" onclick="cerrarPrevisualizacion()">×</button>
+            <h3 id="preview-titulo">📎 Documento</h3>
+            <p id="preview-metadata" style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;"></p>
+            <div id="preview-contenido" class="preview-content"></div>
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="preview-descargar-btn" onclick="descargarDocumentoDesdePreview()">📥 Descargar</button>
+                <button class="btn btn-ghost" onclick="cerrarPrevisualizacion()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-accion-solicitud" class="modal-overlay hidden">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-accion-solicitud')">×</button>
@@ -1495,7 +1578,7 @@
         }
 
         function formatBytes(bytes) {
-            if (!bytes) return '';
+            if (!bytes) return '0 B';
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -1515,6 +1598,191 @@
                 document.getElementById('notif-titulo').textContent = titulo;
                 document.getElementById('notif-mensaje').innerHTML = mensaje;
                 openModal('modal-notificacion');
+            }
+        }
+
+        // ============================================================
+        // PREVISUALIZACIÓN DE DOCUMENTOS
+        // ============================================================
+        let previewDocumentoData = null;
+
+        /**
+         * Abre el documento en un modal para previsualización
+         */
+        function previsualizarDocumento(expediente, docKey) {
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+            if (!solicitud) {
+                notify('⚠️ No se encontró la solicitud.');
+                return;
+            }
+
+            const documentos = solicitud.documentos || {};
+            const doc = documentos[docKey];
+
+            if (!doc || !doc.datos) {
+                notify('⚠️ El documento no tiene datos para mostrar.');
+                return;
+            }
+
+            previewDocumentoData = {
+                expediente: expediente,
+                docKey: docKey,
+                doc: doc,
+                solicitud: solicitud
+            };
+
+            const modal = document.getElementById('modal-preview');
+            document.getElementById('preview-titulo').textContent = '📎 ' + (doc.label || docKey);
+
+            let metadata = doc.nombre || '';
+            if (doc.tamano) {
+                metadata += ' · ' + formatBytes(doc.tamano);
+            }
+            if (doc.estado) {
+                metadata += ' · Estado: ' + doc.estado;
+            }
+            document.getElementById('preview-metadata').textContent = metadata;
+
+            const contenido = document.getElementById('preview-contenido');
+            const tipo = doc.tipo || 'application/octet-stream';
+            const esPDF = tipo.includes('pdf');
+            const esImagen = tipo.includes('image');
+
+            if (esImagen) {
+                contenido.innerHTML = `<img src="${doc.datos}" alt="${doc.nombre}">`;
+            } else if (esPDF) {
+                contenido.innerHTML = `
+                    <iframe src="${doc.datos}"></iframe>
+                    <div style="margin-top:8px;font-size:0.85rem;color:var(--muted);text-align:center;">
+                        📄 El PDF se muestra en el visor. Si no se ve, usa el botón de descarga.
+                    </div>
+                `;
+            } else {
+                contenido.innerHTML = `
+                    <div class="placeholder">
+                        <div class="icon">📄</div>
+                        <p><strong>${doc.nombre || 'Documento'}</strong></p>
+                        <p style="color:var(--muted);font-size:0.85rem;">
+                            Tipo: ${doc.tipo || 'Desconocido'}<br>
+                            Tamaño: ${formatBytes(doc.tamano || 0)}
+                        </p>
+                        <p style="color:var(--muted);font-size:0.85rem;margin-top:8px;">
+                            Este tipo de archivo no se puede previsualizar.
+                        </p>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+
+            // Registrar en bitácora
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: `Documento "${doc.nombre || docKey}" previsualizado`,
+                expediente: expediente
+            });
+        }
+
+        /**
+         * Cierra el modal de previsualización
+         */
+        function cerrarPrevisualizacion() {
+            document.getElementById('modal-preview').classList.add('hidden');
+            previewDocumentoData = null;
+        }
+
+        /**
+         * Descarga el documento desde el modal de previsualización
+         */
+        function descargarDocumentoDesdePreview() {
+            if (!previewDocumentoData) return;
+            const { expediente, docKey } = previewDocumentoData;
+            descargarDocumento(expediente, docKey);
+        }
+
+        /**
+         * Descarga el documento
+         */
+        function descargarDocumento(expediente, docKey) {
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+            if (!solicitud) {
+                notify('⚠️ No se encontró la solicitud.');
+                return;
+            }
+
+            const documentos = solicitud.documentos || {};
+            const doc = documentos[docKey];
+
+            if (!doc || !doc.datos) {
+                notify('⚠️ El documento no tiene datos para descargar.');
+                return;
+            }
+
+            try {
+                const link = document.createElement('a');
+                link.href = doc.datos;
+                link.download = doc.nombre || 'documento';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Trabajador Social',
+                    rol: session ? session.rol : 'trabajador_social',
+                    accion: `Documento "${doc.nombre || docKey}" descargado`,
+                    expediente: expediente
+                });
+
+                notify('📥 Descargando documento...');
+            } catch (error) {
+                console.error('❌ Error al descargar el documento:', error);
+                notify('❌ Error al descargar el documento.');
+            }
+        }
+
+        /**
+         * Abre el documento en una nueva ventana o pestaña
+         */
+        function verDocumento(expediente, docKey) {
+            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+            if (!solicitud) {
+                notify('⚠️ No se encontró la solicitud.');
+                return;
+            }
+
+            const documentos = solicitud.documentos || {};
+            const doc = documentos[docKey];
+
+            if (!doc || !doc.datos) {
+                notify('⚠️ El documento no tiene datos para mostrar.');
+                return;
+            }
+
+            try {
+                const link = document.createElement('a');
+                link.href = doc.datos;
+                link.target = '_blank';
+                link.download = doc.nombre || 'documento';
+                link.click();
+
+                const session = StorageManager.session.get();
+                StorageManager.bitacora.save({
+                    fecha: new Date().toLocaleString(),
+                    usuario: session ? session.nombre : 'Trabajador Social',
+                    rol: session ? session.rol : 'trabajador_social',
+                    accion: `Documento "${doc.nombre || docKey}" visualizado en nueva pestaña`,
+                    expediente: expediente
+                });
+
+                notify('📄 Abriendo documento...');
+            } catch (error) {
+                console.error('❌ Error al abrir el documento:', error);
+                notify('❌ Error al abrir el documento. Intenta descargarlo.');
             }
         }
 
@@ -2348,6 +2616,25 @@
                         const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
                             (estadoDoc === 'Rechazado' ? 'badge-danger' :
                                 (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
+
+                        let accionesDoc = '';
+                        if (opciones.permitirRevision) {
+                            accionesDoc += `
+                                <button class="btn btn-success" style="padding:6px 10px;font-size:0.78rem;" onclick="revisarDocumento('${solicitud.expediente}','${key}','Aprobado')">✓</button>
+                                <button class="btn btn-danger" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento('${solicitud.expediente}','${key}','Rechazado')">✗</button>
+                                <button class="btn btn-warning" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento('${solicitud.expediente}','${key}','Corrección solicitada')">Corregir</button>
+                            `;
+                        }
+
+                        // Botones de previsualización y descarga
+                        let accionesVisualizacion = '';
+                        if (doc.datos) {
+                            accionesVisualizacion = `
+                                <button class="btn btn-small" onclick="previsualizarDocumento('${solicitud.expediente}','${key}')" style="background:var(--info);color:#fff;padding:4px 10px;font-size:0.7rem;">👁️</button>
+                                <button class="btn btn-small" onclick="descargarDocumento('${solicitud.expediente}','${key}')" style="padding:4px 10px;font-size:0.7rem;">📥</button>
+                            `;
+                        }
+
                         return '<div class="doc-item">' +
                             '<div class="doc-item-info">' +
                             '<span class="doc-item-icon">📄</span>' +
@@ -2360,12 +2647,9 @@
                             '</div>' +
                             '</div>' +
                             '<div class="doc-item-actions">' +
+                            accionesVisualizacion +
                             '<span class="badge ' + badgeDoc + '">' + estadoDoc + '</span>' +
-                            (opciones.permitirRevision ?
-                                '<button class="btn btn-success" style="padding:6px 10px;font-size:0.78rem;" onclick="revisarDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Aprobado\')">✓</button>' +
-                                '<button class="btn btn-danger" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Rechazado\')">✗</button>' +
-                                '<button class="btn btn-warning" style="padding:6px 10px;font-size:0.78rem;" onclick="abrirObservacionDocumento(\'' + solicitud.expediente + '\',\'' + key + '\',\'Corrección solicitada\')">Corregir</button>'
-                                : '') +
+                            accionesDoc +
                             '</div>' +
                             '</div>';
                     }).join('') +
@@ -3472,6 +3756,299 @@
             notify('Reporte resumido exportado correctamente.');
         }
 
+        // ============================================================
+        // CLIENTE PARA ENVÍO DE CORREOS
+        // ============================================================
+
+        const API_URL = window.location.origin; // Usa la misma URL del servidor
+
+        /**
+         * Envía una notificación de estado de solicitud por correo
+         */
+        async function notificarEstadoPorCorreo(expediente, estado, observaciones = '') {
+            try {
+                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
+                if (!solicitud) {
+                    console.error('❌ Solicitud no encontrada');
+                    return { success: false, error: 'Solicitud no encontrada' };
+                }
+
+                const email = solicitud.correo || solicitud.estudianteEmail;
+                if (!email) {
+                    console.error('❌ El estudiante no tiene correo registrado');
+                    showToast('⚠️ El estudiante no tiene correo registrado', 'warning');
+                    return { success: false, error: 'Sin correo' };
+                }
+
+                const nombre = solicitud.nombres;
+
+                // Mensajes predefinidos
+                const mensajes = {
+                    'enviada': `Tu solicitud de beca ha sido recibida correctamente. El expediente ${expediente} está en proceso de revisión. Te notificaremos sobre cualquier actualización.`,
+                    'aprobada': `¡Felicidades! Tu solicitud de beca ha sido aprobada. El expediente ${expediente} ha sido aceptado. Pronto recibirás más información sobre el beneficio.`,
+                    'rechazada': `Lamentamos informarte que tu solicitud de beca ha sido rechazada. El expediente ${expediente} no cumple con los requisitos establecidos.`,
+                    'subsanacion': `Tu solicitud requiere correcciones. Por favor revisa los documentos y realiza las correcciones solicitadas lo antes posible.`,
+                    'visita': `Se ha programado una visita domiciliaria para tu expediente ${expediente}. Pronto te contactaremos para coordinar la fecha y hora.`,
+                    'comite': `Tu solicitud ha sido enviada al comité de becas para evaluación final. Estaremos en contacto contigo.`,
+                    'apelacion': `Hemos recibido tu apelación para el expediente ${expediente}. Será revisada por el comité en los próximos días.`,
+                    'suspension': `Tu beca ha sido suspendida temporalmente. Por favor comunícate con la oficina de becas para más información.`,
+                    'restauracion': `Tu beca ha sido restaurada y el beneficio vuelve a estar activo. ¡Bienvenido de nuevo!`
+                };
+
+                const mensaje = mensajes[estado] || `Tu solicitud ha sido actualizada. Estado: ${estado}`;
+
+                const response = await fetch(`${API_URL}/api/email/notificar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        nombre,
+                        expediente,
+                        tipo: solicitud.tipoBeca || 'No especificado',
+                        estado,
+                        mensaje,
+                        observaciones
+                    })
+                });
+
+                const resultado = await response.json();
+                
+                if (resultado.success) {
+                    // Registrar en bitácora
+                    const session = StorageManager.session.get();
+                    StorageManager.bitacora.save({
+                        fecha: new Date().toLocaleString(),
+                        usuario: session ? session.nombre : 'Sistema',
+                        rol: session ? session.rol : 'trabajador_social',
+                        accion: `Correo de ${estado} enviado a ${email}`,
+                        expediente: expediente
+                    });
+                    showToast(`📧 Correo de ${estado} enviado a ${email}`, 'success');
+                } else {
+                    showToast(`⚠️ Error al enviar correo: ${resultado.error || 'Error desconocido'}`, 'warning');
+                }
+
+                return resultado;
+            } catch (error) {
+                console.error('❌ Error al notificar por correo:', error);
+                showToast('⚠️ Error de conexión al enviar correo', 'warning');
+                return { success: false, error: error.message };
+            }
+        }
+
+        /**
+         * Envía un correo simple
+         */
+        async function enviarCorreoSimple(para, asunto, mensaje, html = null) {
+            try {
+                const response = await fetch(`${API_URL}/api/email/enviar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        para,
+                        asunto,
+                        mensaje,
+                        html
+                    })
+                });
+
+                const resultado = await response.json();
+                
+                if (resultado.success) {
+                    showToast('📧 Correo enviado correctamente', 'success');
+                } else {
+                    showToast(`⚠️ Error al enviar correo: ${resultado.error}`, 'warning');
+                }
+
+                return resultado;
+            } catch (error) {
+                console.error('❌ Error al enviar correo:', error);
+                showToast('⚠️ Error de conexión al enviar correo', 'warning');
+                return { success: false, error: error.message };
+            }
+        }
+
+        /**
+         * Verifica la configuración del correo
+         */
+        async function verificarConfiguracionCorreo() {
+            try {
+                const response = await fetch(`${API_URL}/api/email/verificar`);
+                const resultado = await response.json();
+                
+                if (resultado.success) {
+                    showToast(`✅ Configuración de correo verificada: ${resultado.email}`, 'success');
+                    console.log('✅ Configuración de correo:', resultado);
+                } else {
+                    showToast(`⚠️ Error en configuración de correo: ${resultado.error}`, 'warning');
+                }
+                return resultado;
+            } catch (error) {
+                console.error('❌ Error al verificar correo:', error);
+                showToast('⚠️ Error de conexión al verificar correo', 'warning');
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ============================================================
+        // MODIFICAR ejecutarAccionSolicitud para enviar correos
+        // ============================================================
+
+        // Guardar referencia a la función original
+        const ejecutarAccionSolicitudOriginal = ejecutarAccionSolicitud;
+
+        // Sobrescribir la función
+        ejecutarAccionSolicitud = async function() {
+            const expediente = accionSolicitudExpediente;
+            const tipo = accionSolicitudTipo;
+            const observaciones = document.getElementById('accion-observaciones')?.value || '';
+            const sol = StorageManager.solicitudes.getByExpediente(expediente);
+
+            if (!sol) {
+                notify('No se encontró la solicitud.');
+                closeModal('modal-accion-solicitud');
+                return;
+            }
+
+            let estadoCorreo = null;
+            let mensajeAdicional = observaciones;
+
+            switch (tipo) {
+                case 'aprobar': {
+                    const porcentaje = document.getElementById('accion-porcentaje')?.value || '50%';
+                    sol.estado = 'Aprobada';
+                    sol.progreso = 85;
+                    sol.porcentajeCobertura = porcentaje;
+                    sol.observacionesComite = observaciones || 'Aprobada por Trabajador Social';
+                    sol.fechaAprobacion = new Date().toISOString().slice(0, 10);
+                    sol.historial = sol.historial || [];
+                    sol.historial.push({
+                        fecha: new Date().toISOString(),
+                        accion: 'Aprobada',
+                        detalles: 'Aprobada con cobertura del ' + porcentaje,
+                        usuario: 'Trabajador Social'
+                    });
+                    estadoCorreo = 'aprobada';
+                    notify('Beca aprobada con ' + porcentaje + ' de cobertura.');
+                    break;
+                }
+                case 'rechazar': {
+                    const motivo = document.getElementById('accion-motivo')?.value || 'No especificado';
+                    sol.estado = 'Rechazada';
+                    sol.progreso = 100;
+                    sol.motivoRechazo = motivo + (observaciones ? ' - ' + observaciones : '');
+                    sol.observacionesComite = observaciones;
+                    sol.fechaRechazo = new Date().toISOString().slice(0, 10);
+                    sol.historial = sol.historial || [];
+                    sol.historial.push({
+                        fecha: new Date().toISOString(),
+                        accion: 'Rechazada',
+                        detalles: motivo,
+                        usuario: 'Trabajador Social'
+                    });
+                    estadoCorreo = 'rechazada';
+                    mensajeAdicional = motivo + (observaciones ? ' - ' + observaciones : '');
+                    notify('Solicitud rechazada.');
+                    break;
+                }
+                case 'comite': {
+                    sol.estado = 'En comité';
+                    sol.progreso = 60;
+                    sol.observacionTS = (sol.observacionTS || '') + '\nEnviado a comité: ' + (observaciones || 'Sin observaciones');
+                    sol.historial = sol.historial || [];
+                    sol.historial.push({
+                        fecha: new Date().toISOString(),
+                        accion: 'Enviada a Comité',
+                        detalles: observaciones || 'Sin observaciones',
+                        usuario: 'Trabajador Social'
+                    });
+                    estadoCorreo = 'comite';
+                    notify('Solicitud enviada a comité.');
+                    break;
+                }
+                case 'visita': {
+                    sol.estado = 'Visita pendiente';
+                    sol.progreso = 40;
+                    sol.observacionTS = (sol.observacionTS || '') + '\nVisita solicitada: ' + (observaciones || 'Sin observaciones');
+                    sol.historial = sol.historial || [];
+                    sol.historial.push({
+                        fecha: new Date().toISOString(),
+                        accion: 'Visita solicitada',
+                        detalles: observaciones || 'Sin observaciones',
+                        usuario: 'Trabajador Social'
+                    });
+                    StorageManager.visitas.save({
+                        expediente: expediente,
+                        fecha: new Date().toISOString().slice(0, 10),
+                        condiciones: 'Pendiente de realizar',
+                        coincide: 'Pendiente',
+                        archivo: null,
+                        fechaRegistro: new Date().toLocaleString(),
+                        estado: 'Pendiente'
+                    });
+                    estadoCorreo = 'visita';
+                    notify('Visita solicitada. El expediente está en espera de visita.');
+                    break;
+                }
+                case 'subsanacion_ok': {
+                    sol.estado = 'Elegible';
+                    sol.progreso = 50;
+                    sol.observacionTS = (sol.observacionTS || '') + '\nSubsanación completada: ' + (observaciones || 'Documentos corregidos');
+                    sol.historial = sol.historial || [];
+                    sol.historial.push({
+                        fecha: new Date().toISOString(),
+                        accion: 'Subsanación Completada',
+                        detalles: observaciones || 'Documentos corregidos',
+                        usuario: 'Trabajador Social'
+                    });
+                    if (sol.documentos) {
+                        Object.keys(sol.documentos).forEach(key => {
+                            if (sol.documentos[key].estado === 'Corrección solicitada' || sol.documentos[key].estado === 'Rechazado') {
+                                sol.documentos[key].estado = 'Aprobado';
+                            }
+                        });
+                    }
+                    estadoCorreo = 'subsanacion';
+                    notify('Subsanación confirmada. La solicitud ahora es elegible.');
+                    break;
+                }
+                default: {
+                    notify('Acción no reconocida.');
+                    closeModal('modal-accion-solicitud');
+                    return;
+                }
+            }
+
+            // Guardar la solicitud
+            StorageManager.solicitudes.save(sol);
+
+            // Registrar en bitácora
+            const session = StorageManager.session.get();
+            StorageManager.bitacora.save({
+                fecha: new Date().toLocaleString(),
+                usuario: session ? session.nombre : 'Trabajador Social',
+                rol: session ? session.rol : 'trabajador_social',
+                accion: 'Acción rápida: ' + tipo + ' - Expediente ' + expediente,
+                expediente: expediente
+            });
+
+            // Enviar correo de notificación (si corresponde)
+            if (estadoCorreo) {
+                await notificarEstadoPorCorreo(expediente, estadoCorreo, mensajeAdicional);
+            }
+
+            closeModal('modal-accion-solicitud');
+            renderDashboards();
+            if (document.getElementById('soc-estadisticas').classList.contains('active')) {
+                actualizarEstadisticas();
+                actualizarGrafico();
+                renderHistorial();
+            }
+        };
         // ============================================================
         // SHOW DASH TAB
         // ============================================================
