@@ -23,7 +23,7 @@ const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image
 async function generarExpediente() {
   const year = new Date().getFullYear();
   const lastSolicitud = await db.queryOne(
-    'SELECT expediente FROM solicitudes ORDER BY id DESC LIMIT 1'
+    'SELECT TOP 1 expediente FROM solicitudes ORDER BY id DESC'
   );
   let num = 1;
   if (lastSolicitud && lastSolicitud.expediente) {

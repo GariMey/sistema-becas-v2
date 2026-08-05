@@ -57,7 +57,17 @@ async function query(queryString, params = []) {
   let sqlQuery = queryString;
   let paramIndex = 0;
   sqlQuery = sqlQuery.replace(/\?/g, () => `@p${paramIndex++}`);
-  
+
+  // SQL Server no tiene "lastInsertRowid" como SQLite. Si es un INSERT y la
+  // consulta no trae ya una cláusula OUTPUT, agregamos SELECT SCOPE_IDENTITY()
+  // para poder devolver el id autogenerado a través de queryRun().
+  const trimmed = sqlQuery.trim();
+  const isInsert = /^INSERT\s/i.test(trimmed);
+  const hasOutput = /\bOUTPUT\b/i.test(trimmed);
+  if (isInsert && !hasOutput) {
+    sqlQuery = trimmed.replace(/;\s*$/, '') + '; SELECT SCOPE_IDENTITY() AS id;';
+  }
+
   try {
     const result = await request.query(sqlQuery);
     return result;

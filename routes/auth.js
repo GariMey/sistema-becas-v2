@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const { enviarNotificacionEmail } = require('../services/emailService');
 const crypto = require('crypto');
+const db = require('../database/db');
+const bcrypt = require('bcryptjs');
 
 // ===== USUARIOS SIMULADOS (para desarrollo) =====
 // En producción, esto vendría de la base de datos
@@ -13,7 +15,9 @@ function getUsuariosSimulados() {
         { email: 'estudiante3@becas.com', password: '123456', nombre: 'Ana López', rol: 'estudiante', activo: 1, twoFactorEnabled: false },
         { email: 'social@becas.com', password: '123456', nombre: 'Carlos Rodríguez', rol: 'trabajador_social', activo: 1, twoFactorEnabled: false },
         { email: 'comite@becas.com', password: '123456', nombre: 'Dra. Ana Méndez', rol: 'comite', activo: 1, twoFactorEnabled: false },
-        { email: 'admin@becas.com', password: '123456', nombre: 'Admin Sistema', rol: 'admin', activo: 1, twoFactorEnabled: false },
+        { email: 'comite2@becas.com', password: '123456', nombre: 'Carlos Rojas', rol: 'comite', activo: 1, twoFactorEnabled: false },
+        { email: 'comite3@becas.com', password: '123456', nombre: 'María Torres', rol: 'comite', activo: 1, twoFactorEnabled: false },
+        { email: 'admin@becas.com', password: '123456', nombre: 'Juan Pérez', rol: 'admin', activo: 1, twoFactorEnabled: false },
         { email: 'auditor@becas.com', password: '123456', nombre: 'Luis Fernández', rol: 'auditor', activo: 1, twoFactorEnabled: false }
     ];
 }
@@ -133,46 +137,66 @@ router.post('/reset-password', async (req, res) => {
 
 // ===== INICIO DE SESIÓN =====
 router.post('/login', async (req, res) => {
-    console.log('📨 [login] Solicitud recibida:', req.body);
+    console.log('📨 [login] Solicitud recibida:', { email: req.body.email });
     const { email, password, twoFactorCode } = req.body;
 
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
+    }
+
     try {
-        // Buscar usuario (simulado)
-        const usuarios = getUsuariosSimulados();
-        const usuario = usuarios.find(u => u.email === email && u.activo === 1);
+        // Buscar usuario en SQL Server (ya no en el arreglo simulado)
+        const usuario = await db.queryOne(
+            'SELECT * FROM usuarios WHERE email = ?',
+            [email]
+        );
 
         if (!usuario) {
             console.log('❌ Usuario no encontrado:', email);
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
-        console.log('✅ Usuario encontrado:', usuario.email);
+        if (usuario.bloqueado) {
+            return res.status(403).json({ error: 'Usuario bloqueado por múltiples intentos fallidos. Contacta al administrador.' });
+        }
 
-        // Verificar contraseña
-        const passwordValida = password === '123456' || password === usuario.password;
-        
+        // Verificar contraseña con bcrypt (las contraseñas se guardan cifradas, ver database/init.js)
+        const passwordValida = bcrypt.compareSync(password, usuario.password);
+
         if (!passwordValida) {
             console.log('❌ Contraseña incorrecta para:', email);
-            return res.status(401).json({ error: 'Credenciales inválidas' });
+            const intentos = (usuario.intentos || 0) + 1;
+            const bloquear = intentos >= 3;
+            await db.query(
+                'UPDATE usuarios SET intentos = ?, bloqueado = ? WHERE email = ?',
+                [intentos, bloquear ? 1 : 0, email]
+            );
+            return res.status(401).json({
+                error: bloquear ? 'Usuario bloqueado por múltiples intentos fallidos' : 'Credenciales inválidas',
+                intentos
+            });
         }
 
         // Verificar 2FA
-        if (usuario.twoFactorEnabled) {
+        if (usuario.two_factor_enabled) {
             if (!twoFactorCode) {
                 console.log('🔐 2FA requerido para:', email);
-                return res.status(401).json({ 
+                return res.status(401).json({
                     require2FA: true,
                     message: 'Se requiere código de autenticación de dos factores'
                 });
             }
 
-            const esValido = twoFactorCode === '123456';
+            const esValido = twoFactorCode === '123456'; // TODO: reemplazar por validación real (TOTP / código enviado por correo)
             if (!esValido) {
                 console.log('❌ Código 2FA inválido para:', email);
                 return res.status(401).json({ error: 'Código 2FA inválido' });
             }
             console.log('✅ Código 2FA verificado para:', email);
         }
+
+        // Login exitoso: resetear intentos fallidos
+        await db.query('UPDATE usuarios SET intentos = 0 WHERE email = ?', [email]);
 
         console.log('✅ Login exitoso para:', email);
 
