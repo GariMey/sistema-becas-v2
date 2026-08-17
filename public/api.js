@@ -61,7 +61,9 @@ const API = {
 
   // Auth
   login(email, password, twoFactorCode) { return this.post('/api/auth/login', { email, password, twoFactorCode }); },
+  registrarUsuario(data) { return this.post('/api/auth/registro', data); },
   recuperacion(email) { return this.post('/api/auth/recuperacion', { email }); },
+  resetPassword(token, password) { return this.post('/api/auth/reset-password', { token, password }); },
 
   // Usuarios
   getUsuarios() { return this.get('/api/usuarios'); },
@@ -88,6 +90,7 @@ const API = {
 
   // Convocatorias
   getConvocatorias() { return this.get('/api/convocatorias'); },
+  getConvocatoria(id) { return this.get(`/api/convocatorias/${id}`); },
   crearConvocatoria(data) { return this.post('/api/convocatorias', data); },
   publicarConvocatoria(id) { return this.put(`/api/convocatorias/${id}/publicar`); },
   cerrarConvocatoria(id) { return this.put(`/api/convocatorias/${id}/cerrar`); },
@@ -134,5 +137,11 @@ const API = {
 
   // Alertas
   getAlertas() { return this.get('/api/alertas'); },
-  revisarAlerta(id) { return this.put(`/api/alertas/${id}/revisar`); }
+  revisarAlerta(id) { return this.put(`/api/alertas/${id}/revisar`); },
+
+  // Padrón electoral
+  consultarPadron(cedula) { return this.get(`/api/padron/${cedula}`); },
+
+  // Núcleo familiar (Fase 2)
+  getIntegrantesFamilia(expediente) { return this.get(`/api/integrantes-familia/${expediente}`); }
 };

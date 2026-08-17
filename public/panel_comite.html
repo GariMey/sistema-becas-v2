@@ -1,2081 +1,1165 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Comité - Sistema de Becas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <script src="storageManager.js"></script>
-    <style>
-        :root {
-            --primary: #1a365d;
-            --primary-light: #2c4a7c;
-            --primary-dark: #102240;
-            --accent: #c5a028;
-            --accent-light: #e0c468;
-            --bg: #f6f7fb;
-            --paper: #ffffff;
-            --text: #1f2733;
-            --muted: #6b7585;
-            --border: #e6e9f0;
-            --radius: 12px;
-            --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
-            --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
-            --danger: #c0392b;
-            --success: #1e7e4f;
-            --warning: #b07d12;
-            --info: #2471a3;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Comité — Sistema de Becas Universitarias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+/* ============================================================
+   ESTILOS PROPIOS DEL COMITÉ
+   ============================================================ */
+.comite-subheader {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+.comite-subheader h3 {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
 
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-        }
+.comite-subheader p {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
 
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
+/* Filtros de pestañas */
+.comite-filtros {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
 
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; cursor: pointer; border: none; }
-        .hidden { display: none !important; }
+.comite-filtros .btn-filtro {
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--muted);
+    border: 1.5px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-        .btn:active { transform: translateY(1px); }
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            border: 1.5px solid rgba(255,255,255,0.55);
-        }
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: #fff;
-        }
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-        .btn-ghost:hover { border-color: var(--primary); }
-        .btn-danger {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1.5px solid #f6c6c0;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-danger:hover { background: #f6c6c0; }
-        .btn-success {
-            background: #e7f5ee;
-            color: var(--success);
-            border: 1.5px solid #b9e3cb;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-success:hover { background: #b9e3cb; }
-        .btn-warning {
-            background: #fff3cd;
-            color: var(--warning);
-            border: 1.5px solid #ffeaa7;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-warning:hover { background: #ffeaa7; }
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-        }
-        .btn-small:hover { background: var(--primary-light); }
-        .btn-block { width: 100%; }
+.comite-filtros .btn-filtro:hover {
+    background: var(--paper);
+    border-color: var(--border);
+    color: var(--text);
+}
 
-        .btn-vote-yes {
-            background: #e7f5ee;
-            color: var(--success);
-            border: 1.5px solid #b9e3cb;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            border-radius: 8px;
-        }
-        .btn-vote-yes:hover { background: #b9e3cb; }
-        .btn-vote-yes.voted {
-            background: var(--success);
-            color: #fff;
-            border-color: var(--success);
-        }
-        .btn-vote-no {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1.5px solid #f6c6c0;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            border-radius: 8px;
-        }
-        .btn-vote-no:hover { background: #f6c6c0; }
-        .btn-vote-no.voted {
-            background: var(--danger);
-            color: #fff;
-            border-color: var(--danger);
-        }
-        .btn-vote-abstain {
-            background: #eceff3;
-            color: var(--muted);
-            border: 1.5px solid #d0d7e0;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            border-radius: 8px;
-        }
-        .btn-vote-abstain:hover { background: #d0d7e0; }
-        .btn-vote-abstain.voted {
-            background: var(--muted);
-            color: #fff;
-            border-color: var(--muted);
-        }
+.comite-filtros .btn-filtro.active {
+    background: var(--accent);
+    color: var(--primary-dark);
+    border-color: var(--accent);
+}
 
-        /* HEADER */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-            cursor: pointer;
-        }
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .session-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 0.88rem;
-        }
-        .session-pill .role-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--accent-light);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
+/* Tarjeta de candidato */
+.candidato-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    position: relative;
+}
 
-        /* DASHBOARD */
-        .dash-shell {
-            display: flex;
-            min-height: calc(100vh - 75px);
-        }
-        .dash-sidebar {
-            width: 250px;
-            background: var(--primary-dark);
-            color: #fff;
-            flex-shrink: 0;
-            padding: 28px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: sticky;
-            top: 75px;
-            height: calc(100vh - 75px);
-            overflow-y: auto;
-        }
-        .dash-sidebar .dash-user {
-            padding: 0 8px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 14px;
-        }
-        .dash-sidebar .dash-user strong {
-            display: block;
-            font-size: 0.98rem;
-        }
-        .dash-sidebar .dash-user span {
-            font-size: 0.78rem;
-            color: var(--accent-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .dash-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.78);
-            font-size: 0.92rem;
-            font-weight: 500;
-            background: transparent;
-            text-align: left;
-            width: 100%;
-        }
-        .dash-nav-item:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        .dash-nav-item.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: 700;
-        }
-        .dash-nav-item.logout {
-            margin-top: auto;
-            color: #f6c6c0;
-        }
-        .dash-nav-item.logout:hover {
-            background: rgba(192,57,43,0.18);
-        }
-        .dash-main {
-            flex: 1;
-            padding: 32px;
-            max-width: 1100px;
-        }
-        .dash-main h2 {
-            margin-bottom: 4px;
-        }
-        .dash-main .dash-sub {
-            color: var(--muted);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-        .dash-tab { display: none; }
-        .dash-tab.active { display: block; }
+.candidato-card:hover {
+    box-shadow: var(--shadow);
+    border-color: rgba(197,160,40,0.3);
+}
 
-        .card-box {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-        }
-        .card-box h3 {
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-        }
+.candidato-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
 
-        .alert-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: #fff8e6;
-            border: 1px solid #f0dba3;
-            color: var(--warning);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
-        .alert-box.info {
-            background: #e6effa;
-            border-color: #b8d0e8;
-            color: var(--info);
-        }
-        .alert-box.success {
-            background: #e7f5ee;
-            border-color: #b9e3cb;
-            color: var(--success);
-        }
-        .alert-box.danger {
-            background: #fdecea;
-            border-color: #f6c6c0;
-            color: var(--danger);
-        }
+.candidato-card .header .expediente {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary-dark);
+}
 
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .data-table th,
-        .data-table td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        .data-table th {
-            color: var(--muted);
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-weight: 700;
-        }
-        .data-table tbody tr:hover {
-            background: #f9fafc;
-        }
+.candidato-card .header .nombre {
+    font-size: 0.92rem;
+    color: var(--text);
+}
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .badge-info { background: #e6effa; color: var(--info); }
-        .badge-warning { background: #fff3cd; color: var(--warning); }
-        .badge-success { background: #e7f5ee; color: var(--success); }
-        .badge-danger { background: #fdecea; color: var(--danger); }
-        .badge-neutral { background: #eceff3; color: var(--muted); }
+.candidato-card .header .badge-estado {
+    font-size: 0.7rem;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+}
 
-        .counters-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .counter-card {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-            text-align: center;
-        }
-        .counter-card .num {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-        .counter-card .label {
-            color: var(--muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
+.candidato-card .detalles {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 8px 0 12px 0;
+}
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .form-field.full { grid-column: 1/-1; }
-        .form-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .form-field input,
-        .form-field select,
-        .form-field textarea {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 0.93rem;
-            font-family: inherit;
-            color: var(--text);
-            background: #fff;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            width: 100%;
-        }
-        .form-field input:focus,
-        .form-field select:focus,
-        .form-field textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
-        }
+.candidato-card .detalles .item {
+    display: flex;
+    flex-direction: column;
+}
 
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(16,34,64,0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-        .modal-box {
-            background: var(--paper);
-            border-radius: 16px;
-            max-width: 480px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .modal-box.wide { max-width: 680px; }
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: transparent;
-            font-size: 1.4rem;
-            color: var(--muted);
-            line-height: 1;
-            padding: 4px;
-        }
-        .modal-close:hover { color: var(--primary); }
-        .modal-box h3 { margin-bottom: 4px; }
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 0.88rem;
-            margin-bottom: 20px;
-        }
+.candidato-card .detalles .item .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
 
-        .login-error {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1px solid #f6c6c0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-        }
+.candidato-card .detalles .item .value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
 
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #e7f5ee;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 16px;
-        }
+.candidato-card .votacion-resumen {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+}
 
-        .modal-credentials {
-            background: #eef2f8;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-top: 18px;
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-        .modal-credentials strong { color: var(--primary); }
+.candidato-card .votacion-resumen .votos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        .expediente-section {
-            margin-bottom: 16px;
-        }
-        .expediente-section h4 {
-            margin-bottom: 10px;
-            font-size: 1rem;
-            color: var(--primary);
-        }
-        .expediente-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px 18px;
-        }
-        .expediente-grid p {
-            font-size: 0.9rem;
-            margin: 0;
-        }
+.candidato-card .votacion-resumen .votos .voto {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+}
 
-        .votacion-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .votacion-container .miembro-voto {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #f9fafc;
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            font-size: 0.78rem;
-        }
-        .votacion-container .miembro-voto .nombre { font-weight: 600; }
-        .votacion-container .miembro-voto .voto {
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-        .votacion-container .miembro-voto .voto.si { color: var(--success); }
-        .votacion-container .miembro-voto .voto.no { color: var(--danger); }
-        .votacion-container .miembro-voto .voto.abstencion { color: var(--muted); }
-        .votacion-container .miembro-voto .voto.pendiente { color: var(--warning); }
+.candidato-card .votacion-resumen .votos .voto .count {
+    font-weight: 700;
+}
 
-        .votacion-resultado {
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .votacion-resultado.aprobada {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-        .votacion-resultado.rechazada {
-            background: #fdecea;
-            color: var(--danger);
-        }
-        .votacion-resultado.pendiente {
-            background: #fff3cd;
-            color: var(--warning);
-        }
-        .votacion-resultado.devuelta {
-            background: #e6effa;
-            color: var(--info);
-        }
+.candidato-card .votacion-resumen .votos .voto.si .count { color: var(--success); }
+.candidato-card .votacion-resumen .votos .voto.no .count { color: var(--danger); }
+.candidato-card .votacion-resumen .votos .voto.abstencion .count { color: var(--warning); }
 
-        .miembros-comite {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-        .miembro-card {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px 16px;
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
-        }
-        .miembro-card .avatar { font-size: 2rem; }
-        .miembro-card .nombre {
-            font-weight: 600;
-            font-size: 0.88rem;
-            margin-top: 4px;
-        }
-        .miembro-card .estado {
-            font-size: 0.75rem;
-            color: var(--muted);
-        }
-        .miembro-card .estado.activo { color: var(--success); }
-        .miembro-card .estado.inactivo { color: var(--danger); }
+.candidato-card .votacion-resumen .estado-votacion {
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 2px 12px;
+    border-radius: 999px;
+}
 
-        .ranking-pos {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
+.candidato-card .observaciones-ts {
+    background: #f8f9fc;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 8px 0;
+}
 
-        @media (max-width: 680px) {
-            .hamburger { display: flex; }
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-            nav.main-nav.open { display: flex; }
-            nav.main-nav .btn,
-            nav.main-nav .session-pill { width: 100%; }
-            nav.main-nav .session-pill {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .dash-shell { flex-direction: column; }
-            .dash-sidebar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 16px;
-                position: relative;
-                top: 0;
-                height: auto;
-            }
-            .dash-sidebar .dash-user {
-                width: 100%;
-                border-bottom: none;
-                margin-bottom: 6px;
-            }
-            .dash-nav-item {
-                width: auto;
-                flex: 1;
-                justify-content: center;
-            }
-            .dash-nav-item.logout { margin-top: 0; }
-            .form-grid { grid-template-columns: 1fr; }
-            .data-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .expediente-grid { grid-template-columns: 1fr; }
-            .miembros-comite { flex-direction: column; }
-        }
-    </style>
+.candidato-card .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.candidato-card .actions .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+    color: var(--text);
+}
+
+.candidato-card .actions .btn-icon:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+}
+
+.candidato-card .actions .btn-icon.primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.candidato-card .actions .btn-icon.primary:hover {
+    background: var(--primary-light);
+}
+
+.candidato-card .actions .btn-icon.success {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+}
+
+.candidato-card .actions .btn-icon.success:hover {
+    background: #156b42;
+}
+
+.candidato-card .actions .btn-icon.danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+}
+
+.candidato-card .actions .btn-icon.danger:hover {
+    background: #a93226;
+}
+
+.candidato-card .actions .btn-icon.warning {
+    background: var(--warning);
+    color: #fff;
+    border-color: var(--warning);
+}
+
+.candidato-card .actions .btn-icon.warning:hover {
+    background: #9a6e0e;
+}
+
+.candidato-card .actions .btn-icon.outline {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--border);
+}
+
+.candidato-card .actions .btn-icon.outline:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+}
+
+.candidato-card .inconsistencia-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef9e7;
+    color: var(--warning);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 1px solid #ffeaa7;
+}
+
+/* Estadísticas */
+.estadisticas-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.estadistica-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.estadistica-card .numero {
+    font-family: 'Sora', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.estadistica-card .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.estadistica-card .numero.success { color: var(--success); }
+.estadistica-card .numero.danger { color: var(--danger); }
+.estadistica-card .numero.warning { color: var(--warning); }
+.estadistica-card .numero.info { color: var(--info); }
+
+/* Responsive */
+@media (max-width: 980px) {
+    .candidato-card .detalles {
+        grid-template-columns: 1fr 1fr;
+    }
+    .estadisticas-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 680px) {
+    .candidato-card .detalles {
+        grid-template-columns: 1fr;
+    }
+    .estadisticas-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .candidato-card .votacion-resumen {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .comite-filtros {
+        gap: 6px;
+    }
+    .comite-filtros .btn-filtro {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+}
+</style>
 </head>
 <body>
 
-    <!-- HEADER -->
-    <header class="site-header">
-        <div class="header-inner">
-            <div class="brand" onclick="irInicio(event)">
-                <div class="brand-mark">SB</div>
-                <div class="brand-text">
-                    <strong>Sistema de Becas</strong>
-                    <span>Universitarias</span>
-                </div>
-            </div>
-            <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú">
-                <span></span><span></span><span></span>
-            </button>
-            <nav class="main-nav" id="mainNav"></nav>
-        </div>
-    </header>
+<div id="db-status">Conectando...</div>
 
-    <!-- VISTA PÚBLICA -->
-    <div id="view-public" class="view hidden">
-        <div style="padding:60px 24px;max-width:800px;margin:0 auto;text-align:center;">
-            <h1>Sistema de Becas Universitarias</h1>
-            <p style="color:var(--muted);font-size:1.1rem;margin:16px 0 32px;">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
-            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                <button class="btn btn-primary" onclick="openModal('modal-login')">Iniciar sesión</button>
-                <a href="registro.html" class="btn btn-ghost">Registrarse</a>
-            </div>
-        </div>
+<header class="site-header">
+ <div class="header-inner">
+ <a href="index.html" class="brand">
+ <div class="brand-mark">SB</div>
+ <div class="brand-text"><strong>Sistema de Becas</strong><span>Universitarias</span></div>
+ </a>
+ <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+ <nav class="main-nav" id="mainNav">
+ <a href="index.html" class="btn btn-outline">Inicio</a>
+ 
+ <div class="session-pill"><span id="header-nombre">—</span><span class="role-badge" id="header-rol">Comité</span></div>
+ <button class="btn btn-primary" onclick="logout()">Salir</button>
+ </nav>
+ </div>
+</header>
+
+<!-- ===== PANEL COMITÉ ===== -->
+<div id="view-dash-comite">
+ <div class="dash-shell">
+ <aside class="dash-sidebar">
+ <div class="dash-user">
+  <strong id="com-nombre">—</strong>
+  <span>Comité de Becas</span>
+ </div>
+ <button class="dash-nav-item active" onclick="showDashTabComite('com-ranking',this)">Ranking
+ </button>
+ <button class="dash-nav-item" onclick="showDashTabComite('com-votaciones',this)">Votaciones
+ </button>
+ <button class="dash-nav-item" onclick="showDashTabComite('com-historial',this)">Historial
+ </button>
+ <button class="dash-nav-item" onclick="showDashTabComite('com-estadisticas',this)">Estadísticas
+ </button>
+ <button class="dash-nav-item logout" onclick="logout()">Cerrar sesión
+ </button>
+ </aside>
+
+ <main class="dash-main">
+  <h2>Comité de Becas</h2>
+  <p class="dash-sub">Evalúa las solicitudes elegibles, asigna puntajes y aprueba las becas mediante votación del comité.</p>
+
+  <!-- ==========================================================
+       TAB: Ranking
+       ========================================================== -->
+  <div class="dash-tab active" id="com-ranking">
+   <div class="comite-subheader">
+    <h3>🏆 Ranking de candidatos elegibles</h3>
+    <p>Los candidatos son ordenados por puntaje total. El comité puede aprobar o rechazar cada solicitud. Se requieren al menos <strong>3 votos</strong> para una decisión final (mayoría simple).</p>
+   </div>
+
+   <!-- Filtros -->
+   <div class="comite-filtros" id="com-filtros">
+    <button class="btn-filtro active" data-filtro="todos" onclick="filtrarRanking('todos',this)">Todos</button>
+    <button class="btn-filtro" data-filtro="en-votacion" onclick="filtrarRanking('en-votacion',this)">En votación</button>
+    <button class="btn-filtro" data-filtro="aprobadas" onclick="filtrarRanking('aprobadas',this)">Aprobadas</button>
+    <button class="btn-filtro" data-filtro="rechazadas" onclick="filtrarRanking('rechazadas',this)">Rechazadas</button>
+    <button class="btn-filtro" data-filtro="devueltas" onclick="filtrarRanking('devueltas',this)">Devueltas a TS</button>
+   </div>
+
+   <div id="com-ranking-lista">
+    <div class="estado-carga"><span class="spinner-mini"></span> Cargando candidatos...</div>
+   </div>
+  </div>
+
+  <!-- ==========================================================
+       TAB: Votaciones
+       ========================================================== -->
+  <div class="dash-tab" id="com-votaciones">
+   <div class="comite-subheader">
+    <h3>🗳️ Votaciones activas</h3>
+    <p>Expedientes que están actualmente en proceso de votación por el comité.</p>
+   </div>
+   <div id="com-votaciones-lista">
+    <div class="estado-carga"><span class="spinner-mini"></span> Cargando votaciones activas...</div>
+   </div>
+  </div>
+
+  <!-- ==========================================================
+       TAB: Historial
+       ========================================================== -->
+  <div class="dash-tab" id="com-historial">
+   <div class="comite-subheader">
+    <h3>📜 Historial de decisiones</h3>
+    <p>Registro de todas las solicitudes evaluadas por el comité.</p>
+   </div>
+   <div id="com-historial-lista">
+    <div class="estado-carga"><span class="spinner-mini"></span> Cargando historial...</div>
+   </div>
+  </div>
+
+  <!-- ==========================================================
+       TAB: Estadísticas
+       ========================================================== -->
+  <div class="dash-tab" id="com-estadisticas">
+   <div class="comite-subheader">
+    <h3>📈 Estadísticas del comité</h3>
+    <p>Resumen de la actividad y decisiones del comité.</p>
+   </div>
+
+   <div class="estadisticas-grid" id="com-estadisticas-grid">
+    <div class="estadistica-card">
+     <div class="numero info" id="stat-total">0</div>
+     <div class="label">Total evaluados</div>
     </div>
-
-    <!-- PANEL COMITÉ -->
-    <div id="view-dash-comite" class="view">
-        <div class="dash-shell">
-            <aside class="dash-sidebar">
-                <div class="dash-user">
-                    <strong id="com-nombre">—</strong>
-                    <span>Comité de Becas</span>
-                </div>
-                <button class="dash-nav-item active" onclick="showDashTab('com','com-ranking',this)">Ranking</button>
-                <button class="dash-nav-item" onclick="showDashTab('com','com-votaciones',this)">Votaciones</button>
-                <button class="dash-nav-item" onclick="showDashTab('com','com-historial',this)">Historial</button>
-                <button class="dash-nav-item" onclick="showDashTab('com','com-estadisticas',this)">Estadísticas</button>
-                <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
-            </aside>
-
-            <main class="dash-main">
-                <h2>Comité de Becas</h2>
-                <p class="dash-sub">Evalúa las solicitudes elegibles, asigna puntajes y aprueba las becas mediante votación del comité.</p>
-
-                <!-- TAB: Ranking -->
-                <div class="dash-tab active" id="com-ranking">
-                    <div class="card-box">
-                        <h3>Ranking de candidatos elegibles</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Los candidatos son ordenados por puntaje total. El comité puede aprobar o rechazar cada solicitud.
-                            Se requieren al menos 3 votos para una decisión final (mayoría simple).
-                        </p>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-                            <button class="btn btn-small" onclick="filtrarRanking('todos')">Todos</button>
-                            <button class="btn btn-small btn-warning" onclick="filtrarRanking('En comité')">En votación</button>
-                            <button class="btn btn-small btn-success" onclick="filtrarRanking('Aprobada')">Aprobadas</button>
-                            <button class="btn btn-small btn-danger" onclick="filtrarRanking('Rechazada')">Rechazadas</button>
-                            <button class="btn btn-small btn-info" onclick="filtrarRanking('Devuelta a TS')">Devueltas a TS</button>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Pos</th>
-                                    <th>Expediente</th>
-                                    <th>Nombre</th>
-                                    <th>Tipo Beca</th>
-                                    <th>Puntaje</th>
-                                    <th>Observaciones TS</th>
-                                    <th>Votación</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="com-tabla-ranking"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Votaciones -->
-                <div class="dash-tab" id="com-votaciones">
-                    <div class="card-box">
-                        <h3>Votaciones en curso</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Solicitudes que están siendo votadas por los miembros del comité.
-                            <strong>Regla:</strong> Se necesitan 2 votos a favor de 3 para aprobar.
-                        </p>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Expediente</th>
-                                    <th>Estudiante</th>
-                                    <th>Votos</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="com-tabla-votaciones"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Historial -->
-                <div class="dash-tab" id="com-historial">
-                    <div class="card-box">
-                        <h3>Historial de votaciones</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Registro completo de todas las votaciones realizadas por el comité.
-                        </p>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Expediente</th>
-                                    <th>Estudiante</th>
-                                    <th>Votos</th>
-                                    <th>Resultado</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="com-tabla-historial"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Estadísticas -->
-                <div class="dash-tab" id="com-estadisticas">
-                    <div class="card-box">
-                        <h3>Resumen General</h3>
-                        <div class="counters-row">
-                            <div class="counter-card">
-                                <div class="num" id="com-stat-total">0</div>
-                                <div class="label">📋 Total Solicitudes</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="com-stat-aprobadas">0</div>
-                                <div class="label">✅ Aprobadas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="com-stat-rechazadas">0</div>
-                                <div class="label">❌ Rechazadas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="com-stat-pendientes">0</div>
-                                <div class="label">⏳ Pendientes</div>
-                            </div>
-                        </div>
-                        <div style="position:relative;height:260px;margin-bottom:24px;">
-                            <canvas id="comStatsChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+    <div class="estadistica-card">
+     <div class="numero success" id="stat-aprobadas">0</div>
+     <div class="label">Aprobadas</div>
     </div>
-
-    <!-- MODALES -->
-    <div id="modal-login" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-login')">×</button>
-            <h3>Iniciar sesión</h3>
-            <div id="login-error" class="login-error hidden"></div>
-            <div class="form-field">
-                <label>Correo</label>
-                <input type="email" id="login-email" class="form-control" value="comite@becas.com">
-            </div>
-            <div class="form-field">
-                <label>Contraseña</label>
-                <input type="password" id="login-password" class="form-control" value="123456">
-            </div>
-            <button class="btn btn-primary btn-block" onclick="handleLogin()">Ingresar</button>
-            <div class="modal-credentials">
-                <strong>Credenciales</strong><br>
-                Comité: comite@becas.com / 123456
-            </div>
-        </div>
+    <div class="estadistica-card">
+     <div class="numero danger" id="stat-rechazadas">0</div>
+     <div class="label">Rechazadas</div>
     </div>
-
-    <div id="modal-votacion" class="modal-overlay hidden">
-        <div class="modal-box wide">
-            <button class="modal-close" onclick="closeModal('modal-votacion')">×</button>
-            <h3 id="votacion-titulo">Votación</h3>
-            <div id="votacion-contenido"></div>
-            <div class="form-actions" style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn btn-primary" onclick="cerrarVotacion()">Cerrar</button>
-            </div>
-        </div>
+    <div class="estadistica-card">
+     <div class="numero warning" id="stat-devueltas">0</div>
+     <div class="label">Devueltas a TS</div>
     </div>
+   </div>
 
-    <div id="modal-devolver" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-devolver')">×</button>
-            <h3>Devolver solicitud a TS</h3>
-            <p class="modal-sub">Indica el motivo por el cual devuelves esta solicitud al Trabajador Social.</p>
-            <input type="hidden" id="devolver-expediente">
-            <div class="form-field" style="margin:12px 0;">
-                <label>Motivo de devolución *</label>
-                <select id="devolver-motivo" class="form-control">
-                    <option value="Falta documentación">Falta documentación</option>
-                    <option value="Inconsistencias en los datos">Inconsistencias en los datos</option>
-                    <option value="Requiere visita domiciliaria adicional">Requiere visita domiciliaria adicional</option>
-                    <option value="Información incompleta">Información incompleta</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-            <div class="form-field" style="margin:12px 0;">
-                <label>Observaciones adicionales</label>
-                <textarea id="devolver-observacion" class="form-control" rows="3" placeholder="Detalles adicionales..."></textarea>
-            </div>
-            <button class="btn btn-warning btn-block" onclick="confirmarDevolver()">Devolver a TS</button>
-            <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal('modal-devolver')">Cancelar</button>
-        </div>
+   <div class="card-box">
+    <h3>Detalle por tipo de beca</h3>
+    <div id="com-estadisticas-detalle">
+     <div class="estado-carga"><span class="spinner-mini"></span> Cargando estadísticas...</div>
     </div>
+   </div>
+  </div>
 
-    <div id="modal-expediente" class="modal-overlay hidden">
-        <div class="modal-box wide">
-            <button class="modal-close" onclick="closeModal('modal-expediente')">×</button>
-            <h3 id="modal-expediente-titulo">Expediente</h3>
-            <div id="expediente-contenido" style="max-height:60vh; overflow-y:auto;"></div>
-            <div class="form-actions" style="margin-top:20px;">
-                <button class="btn btn-ghost" onclick="closeModal('modal-expediente')">Cerrar</button>
-            </div>
-        </div>
+ </main>
+ </div>
+</div>
+
+<!-- ============================================================
+     MODALES
+     ============================================================ -->
+<div id="modal-expediente" class="modal-overlay hidden">
+ <div class="modal-box wide">
+ <button class="modal-close" onclick="closeModal('modal-expediente')">×</button>
+ <h3 id="modal-expediente-titulo">Expediente</h3>
+ <div id="expediente-contenido" style="max-height:60vh; overflow-y:auto;"></div>
+ <div id="expediente-obs-edit" class="form-field full" style="margin-top:20px;">
+ <label>Observaciones del Trabajador Social</label>
+ <textarea id="observacion-ts" class="form-control" rows="4" placeholder="Escriba aquí sus observaciones sobre la solicitud..."></textarea>
+ </div>
+ <div class="form-actions" style="margin-top:20px;">
+ <button id="expediente-btn-guardar" class="btn btn-primary" onclick="guardarObservaciones()">Guardar Observaciones</button>
+ <button class="btn btn-ghost" onclick="closeModal('modal-expediente')">Cerrar</button>
+ </div>
+ </div>
+</div>
+
+<div id="modal-votacion" class="modal-overlay hidden">
+ <div class="modal-box">
+ <button class="modal-close" onclick="closeModal('modal-votacion')">×</button>
+ <h3>🗳️ Votar expediente <span id="votacion-expediente"></span></h3>
+ <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">Selecciona tu voto y añade observaciones si es necesario. El porcentaje de cobertura ya fue definido por el Trabajador Social al enviar este expediente.</p>
+ <div class="alert-box info" id="votacion-pct-info" style="margin-bottom:16px;"></div>
+ <div class="form-field">
+  <label>Observaciones</label>
+  <textarea id="votacion-obs" class="form-control" rows="3" placeholder="Obligatorio si vota No o Devolver a TS..."></textarea>
+ </div>
+ <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+  <button class="btn btn-success" onclick="registrarVotoComite('Sí')">✅ Sí</button>
+  <button class="btn btn-danger" onclick="registrarVotoComite('No')">❌ No</button>
+  <button class="btn btn-outline" onclick="registrarVotoComite('Devolver a TS')">↩️ Devolver a TS</button>
+ </div>
+ </div>
+</div>
+
+<div id="modal-devolver-ts" class="modal-overlay hidden">
+ <div class="modal-box">
+ <button class="modal-close" onclick="closeModal('modal-devolver-ts')">×</button>
+ <h3>↩️ Devolver expediente al Trabajador Social</h3>
+ <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">
+  Indica el motivo por el cual este expediente debe ser devuelto al Trabajador Social para revisión.
+ </p>
+ <div class="form-field">
+  <label>Expediente</label>
+  <input type="text" id="devolver-expediente" class="form-control" readonly>
+ </div>
+ <div class="form-field">
+  <label>Motivo de la devolución <span style="color:var(--danger);">*</span></label>
+  <textarea id="devolver-motivo" class="form-control" rows="4" placeholder="Describe detalladamente qué información falta o qué inconsistencia se encontró..."></textarea>
+ </div>
+ <div class="form-actions" style="margin-top:20px;">
+  <button class="btn btn-warning" onclick="confirmarDevolverTS()">↩️ Devolver al Trabajador Social</button>
+  <button class="btn btn-ghost" onclick="closeModal('modal-devolver-ts')">Cancelar</button>
+ </div>
+ </div>
+</div>
+
+<div id="modal-notificacion" class="modal-overlay hidden"><div class="modal-box"><div class="success-icon"></div><h3 id="notif-titulo">Notificación</h3><p id="notif-mensaje"></p><button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button></div></div>
+
+<div id="modal-custom-confirm" class="modal-overlay hidden">
+ <div class="modal-box">
+ <h3 style="margin-bottom:14px;">Confirmar acción</h3>
+ <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
+ <div style="display:flex;gap:10px;justify-content:flex-end;">
+ <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
+ </div>
+ </div>
+</div>
+
+<div id="modal-custom-prompt" class="modal-overlay hidden">
+ <div class="modal-box">
+ <button class="modal-close" id="cp-close">×</button>
+ <h3 id="cp-titulo" style="margin-bottom:18px;">Editar información</h3>
+ <div id="cp-fields" style="display:flex;flex-direction:column;gap:14px;"></div>
+ <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+ <button class="btn btn-ghost" id="cp-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="cp-ok">Guardar</button>
+ </div>
+ </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/common.js?v=1786821979"></script>
+<script>
+// ============================================================
+// VARIABLES GLOBALES
+// ============================================================
+// expedienteActual ya está declarada como global en js/common.js —
+// no se redeclara aquí para evitar el SyntaxError de redeclaración.
+let todasLasSolicitudes = [];
+let filtroActual = 'todos';
+
+// ============================================================
+// FUNCIONES DE NAVEGACIÓN ENTRE TABS
+// ============================================================
+function showDashTabComite(tabId, btn){
+ document.querySelectorAll('#view-dash-comite .dash-tab').forEach(t => t.classList.remove('active'));
+ document.getElementById(tabId).classList.add('active');
+ 
+ if(btn){
+  document.querySelectorAll('#view-dash-comite .dash-nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+ }
+ 
+ if(tabId === 'com-ranking'){
+  renderRanking();
+ }
+ if(tabId === 'com-votaciones'){
+  renderVotacionesActivas();
+ }
+ if(tabId === 'com-historial'){
+  renderHistorial();
+ }
+ if(tabId === 'com-estadisticas'){
+  renderEstadisticas();
+ }
+}
+
+// ============================================================
+// VOTOS: la API de solicitudes no trae los votos embebidos (viven en
+// su propia tabla), así que hay que pedirlos aparte por expediente.
+// Antes nadie llamaba esto y s.votos siempre quedaba undefined -> los
+// contadores en pantalla se quedaban pegados en 0 aunque sí hubiera
+// votos registrados en la base de datos.
+// ============================================================
+async function adjuntarVotos(lista){
+ await Promise.all(lista.map(async s => {
+  try { s.votos = await API.getVotos(s.expediente); }
+  catch(e){ console.warn(`No se pudieron cargar los votos de ${s.expediente}:`, e.message); s.votos = s.votos || []; }
+ }));
+ return lista;
+}
+
+// ============================================================
+// RANKING - con filtros
+// ============================================================
+function filtrarRanking(filtro, btn){
+ filtroActual = filtro;
+ document.querySelectorAll('#com-filtros .btn-filtro').forEach(b => b.classList.remove('active'));
+ if(btn) btn.classList.add('active');
+ renderRanking();
+}
+
+async function renderRanking(){
+ const container = document.getElementById('com-ranking-lista');
+ 
+ try {
+  // Obtener solicitudes en comité
+  let enComite = [];
+  if(todasLasSolicitudes.length > 0){
+   enComite = todasLasSolicitudes.filter(s => s.estado === 'En comité');
+  } else {
+   const data = await API.getSolicitudes();
+   todasLasSolicitudes = data.map(mapSolicitudAPI);
+   enComite = todasLasSolicitudes.filter(s => s.estado === 'En comité');
+  }
+  await adjuntarVotos(enComite);
+  
+  // Aplicar filtro
+  let filtradas = [...enComite];
+  if(filtroActual === 'en-votacion'){
+   // Solicitudes que aún no tienen decisión (no han alcanzado quórum)
+   filtradas = filtradas.filter(s => {
+    const votos = s.votos || [];
+    const si = votos.filter(v => v.decision === 'Sí').length;
+    const no = votos.filter(v => v.decision === 'No').length;
+    return si < 3 && no < 3;
+   });
+  } else if(filtroActual === 'aprobadas'){
+   filtradas = filtradas.filter(s => s.estado === 'Aprobada');
+  } else if(filtroActual === 'rechazadas'){
+   filtradas = filtradas.filter(s => s.estado === 'Rechazada');
+  } else if(filtroActual === 'devueltas'){
+   filtradas = filtradas.filter(s => s.estado === 'En revisión TS' && s.observacionesComite && s.observacionesComite.includes('Devuelto a TS'));
+  }
+  
+  // Ordenar por puntaje
+  filtradas.sort((a,b) => (b.puntaje||0) - (a.puntaje||0));
+  
+  if(filtradas.length === 0){
+   const mensajes = {
+    'todos': 'No hay solicitudes en estado "En comité"',
+    'en-votacion': 'No hay solicitudes en proceso de votación',
+    'aprobadas': 'No hay solicitudes aprobadas recientemente',
+    'rechazadas': 'No hay solicitudes rechazadas recientemente',
+    'devueltas': 'No hay solicitudes devueltas al Trabajador Social'
+   };
+   container.innerHTML = `<div class="alert-box info">${mensajes[filtroActual] || 'No hay solicitudes'}</div>`;
+   return;
+  }
+  
+  container.innerHTML = filtradas.map((s, i) => {
+   const tieneInconsistencia = verificarInconsistencia(s);
+   const votos = s.votos || [];
+   const si = votos.filter(v => v.decision === 'Sí').length;
+   const no = votos.filter(v => v.decision === 'No').length;
+   const totalVotos = si + no;
+   const quorum = totalVotos >= 3;
+   
+   let estadoVotacion = '';
+   let colorEstado = 'badge-neutral';
+   if(si >= 3){
+    estadoVotacion = '✅ Aprobada';
+    colorEstado = 'badge-success';
+   } else if(no >= 3){
+    estadoVotacion = '❌ Rechazada';
+    colorEstado = 'badge-danger';
+   } else if(totalVotos >= 3){
+    estadoVotacion = '⚖️ En decisión';
+    colorEstado = 'badge-warning';
+   } else {
+    estadoVotacion = `⏳ ${totalVotos}/3 votos`;
+    colorEstado = 'badge-info';
+   }
+   
+   const votosHtml = `
+    <div class="votos">
+     <span class="voto si">🟢 <span class="count">${si}</span></span>
+     <span class="voto no">🔴 <span class="count">${no}</span></span>
+     <span class="voto abstencion">⚪ <span class="count">${totalVotos - si - no}</span></span>
     </div>
-
-    <div id="modal-notificacion" class="modal-overlay hidden">
-        <div class="modal-box">
-            <div class="success-icon">📧</div>
-            <h3 id="notif-titulo">Notificación</h3>
-            <p id="notif-mensaje"></p>
-            <button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button>
-        </div>
+    <span class="estado-votacion ${colorEstado}">${estadoVotacion}</span>
+   `;
+   
+   const badgeInconsistencia = tieneInconsistencia ? `<span class="inconsistencia-badge">⚠️ Inconsistencia</span>` : '';
+   
+   return `
+    <div class="candidato-card">
+     <div class="header">
+      <div>
+       <span class="expediente">#${i+1} — ${s.expediente}</span>
+       <span class="nombre">${s.nombres || ''} ${s.apellidos || ''}</span>
+       ${badgeInconsistencia}
+      </div>
+      <span class="badge badge-info">${s.tipoBeca || ''}</span>
+     </div>
+     <div class="detalles">
+      <div class="item">
+       <span class="label">Puntaje</span>
+       <span class="value">${s.puntaje || 0} pts</span>
+      </div>
+      <div class="item">
+       <span class="label">Promedio</span>
+       <span class="value">${s.promedio || 0}</span>
+      </div>
+      <div class="item">
+       <span class="label">Estado</span>
+       <span class="value"><span class="badge ${badgeClassEstado(s.estado)}">${s.estado}</span></span>
+      </div>
+     </div>
+     <div class="observaciones-ts">
+      <strong>Observaciones TS:</strong> ${s.observacionTS || 'Sin observaciones del trabajador social'}
+     </div>
+     <div class="votacion-resumen">
+      ${votosHtml}
+     </div>
+     <div class="actions">
+      <button class="btn-icon" onclick="verExpedienteComite('${s.expediente}')">📄 Ver expediente</button>
+      <button class="btn-icon primary" onclick="abrirModalVotacion('${s.expediente}')">🗳️ Votar</button>
+      ${tieneInconsistencia ? `<button class="btn-icon warning" onclick="abrirModalDevolverTS('${s.expediente}')">↩️ Devolver a TS</button>` : ''}
+     </div>
     </div>
+   `;
+  }).join('');
+  
+ } catch(e){
+  console.warn('Error renderizando ranking:', e);
+  container.innerHTML = `<div class="estado-error">⚠️ No se pudieron cargar los candidatos. ${e.message}</div>`;
+ }
+}
 
-    <div id="modal-custom-confirm" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3 style="margin-bottom:14px;">Confirmar acción</h3>
-            <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-                <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
-                <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
-            </div>
-        </div>
+// ============================================================
+// VOTACIONES ACTIVAS
+// ============================================================
+async function renderVotacionesActivas(){
+ const container = document.getElementById('com-votaciones-lista');
+ 
+ try {
+  let enComite = [];
+  if(todasLasSolicitudes.length > 0){
+   enComite = todasLasSolicitudes.filter(s => s.estado === 'En comité');
+  } else {
+   const data = await API.getSolicitudes();
+   todasLasSolicitudes = data.map(mapSolicitudAPI);
+   enComite = todasLasSolicitudes.filter(s => s.estado === 'En comité');
+  }
+  await adjuntarVotos(enComite);
+  
+  // Filtrar las que están en votación (sin decisión final)
+  const enVotacion = enComite.filter(s => {
+   const votos = s.votos || [];
+   const si = votos.filter(v => v.decision === 'Sí').length;
+   const no = votos.filter(v => v.decision === 'No').length;
+   return si < 3 && no < 3;
+  });
+  
+  if(enVotacion.length === 0){
+   container.innerHTML = `<div class="alert-box info">No hay votaciones activas en este momento.</div>`;
+   return;
+  }
+  
+  container.innerHTML = enVotacion.map(s => {
+   const votos = s.votos || [];
+   const si = votos.filter(v => v.decision === 'Sí').length;
+   const no = votos.filter(v => v.decision === 'No').length;
+   
+   return `
+    <div class="candidato-card">
+     <div class="header">
+      <div>
+       <span class="expediente">${s.expediente}</span>
+       <span class="nombre">${s.nombres || ''} ${s.apellidos || ''}</span>
+      </div>
+      <span class="badge badge-warning">⏳ En votación</span>
+     </div>
+     <div class="detalles">
+      <div class="item">
+       <span class="label">Puntaje</span>
+       <span class="value">${s.puntaje || 0} pts</span>
+      </div>
+      <div class="item">
+       <span class="label">Votos</span>
+       <span class="value">🟢 ${si} · 🔴 ${no}</span>
+      </div>
+      <div class="item">
+       <span class="label">Faltan</span>
+       <span class="value">${3 - (si + no)} votos</span>
+      </div>
+     </div>
+     <div class="actions">
+      <button class="btn-icon" onclick="verExpedienteComite('${s.expediente}')">📄 Ver expediente</button>
+      <button class="btn-icon primary" onclick="abrirModalVotacion('${s.expediente}')">🗳️ Votar</button>
+     </div>
     </div>
-
-    <div id="toast-container"></div>
-
-    <script>
-        // ============================================================
-        // CONSTANTES Y CONFIGURACIÓN
-        // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        let filtroRankingActual = 'todos';
-        let comStatsChartInstance = null;
-
-        // ============================================================
-        // UTILIDADES
-        // ============================================================
-        function rolLabel(rol) {
-            const map = {
-                estudiante: 'Estudiante',
-                trabajador_social: 'Trab. Social',
-                comite: 'Comité',
-                admin: 'Administrador',
-                auditor: 'Auditor',
-                aspirante: 'Aspirante'
-            };
-            return map[rol] || rol;
-        }
-
-        function badgeClassEstado(estado) {
-            if (estado === 'Aprobada' || estado === 'Beneficio Activo' || estado === 'Elegible' || estado === 'Restaurada')
-                return 'badge-success';
-            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado === 'Cancelada' || estado === 'Suspendida')
-                return 'badge-danger';
-            if (estado === 'Pendiente subsanación' || estado === 'En revisión TS' || estado === 'Visita pendiente')
-                return 'badge-warning';
-            if (estado === 'En comité' || estado === 'Enviada' || estado === 'En Apelación' || estado === 'Devuelta a TS')
-                return 'badge-info';
-            return 'badge-neutral';
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function showToast(message, type) {
-            type = type || 'info';
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-            const colors = {
-                success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
-                error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
-                warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
-                info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
-            };
-            const c = colors[type] || colors.info;
-            const toast = document.createElement('div');
-            toast.className = 'toast-box';
-            toast.style.background = c.bg;
-            toast.style.border = '1px solid ' + c.border;
-            toast.style.color = c.color;
-            toast.innerHTML = '<span class="toast-icon">' + c.icon +
-                '</span><span style="flex:1;">' + message +
-                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
-            container.appendChild(toast);
-
-            const remove = () => {
-                toast.style.transition = 'opacity .3s ease, transform .3s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(24px)';
-                setTimeout(() => toast.remove(), 300);
-            };
-            toast.querySelector('.toast-close').addEventListener('click', remove);
-            setTimeout(remove, 4500);
-        }
-
-        function notify(message) {
-            let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
-                type = 'warning';
-            showToast(message, type);
-        }
-
-        function customConfirm(message) {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('modal-custom-confirm');
-                document.getElementById('custom-confirm-message').textContent = message;
-                modal.classList.remove('hidden');
-                const okBtn = document.getElementById('custom-confirm-ok');
-                const cancelBtn = document.getElementById('custom-confirm-cancel');
-                const cleanup = (result) => {
-                    modal.classList.add('hidden');
-                    okBtn.removeEventListener('click', onOk);
-                    cancelBtn.removeEventListener('click', onCancel);
-                    resolve(result);
-                };
-                const onOk = () => cleanup(true);
-                const onCancel = () => cleanup(false);
-                okBtn.addEventListener('click', onOk);
-                cancelBtn.addEventListener('click', onCancel);
-            });
-        }
-
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        function simularNotificacion(titulo, mensaje, expediente) {
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Sistema',
-                rol: session ? session.rol : 'system',
-                accion: 'Notificación: ' + titulo + ' - ' + mensaje.substring(0, 50),
-                expediente: expediente || '—'
-            });
-            const notifModal = document.getElementById('modal-notificacion');
-            if (notifModal) {
-                document.getElementById('notif-titulo').textContent = titulo;
-                document.getElementById('notif-mensaje').innerHTML = mensaje;
-                openModal('modal-notificacion');
-            }
-        }
-
-        // ============================================================
-        // NAVEGACIÓN
-        // ============================================================
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-            if (viewId.includes('dash')) renderDashboards();
-        }
-
-        function irInicio(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function goHome(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function goToDashboard() {
-            const session = StorageManager.session.get();
-            if (session) {
-                const dashMap = {
-                    estudiante: 'view-dash-estudiante',
-                    aspirante: 'view-dash-estudiante',
-                    trabajador_social: 'view-dash-social',
-                    comite: 'view-dash-comite',
-                    admin: 'view-dash-admin',
-                    auditor: 'view-dash-auditor'
-                };
-                showView(dashMap[session.rol] || 'view-public');
-            }
-        }
-
-        function cerrarSesion() {
-            const session = StorageManager.session.get();
-            if (session) {
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session.nombre,
-                    rol: session.rol,
-                    accion: 'Cierre de sesión',
-                    expediente: '—'
-                });
-            }
-            StorageManager.session.clear();
-            notify('✅ Sesión cerrada correctamente.');
-            window.location.href = 'index.html';
-        }
-
-        function renderHeaderNav() {
-            const nav = document.getElementById('mainNav');
-            const session = StorageManager.session.get();
-            if (session) {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<div class="session-pill"><span>' + session.nombre +
-                    '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
-                    '<button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button>' +
-                    '<button class="btn btn-primary" onclick="cerrarSesion()">Salir</button>';
-            } else {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<button class="btn btn-outline" onclick="openModal(\'modal-login\')">Ingresar</button>' +
-                    '<a href="registro.html" class="btn btn-primary">Registrarse</a>';
-            }
-        }
-
-        // ============================================================
-        // LOGIN
-        // ============================================================
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value.trim().toLowerCase();
-            const password = document.getElementById('login-password').value;
-            const errorBox = document.getElementById('login-error');
-            errorBox.className = 'login-error hidden';
-            errorBox.textContent = '';
-
-            if (!email || !password) {
-                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const usuario = StorageManager.usuarios.getByEmail(email);
-
-            if (!usuario) {
-                errorBox.textContent = '❌ Usuario no encontrado';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            if (password !== '123456') {
-                errorBox.textContent = '❌ Contraseña incorrecta.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const nuevaSesion = {
-                email: usuario.email,
-                nombre: usuario.nombre,
-                rol: usuario.rol
-            };
-            StorageManager.session.set(nuevaSesion);
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: usuario.nombre,
-                rol: usuario.rol,
-                accion: 'Inicio de sesión',
-                expediente: '—'
-            });
-
-            closeModal('modal-login');
-            renderHeaderNav();
-            StorageManager.emit('session_actualizada', nuevaSesion);
-
-            const dashMap = {
-                estudiante: 'view-dash-estudiante',
-                aspirante: 'view-dash-estudiante',
-                trabajador_social: 'view-dash-social',
-                comite: 'view-dash-comite',
-                admin: 'view-dash-admin',
-                auditor: 'view-dash-auditor'
-            };
-            showView(dashMap[usuario.rol] || 'view-public');
-            notify('✅ Bienvenido/a ' + usuario.nombre);
-        }
-
-        // ============================================================
-        // DASHBOARD COMITÉ
-        // ============================================================
-        function renderDashboards() {
-            const session = StorageManager.session.get();
-            if (!session) return;
-            if (session.rol === 'comite') renderComiteDashboard(session);
-        }
-
-        function renderComiteDashboard(session) {
-            document.getElementById('com-nombre').textContent = session.nombre;
-
-            // Inicializar miembros del comité si no existen
-            if (StorageManager.miembrosComite.getAll().length === 0) {
-                const miembrosIniciales = [
-                    { id: 1, email: 'comite@becas.com', nombre: 'Dra. Ana Méndez', rol: 'Presidenta', activo: true },
-                    { id: 2, email: 'carlos.montero@becas.com', nombre: 'Dr. Carlos Montero', rol: 'Vocal', activo: true },
-                    { id: 3, email: 'laura.chaves@becas.com', nombre: 'Dra. Laura Chaves', rol: 'Vocal', activo: true }
-                ];
-                miembrosIniciales.forEach(m => StorageManager.miembrosComite.save(m));
-            }
-
-            renderRanking();
-            renderVotaciones();
-            renderMiembros();
-            renderHistorial();
-            cargarUsuariosParaMiembro();
-            actualizarEstadisticasComite();
-            actualizarGraficoComite();
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session.nombre,
-                rol: session.rol,
-                accion: 'Consulta Comité',
-                expediente: '—'
-            });
-        }
-
-        // ============================================================
-        // RANKING
-        // ============================================================
-        function filtrarRanking(filtro) {
-            filtroRankingActual = filtro;
-            renderRanking();
-        }
-
-        function renderRanking() {
-            const solicitudes = StorageManager.solicitudes.getAll();
-            const tbody = document.getElementById('com-tabla-ranking');
-            if (!tbody) return;
-
-            let elegibles = solicitudes.filter(s =>
-                s.estado === 'En comité' || s.estado === 'Elegible'
-            );
-
-            elegibles.sort((a, b) => (b.puntaje || 0) - (a.puntaje || 0));
-
-            if (filtroRankingActual !== 'todos') {
-                elegibles = elegibles.filter(s => s.estado === filtroRankingActual);
-            }
-
-            if (elegibles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay candidatos elegibles en este momento.</td></tr>';
-                return;
-            }
-
-            const miembros = StorageManager.miembrosComite.getAll();
-            const miembrosActivos = miembros.filter(m => m.activo);
-            const votaciones = StorageManager.votaciones.getAll();
-
-            tbody.innerHTML = elegibles.map((s, index) => {
-                const votacion = votaciones.find(v => v.expediente === s.expediente && v.estado === 'En curso');
-                const votosSi = votacion ? votacion.votos.filter(v => v.decision === 'A favor').length : 0;
-                const votosNo = votacion ? votacion.votos.filter(v => v.decision === 'En contra').length : 0;
-                const totalVotos = votacion ? votacion.votos.length : 0;
-
-                let estadoVotacion = 'Pendiente';
-                let resultado = '';
-
-                if (votacion) {
-                    if (votosSi >= 2) {
-                        estadoVotacion = 'Aprobada';
-                        resultado = '<span class="votacion-resultado aprobada">✅ Aprobada (' + votosSi + '/3 votos)</span>';
-                    } else if (votosNo >= 2) {
-                        estadoVotacion = 'Rechazada';
-                        resultado = '<span class="votacion-resultado rechazada">❌ Rechazada (' + votosNo + '/3 votos)</span>';
-                    } else if (totalVotos >= 3 && (votosSi + votosNo) < 3) {
-                        estadoVotacion = 'Pendiente';
-                        resultado = '<span class="votacion-resultado pendiente">⏳ En espera (' + totalVotos + '/3 votos)</span>';
-                    } else {
-                        resultado = '<span class="votacion-resultado pendiente">⏳ En votación (' + totalVotos + '/3 votos)</span>';
-                    }
-                } else {
-                    resultado = '<span class="votacion-resultado pendiente">⏳ Sin votación</span>';
-                }
-
-                let acciones = '';
-                if (s.estado === 'En comité' || s.estado === 'Elegible') {
-                    acciones = `<button class="btn btn-small" onclick="verExpedienteComite('${s.expediente}')">Ver</button>`;
-
-                    if (!votacion || votacion.estado !== 'Cerrada') {
-                        acciones += `<button class="btn btn-small btn-primary" onclick="abrirVotacion('${s.expediente}')">Votar</button>`;
-                    }
-
-                    acciones += `<button class="btn btn-small btn-warning" onclick="devolverATS('${s.expediente}')">Devolver a TS</button>`;
-                }
-
-                let votacionHtml = resultado;
-                if (votacion && totalVotos > 0) {
-                    votacionHtml += `<div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">
-                        ${votosSi} 👍 · ${votosNo} 👎 · ${totalVotos - votosSi - votosNo} ⚪
-                    </div>`;
-                }
-
-                return '<tr>' +
-                    '<td><span class="ranking-pos">' + (index + 1) + '</span></td>' +
-                    '<td><strong>' + s.expediente + '</strong></td>' +
-                    '<td>' + s.nombres + ' ' + s.apellidos + '</td>' +
-                    '<td>' + (s.tipoBeca || '—') + '</td>' +
-                    '<td>' + (s.puntaje || 0) + ' pts<br><span style="font-size:0.7rem;color:var(--muted);">Promedio: ' +
-                    (s.promedio || 'N/A') + '</span></td>' +
-                    '<td style="font-size:0.85rem;max-width:150px;word-break:break-word;">' +
-                    (s.observacionTS || 'Sin observaciones') + '</td>' +
-                    '<td>' + votacionHtml + '</td>' +
-                    '<td style="display:flex;gap:4px;flex-wrap:wrap;">' + acciones + '</td>' +
-                    '</tr>';
-            }).join('');
-        }
-
-        // ============================================================
-        // VOTACIONES
-        // ============================================================
-        function renderVotaciones() {
-            const votaciones = StorageManager.votaciones.getAll();
-            const tbody = document.getElementById('com-tabla-votaciones');
-            if (!tbody) return;
-
-            const activas = votaciones.filter(v => v.estado === 'En curso');
-
-            if (activas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay votaciones en curso.</td></tr>';
-                return;
-            }
-
-            const solicitudes = StorageManager.solicitudes.getAll();
-
-            tbody.innerHTML = activas.map(v => {
-                const sol = solicitudes.find(s => s.expediente === v.expediente);
-                const votosSi = v.votos.filter(vt => vt.decision === 'A favor').length;
-                const votosNo = v.votos.filter(vt => vt.decision === 'En contra').length;
-                const totalVotos = v.votos.length;
-
-                let estado = '⏳ En curso';
-                let estadoClass = 'badge-warning';
-
-                if (votosSi >= 2) {
-                    estado = '✅ Aprobada';
-                    estadoClass = 'badge-success';
-                } else if (votosNo >= 2) {
-                    estado = '❌ Rechazada';
-                    estadoClass = 'badge-danger';
-                }
-
-                return '<tr>' +
-                    '<td><strong>' + v.expediente + '</strong></td>' +
-                    '<td>' + (sol ? sol.nombres + ' ' + sol.apellidos : 'N/A') + '</td>' +
-                    '<td>' + votosSi + ' 👍 · ' + votosNo + ' 👎 · ' + (totalVotos - votosSi - votosNo) +
-                    ' ⚪ (Total: ' + totalVotos + '/3)</td>' +
-                    '<td><span class="badge ' + estadoClass + '">' + estado + '</span></td>' +
-                    '<td>' +
-                    '<button class="btn btn-small" onclick="abrirVotacion(\'' + v.expediente + '\')">Ver votación</button>' +
-                    '</td>' +
-                    '</tr>';
-            }).join('');
-        }
-
-        // ============================================================
-        // ABRIR VOTACIÓN
-        // ============================================================
-        function abrirVotacion(expediente) {
-            const solicitudes = StorageManager.solicitudes.getAll();
-            const solicitud = solicitudes.find(s => s.expediente === expediente);
-            if (!solicitud) { notify('⚠️ No se encontró la solicitud'); return; }
-
-            const miembros = StorageManager.miembrosComite.getAll();
-            const miembrosActivos = miembros.filter(m => m.activo);
-
-            if (miembrosActivos.length < 3) {
-                notify('⚠️ Se necesitan al menos 3 miembros activos en el comité para votar.');
-                return;
-            }
-
-            let votaciones = StorageManager.votaciones.getAll();
-            let votacion = votaciones.find(v => v.expediente === expediente && v.estado === 'En curso');
-
-            if (!votacion) {
-                votacion = {
-                    id: Date.now(),
-                    expediente: expediente,
-                    fecha_inicio: new Date().toISOString(),
-                    estado: 'En curso',
-                    votos: miembrosActivos.map(m => ({
-                        miembro_id: m.id,
-                        miembro_nombre: m.nombre,
-                        decision: null,
-                        observacion: ''
-                    }))
-                };
-                StorageManager.votaciones.save(votacion);
-                votaciones = StorageManager.votaciones.getAll();
-                votacion = votaciones.find(v => v.expediente === expediente && v.estado === 'En curso');
-            }
-
-            const solicitudActual = StorageManager.solicitudes.getByExpediente(expediente);
-            if (solicitudActual && solicitudActual.estado !== 'En comité') {
-                solicitudActual.estado = 'En comité';
-                solicitudActual.progreso = 60;
-                StorageManager.solicitudes.save(solicitudActual);
-            }
-
-            mostrarModalVotacion(votacion, solicitud, miembrosActivos);
-        }
-
-        function mostrarModalVotacion(votacion, solicitud, miembros) {
-            const modal = document.getElementById('modal-votacion');
-            const contenido = document.getElementById('votacion-contenido');
-            const titulo = document.getElementById('votacion-titulo');
-
-            titulo.textContent = 'Votación - ' + solicitud.expediente;
-
-            const session = StorageManager.session.get();
-            const miembroActual = miembros.find(m => m.email === session?.email);
-
-            let html = `
-                <div class="alert-box info" style="margin-bottom:16px;">
-                    <div>
-                        <strong>Expediente:</strong> ${solicitud.expediente}<br>
-                        <strong>Estudiante:</strong> ${solicitud.nombres} ${solicitud.apellidos}<br>
-                        <strong>Tipo de beca:</strong> ${solicitud.tipoBeca}<br>
-                        <strong>Puntaje:</strong> ${solicitud.puntaje || 0} pts
-                    </div>
-                </div>
-                <div style="margin-bottom:16px;">
-                    <strong>Observaciones del TS:</strong><br>
-                    ${solicitud.observacionTS || 'Sin observaciones'}
-                </div>
-                <h4 style="margin-bottom:12px;">Votos de los miembros</h4>
-                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-            `;
-
-            const votosSi = votacion.votos.filter(v => v.decision === 'A favor').length;
-            const votosNo = votacion.votos.filter(v => v.decision === 'En contra').length;
-            const totalVotos = votacion.votos.filter(v => v.decision !== null).length;
-
-            votacion.votos.forEach(voto => {
-                const miembro = miembros.find(m => m.id === voto.miembro_id);
-                const esActual = miembro?.email === session?.email;
-                let votoLabel = '⏳ Pendiente';
-                let votoClass = 'pendiente';
-
-                if (voto.decision === 'A favor') {
-                    votoLabel = '✅ A favor';
-                    votoClass = 'si';
-                } else if (voto.decision === 'En contra') {
-                    votoLabel = '❌ En contra';
-                    votoClass = 'no';
-                }
-
-                html += `
-                    <div class="miembro-voto" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafc;border-radius:6px;border:1px solid var(--border);">
-                        <div>
-                            <strong>${miembro?.nombre || 'Miembro'}</strong>
-                            ${esActual ? ' <span style="font-size:0.7rem;color:var(--accent);">(Tú)</span>' : ''}
-                            <span style="font-size:0.7rem;color:var(--muted);margin-left:8px;">${miembro?.rol || ''}</span>
-                        </div>
-                        <div>
-                            ${esActual ? `
-                                <button class="btn-vote-yes ${voto.decision === 'A favor' ? 'voted' : ''}" onclick="votar('${votacion.expediente}', ${voto.miembro_id}, 'A favor')">👍 A favor</button>
-                                <button class="btn-vote-no ${voto.decision === 'En contra' ? 'voted' : ''}" onclick="votar('${votacion.expediente}', ${voto.miembro_id}, 'En contra')">👎 En contra</button>
-                                <button class="btn-vote-abstain ${voto.decision === 'Abstención' ? 'voted' : ''}" onclick="votar('${votacion.expediente}', ${voto.miembro_id}, 'Abstención')">⚪ Abstenerse</button>
-                            ` : `
-                                <span class="voto ${votoClass}">${votoLabel}</span>
-                            `}
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `
-                </div>
-                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:8px;">
-                    <span>✅ A favor: <strong>${votosSi}</strong></span>
-                    <span>❌ En contra: <strong>${votosNo}</strong></span>
-                    <span>⚪ Pendientes: <strong>${votacion.votos.length - totalVotos}</strong></span>
-                    <span>📊 Total votos: <strong>${totalVotos}/3</strong></span>
-                </div>
-            `;
-
-            if (votosSi >= 2) {
-                html += `
-                    <div class="alert-box success" style="margin-bottom:16px;">
-                        ✅ <strong>¡Beca aprobada!</strong> La mayoría del comité (${votosSi} de 3 votos) ha aprobado esta solicitud.
-                    </div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <button class="btn btn-success" onclick="cerrarVotacionFinal('${votacion.expediente}', 'Aprobada')">Confirmar aprobación</button>
-                    </div>
-                `;
-            } else if (votosNo >= 2) {
-                html += `
-                    <div class="alert-box danger" style="margin-bottom:16px;">
-                        ❌ <strong>Beca rechazada</strong> La mayoría del comité (${votosNo} de 3 votos) ha rechazado esta solicitud.
-                    </div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <button class="btn btn-danger" onclick="cerrarVotacionFinal('${votacion.expediente}', 'Rechazada')">Confirmar rechazo</button>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="alert-box info" style="margin-bottom:16px;">
-                        ⏳ <strong>En espera de votos</strong> Se necesitan al menos 2 votos a favor o 2 en contra para decidir.
-                        Votos actuales: ${totalVotos}/3
-                    </div>
-                `;
-            }
-
-            html += `
-                <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
-                    <button class="btn btn-warning" onclick="devolverATS('${votacion.expediente}')">↩️ Devolver a TS</button>
-                    <span style="font-size:0.78rem;color:var(--muted);margin-left:12px;">Devuelve la solicitud al Trabajador Social con observaciones</span>
-                </div>
-            `;
-
-            contenido.innerHTML = html;
-            openModal('modal-votacion');
-        }
-
-        // ============================================================
-        // VOTAR
-        // ============================================================
-        function votar(expediente, miembroId, decision) {
-            let votaciones = StorageManager.votaciones.getAll();
-            const votacionIndex = votaciones.findIndex(v => v.expediente === expediente && v.estado === 'En curso');
-
-            if (votacionIndex === -1) {
-                notify('⚠️ No hay una votación activa para este expediente.');
-                return;
-            }
-
-            const votoIndex = votaciones[votacionIndex].votos.findIndex(v => v.miembro_id === miembroId);
-
-            if (votoIndex === -1) {
-                notify('⚠️ No eres miembro de este comité.');
-                return;
-            }
-
-            votaciones[votacionIndex].votos[votoIndex].decision = decision;
-
-            const votos = votaciones[votacionIndex].votos;
-            const votosSi = votos.filter(v => v.decision === 'A favor').length;
-            const votosNo = votos.filter(v => v.decision === 'En contra').length;
-            const totalVotos = votos.filter(v => v.decision !== null).length;
-
-            let estadoFinal = null;
-
-            if (votosSi >= 2) {
-                estadoFinal = 'Aprobada';
-            } else if (votosNo >= 2) {
-                estadoFinal = 'Rechazada';
-            }
-
-            if (estadoFinal) {
-                votaciones[votacionIndex].estado = 'Cerrada';
-                votaciones[votacionIndex].fecha_cierre = new Date().toISOString();
-                votaciones[votacionIndex].resultado = estadoFinal;
-
-                const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-                if (solicitud) {
-                    solicitud.estado = estadoFinal;
-                    solicitud.progreso = estadoFinal === 'Aprobada' ? 85 : 100;
-                    if (estadoFinal === 'Aprobada') {
-                        solicitud.fechaAprobacion = new Date().toISOString().slice(0, 10);
-                        solicitud.porcentajeCobertura = '50%';
-                    } else {
-                        solicitud.fechaRechazo = new Date().toISOString().slice(0, 10);
-                        solicitud.motivoRechazo = 'Rechazado por el Comité de Becas';
-                    }
-                    StorageManager.solicitudes.save(solicitud);
-                    simularNotificacion(
-                        estadoFinal === 'Aprobada' ? 'Beca Aprobada por el Comité' : 'Beca Rechazada por el Comité',
-                        estadoFinal === 'Aprobada' ?
-                        'Tu solicitud ha sido aprobada por el Comité de Becas. Pronto recibirás más información.' :
-                        'Tu solicitud ha sido rechazada por el Comité de Becas. Puedes apelar esta decisión.',
-                        expediente
-                    );
-                }
-
-                const session = StorageManager.session.get();
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session ? session.nombre : 'Comité',
-                    rol: session ? session.rol : 'comite',
-                    accion: 'Votación finalizada: ' + estadoFinal + ' - Expediente ' + expediente,
-                    expediente: expediente
-                });
-            }
-
-            // Guardar votaciones actualizadas
-            StorageManager.votaciones.save(votaciones[votacionIndex]);
-
-            renderRanking();
-            renderVotaciones();
-            renderHistorial();
-            actualizarEstadisticasComite();
-            actualizarGraficoComite();
-
-            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-            const miembros = StorageManager.miembrosComite.getAll();
-            const miembrosActivos = miembros.filter(m => m.activo);
-            const votacionActualizada = StorageManager.votaciones.getAll().find(v => v.expediente === expediente && v.estado === 'En curso');
-            if (votacionActualizada) {
-                mostrarModalVotacion(votacionActualizada, solicitud, miembrosActivos);
-            }
-
-            notify('✅ Voto registrado correctamente.');
-        }
-
-        // ============================================================
-        // CERRAR VOTACIÓN FINAL
-        // ============================================================
-        function cerrarVotacionFinal(expediente, resultado) {
-            closeModal('modal-votacion');
-            renderRanking();
-            renderVotaciones();
-            renderHistorial();
-            actualizarEstadisticasComite();
-            actualizarGraficoComite();
-            notify('✅ Votación finalizada: ' + resultado);
-        }
-
-        function cerrarVotacion() {
-            closeModal('modal-votacion');
-            renderRanking();
-            renderVotaciones();
-            renderHistorial();
-            actualizarEstadisticasComite();
-            actualizarGraficoComite();
-        }
-
-        // ============================================================
-        // DEVOLVER A TS
-        // ============================================================
-        function devolverATS(expediente) {
-            document.getElementById('devolver-expediente').value = expediente;
-            document.getElementById('devolver-motivo').value = 'Falta documentación';
-            document.getElementById('devolver-observacion').value = '';
-            openModal('modal-devolver');
-        }
-
-        function confirmarDevolver() {
-            const expediente = document.getElementById('devolver-expediente').value;
-            const motivo = document.getElementById('devolver-motivo').value;
-            const observacion = document.getElementById('devolver-observacion').value.trim();
-
-            if (!expediente) { notify('⚠️ No se encontró el expediente.'); return; }
-
-            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-            if (!solicitud) { notify('⚠️ No se encontró la solicitud.'); return; }
-
-            solicitud.estado = 'Devuelta a TS';
-            solicitud.progreso = 35;
-            solicitud.observacionTS = (solicitud.observacionTS || '') +
-                '\n\n📌 DEVUELTA POR COMITÉ: ' + motivo +
-                (observacion ? '\nObservación: ' + observacion : '');
-
-            solicitud.historial = solicitud.historial || [];
-            solicitud.historial.push({
-                fecha: new Date().toISOString(),
-                accion: 'Devuelta a TS por Comité',
-                detalles: motivo + (observacion ? ' - ' + observacion : ''),
-                usuario: 'Comité de Becas'
-            });
-
-            StorageManager.solicitudes.save(solicitud);
-
-            let votaciones = StorageManager.votaciones.getAll();
-            const vIndex = votaciones.findIndex(v => v.expediente === expediente && v.estado === 'En curso');
-            if (vIndex !== -1) {
-                votaciones[vIndex].estado = 'Cerrada';
-                votaciones[vIndex].resultado = 'Devuelta a TS';
-                StorageManager.votaciones.save(votaciones[vIndex]);
-            }
-
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Comité',
-                rol: session ? session.rol : 'comite',
-                accion: 'Solicitud devuelta a TS: ' + expediente + ' - Motivo: ' + motivo,
-                expediente: expediente
-            });
-
-            simularNotificacion('Solicitud devuelta a TS',
-                'Tu solicitud ha sido devuelta al Trabajador Social para revisión adicional. Motivo: ' + motivo,
-                expediente);
-
-            closeModal('modal-devolver');
-            closeModal('modal-votacion');
-            renderRanking();
-            renderVotaciones();
-            renderHistorial();
-            actualizarEstadisticasComite();
-            actualizarGraficoComite();
-            notify('✅ Solicitud devuelta a Trabajador Social correctamente.');
-        }
-
-        // ============================================================
-        // VER EXPEDIENTE
-        // ============================================================
-        function verExpedienteComite(expediente) {
-            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-            if (solicitud) {
-                document.getElementById('modal-expediente-titulo').textContent = 'Expediente: ' + expediente;
-                document.getElementById('expediente-contenido').innerHTML = renderExpedienteCompleto(solicitud);
-                openModal('modal-expediente');
-            }
-        }
-
-        function renderExpedienteCompleto(solicitud) {
-            const d = solicitud.datosCompletos || {};
-            const docs = solicitud.documentos || {};
-
-            const campo = (label, valor) =>
-                '<p><strong>' + label + ':</strong> ' +
-                ((valor === undefined || valor === null || valor === '') ?
-                    '<span style="color:var(--muted);">No registrado</span>' : valor) +
-                '</p>';
-
-            let html = '';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Estado del expediente</h4>' +
-                '<div class="expediente-grid">' +
-                campo('N° Expediente', solicitud.expediente) +
-                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud.estado + '</span>') +
-                campo('Fecha de solicitud', solicitud.fecha) +
-                campo('Tipo de beca', solicitud.tipoBeca) +
-                campo('Progreso', (solicitud.progreso || 0) + '%') +
-                campo('Puntaje total', solicitud.puntaje !== undefined ? solicitud.puntaje + ' pts' : '') +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Personal</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Nombres', solicitud.nombres) +
-                campo('Apellidos', solicitud.apellidos) +
-                campo('Cédula', solicitud.cedula) +
-                campo('Correo', solicitud.correo || solicitud.estudianteEmail) +
-                campo('Teléfono', d['f-telefono'] || solicitud.telefono) +
-                campo('Fecha de nacimiento', d['f-nacimiento']) +
-                '</div>' +
-                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] + '</p>' : '') +
-                '</div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Académica</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Carrera', d['f-carrera']) +
-                campo('Sede', d['f-sede']) +
-                campo('Facultad', d['f-facultad']) +
-                campo('Año de ingreso', d['f-anio']) +
-                campo('Promedio ponderado', solicitud.promedio) +
-                campo('Avance curricular', d['f-avance'] ? d['f-avance'] + '%' : '') +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Socioeconómica</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Ingreso familiar mensual', '₡' + (solicitud.ingresoFamiliar || 0).toLocaleString()) +
-                campo('Dependientes económicos', d['f-dependientes']) +
-                campo('Miembros que trabajan', d['f-trabajadores']) +
-                campo('Tipo de vivienda', d['f-vivienda']) +
-                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() : '') +
-                campo('Situación laboral', d['f-laboral']) +
-                campo('¿Posee discapacidad?', d['f-discapacidad']) +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Complementaria</h4>' +
-                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d['f-extracurricular'] + '</p>' : '') +
-                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' : '') +
-                campo('¿Beca anterior?', d['f-beca-anterior']) +
-                '<p style="margin-top:6px;"><strong>Justificación de mérito:</strong><br>' +
-                (d['f-merito'] || 'No disponible') + '</p>' +
-                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d['f-motivacion'] + '</p>' : '') +
-                '</div>';
-
-            const docKeys = Object.keys(docs);
-            html += '<div class="expediente-section">' +
-                '<h4>Documentos adjuntos</h4>' +
-                (docKeys.length === 0 ?
-                    '<p style="color:var(--muted);font-size:0.9rem;">El estudiante no ha adjuntado documentos.</p>' :
-                    '<div class="doc-list">' +
-                    docKeys.map(key => {
-                        const doc = docs[key];
-                        const estadoDoc = doc.estado || 'Pendiente';
-                        const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
-                            (estadoDoc === 'Rechazado' ? 'badge-danger' :
-                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
-                        return '<div class="doc-item">' +
-                            '<div class="doc-item-info">' +
-                            '<span class="doc-item-icon">📄</span>' +
-                            '<div>' +
-                            '<div><strong>' + (doc.label || key) + '</strong></div>' +
-                            '<div class="doc-item-meta">' + (doc.nombre || '') +
-                            (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
-                            '</div>' +
-                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
-                            '</div>' +
-                            '</div>' +
-                            '<div class="doc-item-actions">' +
-                            '<span class="badge ' + badgeDoc + '">' + estadoDoc + '</span>' +
-                            '</div>' +
-                            '</div>';
-                    }).join('') +
-                    '</div>'
-                ) +
-                '</div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Observaciones del Trabajador Social</h4>' +
-                '<p>' + (solicitud.observacionTS || 'Sin observaciones registradas.') + '</p>' +
-                '</div>';
-
-            if (solicitud.observacionesComite || solicitud.porcentajeCobertura) {
-                html += '<div class="expediente-section">' +
-                    '<h4>Resolución del Comité</h4>' +
-                    '<div class="expediente-grid">' +
-                    campo('Porcentaje otorgado', solicitud.porcentajeCobertura) +
-                    campo('Beneficio aceptado', solicitud.aceptado ? 'Sí' : 'No') +
-                    '</div>' +
-                    (solicitud.observacionesComite ?
-                        '<p style="margin-top:6px;"><strong>Observaciones del comité:</strong><br>' +
-                        solicitud.observacionesComite + '</p>' : '') +
-                    '</div>';
-            }
-
-            if (solicitud.motivoRechazo) {
-                html += '<div class="expediente-section">' +
-                    '<h4>Motivo del Rechazo</h4>' +
-                    '<p style="color:var(--danger);">' + solicitud.motivoRechazo + '</p>' +
-                    '</div>';
-            }
-
-            return html;
-        }
-
-    
-        // ============================================================
-        // HISTORIAL DE VOTACIONES
-        // ============================================================
-        function renderHistorial() {
-            const votaciones = StorageManager.votaciones.getAll();
-            const tbody = document.getElementById('com-tabla-historial');
-            if (!tbody) return;
-
-            const cerradas = votaciones.filter(v => v.estado === 'Cerrada');
-
-            if (cerradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay votaciones finalizadas.</td></tr>';
-                return;
-            }
-
-            const solicitudes = StorageManager.solicitudes.getAll();
-
-            cerradas.sort((a, b) => new Date(b.fecha_cierre || b.fecha_inicio) - new Date(a.fecha_cierre || a.fecha_inicio));
-
-            tbody.innerHTML = cerradas.slice(0, 50).map(v => {
-                const sol = solicitudes.find(s => s.expediente === v.expediente);
-                const votosSi = v.votos.filter(vt => vt.decision === 'A favor').length;
-                const votosNo = v.votos.filter(vt => vt.decision === 'En contra').length;
-                const totalVotos = v.votos.filter(vt => vt.decision !== null).length;
-
-                const resultado = v.resultado || 'Indefinido';
-                const badgeClass = resultado === 'Aprobada' ? 'badge-success' :
-                    (resultado === 'Rechazada' ? 'badge-danger' :
-                        (resultado === 'Devuelta a TS' ? 'badge-info' : 'badge-neutral'));
-
-                return '<tr>' +
-                    '<td><strong>' + v.expediente + '</strong></td>' +
-                    '<td>' + (sol ? sol.nombres + ' ' + sol.apellidos : 'N/A') + '</td>' +
-                    '<td>' + votosSi + ' 👍 · ' + votosNo + ' 👎 · ' + (totalVotos - votosSi - votosNo) + ' ⚪</td>' +
-                    '<td><span class="badge ' + badgeClass + '">' + resultado + '</span></td>' +
-                    '<td style="font-size:0.78rem;color:var(--muted);">' +
-                    new Date(v.fecha_cierre || v.fecha_inicio).toLocaleDateString() +
-                    ' ' + new Date(v.fecha_cierre || v.fecha_inicio).toLocaleTimeString() +
-                    '</td>' +
-                    '<td><button class="btn btn-small" onclick="verExpedienteComite(\'' + v.expediente + '\')">Ver</button></td>' +
-                    '</tr>';
-            }).join('');
-        }
-
-        // ============================================================
-        // ESTADÍSTICAS COMITÉ
-        // ============================================================
-        function actualizarEstadisticasComite() {
-            const solicitudes = StorageManager.solicitudes.getAll();
-
-            const total = solicitudes.length;
-            const aprobadas = solicitudes.filter(s =>
-                s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada'
-            ).length;
-            const rechazadas = solicitudes.filter(s =>
-                s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' ||
-                s.estado === 'No elegible' || s.estado === 'Cancelada'
-            ).length;
-            const pendientes = solicitudes.filter(s =>
-                s.estado === 'En comité' || s.estado === 'Elegible' ||
-                s.estado === 'En revisión TS' || s.estado === 'Enviada' ||
-                s.estado === 'Pendiente subsanación' || s.estado === 'En Apelación' ||
-                s.estado === 'Devuelta a TS'
-            ).length;
-
-            document.getElementById('com-stat-total').textContent = total;
-            document.getElementById('com-stat-aprobadas').textContent = aprobadas;
-            document.getElementById('com-stat-rechazadas').textContent = rechazadas;
-            document.getElementById('com-stat-pendientes').textContent = pendientes;
-        }
-
-        function actualizarGraficoComite() {
-            const ctx = document.getElementById('comStatsChart');
-            if (!ctx) return;
-
-            const total = parseInt(document.getElementById('com-stat-total')?.textContent || '0');
-            const aprobadas = parseInt(document.getElementById('com-stat-aprobadas')?.textContent || '0');
-            const rechazadas = parseInt(document.getElementById('com-stat-rechazadas')?.textContent || '0');
-            const pendientes = parseInt(document.getElementById('com-stat-pendientes')?.textContent || '0');
-
-            if (comStatsChartInstance) {
-                comStatsChartInstance.destroy();
-                comStatsChartInstance = null;
-            }
-
-            comStatsChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Aprobadas', 'Rechazadas', 'Pendientes', 'Total'],
-                    datasets: [{
-                        label: 'Solicitudes',
-                        data: [aprobadas, rechazadas, pendientes, total],
-                        backgroundColor: [
-                            'rgba(30,126,79,0.75)',
-                            'rgba(192,57,43,0.75)',
-                            'rgba(176,125,18,0.75)',
-                            'rgba(26,54,93,0.75)'
-                        ],
-                        borderColor: ['#1e7e4f', '#c0392b', '#b07d12', '#1a365d'],
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1, precision: 0 },
-                            title: { display: true, text: 'Número de solicitudes' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            title: { display: true, text: 'Estado de la solicitud' }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============================================================
-        // SHOW DASH TAB
-        // ============================================================
-        function showDashTab(prefix, tabId, btn) {
-            const dashId = 'comite';
-            const tabs = document.querySelectorAll('#view-dash-' + dashId + ' .dash-tab');
-            if (tabs) tabs.forEach(t => t.classList.remove('active'));
-
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) activeTab.classList.add('active');
-
-            if (btn) {
-                const navItems = btn.closest('.dash-sidebar')?.querySelectorAll('.dash-nav-item');
-                if (navItems) navItems.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            if (tabId === 'com-ranking') renderRanking();
-            if (tabId === 'com-votaciones') renderVotaciones();
-            if (tabId === 'com-miembros') {
-                renderMiembros();
-                cargarUsuariosParaMiembro();
-            }
-            if (tabId === 'com-historial') renderHistorial();
-            if (tabId === 'com-estadisticas') {
-                actualizarEstadisticasComite();
-                actualizarGraficoComite();
-            }
-        }
-
-        // ============================================================
-        // INICIALIZACIÓN
-        // ============================================================
-        (function init() {
-            renderHeaderNav();
-
-            const storedSession = StorageManager.session.get();
-            if (storedSession && storedSession.rol === 'comite') {
-                showView('view-dash-comite');
-                renderDashboards();
-            } else if (storedSession) {
-                const dashMap = {
-                    estudiante: 'panel_estudiante.html',
-                    aspirante: 'panel_estudiante.html',
-                    trabajador_social: 'panel_trabajador_social.html',
-                    comite: 'panel_comite.html',
-                    admin: 'panel_admin.html',
-                    auditor: 'panel_auditor.html'
-                };
-                const target = dashMap[storedSession.rol];
-                if (target) {
-                    window.location.href = target;
-                }
-            } else {
-                showView('view-public');
-            }
-
-            document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
-                document.getElementById('mainNav').classList.toggle('open');
-            });
-
-            document.getElementById('db-status').textContent = '🟢 Conectado';
-            document.getElementById('db-status').className = 'online';
-
-            StorageManager.on('session_actualizada', function() {
-                renderHeaderNav();
-            });
-        })();
-    </script>
-
+   `;
+  }).join('');
+  
+ } catch(e){
+  container.innerHTML = `<div class="estado-error">⚠️ No se pudieron cargar las votaciones activas.</div>`;
+ }
+}
+
+// ============================================================
+// HISTORIAL
+// ============================================================
+async function renderHistorial(){
+ const container = document.getElementById('com-historial-lista');
+ 
+ try {
+  let historial = [];
+  if(todasLasSolicitudes.length > 0){
+   historial = todasLasSolicitudes.filter(s => 
+    ['Aprobada', 'Rechazada', 'Rechazado Definitivo', 'En revisión TS'].includes(s.estado)
+   );
+  } else {
+   const data = await API.getSolicitudes();
+   todasLasSolicitudes = data.map(mapSolicitudAPI);
+   historial = todasLasSolicitudes.filter(s => 
+    ['Aprobada', 'Rechazada', 'Rechazado Definitivo', 'En revisión TS'].includes(s.estado)
+   );
+  }
+  
+  historial.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  
+  if(historial.length === 0){
+   container.innerHTML = `<div class="alert-box info">No hay historial de decisiones registrado.</div>`;
+   return;
+  }
+  
+  container.innerHTML = historial.slice(0, 20).map(s => {
+   const esDevuelta = s.estado === 'En revisión TS' && s.observacionesComite && s.observacionesComite.includes('Devuelto a TS');
+   const badgeColor = esDevuelta ? 'badge-warning' : (s.estado === 'Aprobada' ? 'badge-success' : 'badge-danger');
+   const icono = esDevuelta ? '↩️' : (s.estado === 'Aprobada' ? '✅' : '❌');
+   
+   return `
+    <div class="candidato-card" style="border-left:4px solid ${esDevuelta ? 'var(--warning)' : (s.estado === 'Aprobada' ? 'var(--success)' : 'var(--danger)')};">
+     <div class="header">
+      <div>
+       <span class="expediente">${s.expediente}</span>
+       <span class="nombre">${s.nombres || ''} ${s.apellidos || ''}</span>
+      </div>
+      <span class="badge ${badgeColor}">${icono} ${s.estado}</span>
+     </div>
+     <div class="detalles">
+      <div class="item">
+       <span class="label">Tipo de beca</span>
+       <span class="value">${s.tipoBeca || ''}</span>
+      </div>
+      <div class="item">
+       <span class="label">Fecha</span>
+       <span class="value">${s.fecha}</span>
+      </div>
+      <div class="item">
+       <span class="label">Puntaje</span>
+       <span class="value">${s.puntaje || 0} pts</span>
+      </div>
+     </div>
+     ${s.observacionesComite ? `<div style="font-size:0.85rem;color:var(--muted);margin-top:8px;"><strong>Observaciones:</strong> ${s.observacionesComite}</div>` : ''}
+     <div class="actions" style="margin-top:8px;">
+      <button class="btn-icon" onclick="verExpedienteComite('${s.expediente}')">📄 Ver expediente</button>
+     </div>
+    </div>
+   `;
+  }).join('');
+  
+ } catch(e){
+  container.innerHTML = `<div class="estado-error">⚠️ No se pudo cargar el historial.</div>`;
+ }
+}
+
+// ============================================================
+// ESTADÍSTICAS
+// ============================================================
+async function renderEstadisticas(){
+ const container = document.getElementById('com-estadisticas-detalle');
+ 
+ try {
+  let solicitudes = todasLasSolicitudes;
+  if(solicitudes.length === 0){
+   const data = await API.getSolicitudes();
+   solicitudes = data.map(mapSolicitudAPI);
+  }
+  
+  const total = solicitudes.length;
+  const aprobadas = solicitudes.filter(s => s.estado === 'Aprobada' || s.estado === 'Beneficio Activo').length;
+  const rechazadas = solicitudes.filter(s => s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo').length;
+  const devueltas = solicitudes.filter(s => s.estado === 'En revisión TS' && s.observacionesComite && s.observacionesComite.includes('Devuelto a TS')).length;
+  
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-aprobadas').textContent = aprobadas;
+  document.getElementById('stat-rechazadas').textContent = rechazadas;
+  document.getElementById('stat-devueltas').textContent = devueltas;
+  
+  // Detalle por tipo de beca
+  const tipos = {};
+  solicitudes.forEach(s => {
+   const tipo = s.tipoBeca || 'Sin tipo';
+   if(!tipos[tipo]) tipos[tipo] = { total: 0, aprobadas: 0, rechazadas: 0, devueltas: 0 };
+   tipos[tipo].total++;
+   if(s.estado === 'Aprobada' || s.estado === 'Beneficio Activo') tipos[tipo].aprobadas++;
+   else if(s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo') tipos[tipo].rechazadas++;
+   else if(s.estado === 'En revisión TS' && s.observacionesComite && s.observacionesComite.includes('Devuelto a TS')) tipos[tipo].devueltas++;
+  });
+  
+  const tipoKeys = Object.keys(tipos);
+  if(tipoKeys.length === 0){
+   container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">No hay datos de tipos de beca disponibles.</p>';
+   return;
+  }
+  
+  container.innerHTML = `
+   <table class="data-table">
+    <thead>
+     <tr><th>Tipo de beca</th><th>Total</th><th>✅ Aprobadas</th><th>❌ Rechazadas</th><th>↩️ Devueltas</th></tr>
+    </thead>
+    <tbody>
+     ${tipoKeys.map(tipo => `
+      <tr>
+       <td><strong>${tipo}</strong></td>
+       <td>${tipos[tipo].total}</td>
+       <td><span class="badge badge-success">${tipos[tipo].aprobadas}</span></td>
+       <td><span class="badge badge-danger">${tipos[tipo].rechazadas}</span></td>
+       <td><span class="badge badge-warning">${tipos[tipo].devueltas}</span></td>
+      </tr>
+     `).join('')}
+    </tbody>
+   </table>
+  `;
+  
+ } catch(e){
+  container.innerHTML = `<div class="estado-error">⚠️ No se pudieron cargar las estadísticas.</div>`;
+ }
+}
+
+// ============================================================
+// VERIFICAR INCONSISTENCIAS
+// ============================================================
+function verificarInconsistencia(solicitud){
+ if(solicitud.documentos){
+  const docs = Object.values(solicitud.documentos);
+  if(docs.some(d => d.estado === 'Corrección solicitada' || d.estado === 'Rechazado')){
+   return true;
+  }
+ }
+ 
+ if(solicitud.documentos){
+  const docsKeys = Object.keys(solicitud.documentos);
+  const obligatorios = ['f-cedula-f', 'f-cedula-p', 'f-constancia', 'f-recibo'];
+  const faltan = obligatorios.some(key => !docsKeys.includes(key));
+  if(faltan) return true;
+ }
+ 
+ if(solicitud.promedio && solicitud.promedio < 80){
+  return true;
+ }
+ 
+ if(!solicitud.observacionTS || solicitud.observacionTS.trim() === '' || solicitud.observacionTS === 'Pendiente de revisión por trabajador social.'){
+  return true;
+ }
+ 
+ return false;
+}
+
+// ============================================================
+// VER EXPEDIENTE
+// ============================================================
+function verExpedienteComite(expediente){
+ API.getSolicitud(expediente).then(s => {
+  const solicitud = mapSolicitudAPI(s);
+  expedienteActual = expediente;
+  document.getElementById('modal-expediente-titulo').textContent = `Expediente completo: ${expediente}`;
+  document.getElementById('expediente-contenido').innerHTML = renderExpedienteCompleto(solicitud, { permitirRevision: false });
+  if(window.lucide) lucide.createIcons();
+  const obsEdit = document.getElementById('expediente-obs-edit');
+  const btnGuardar = document.getElementById('expediente-btn-guardar');
+  if(obsEdit) obsEdit.classList.add('hidden');
+  if(btnGuardar) btnGuardar.classList.add('hidden');
+  openModal('modal-expediente');
+ }).catch(e => notify('No se pudo cargar el expediente: ' + e.message));
+}
+
+// ============================================================
+// VOTACIÓN
+// ============================================================
+async function abrirModalVotacion(expediente){
+ document.getElementById('modal-votacion').dataset.expediente = expediente;
+ document.getElementById('votacion-expediente').textContent = `· ${expediente}`;
+ document.getElementById('votacion-obs').value = '';
+
+ const solicitud = todasLasSolicitudes.find(s => s.expediente === expediente);
+ const pct = solicitud?.porcentajeCobertura || '100%';
+ document.getElementById('votacion-pct-info').innerHTML = `Porcentaje de cobertura propuesto por el Trabajador Social: <strong>${pct}</strong> (se aplicará solo si el expediente resulta aprobado).`;
+
+ // Si este miembro ya votó por este expediente, no dejarlo votar de nuevo.
+ const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || 'null');
+ try {
+  const votos = await API.getVotos(expediente);
+  const miVoto = votos.find(v => v.email === session?.email);
+  const botones = document.querySelectorAll('#modal-votacion .btn-success, #modal-votacion .btn-danger, #modal-votacion .btn-outline');
+  if(miVoto){
+   document.getElementById('votacion-pct-info').innerHTML += `<br>Ya emitiste tu voto: <strong>${miVoto.decision}</strong>. No se puede votar de nuevo.`;
+   botones.forEach(b => b.disabled = true);
+  } else {
+   botones.forEach(b => b.disabled = false);
+  }
+ } catch(e){
+  console.warn('No se pudo verificar si ya votaste:', e.message);
+ }
+
+ openModal('modal-votacion');
+}
+
+async function registrarVotoComite(decision){
+ const expediente = document.getElementById('modal-votacion').dataset.expediente;
+ const observaciones = document.getElementById('votacion-obs').value;
+ const solicitud = todasLasSolicitudes.find(s => s.expediente === expediente);
+ const pct = solicitud?.porcentajeCobertura || '100%';
+
+ if(decision === 'No' && !observaciones.trim()){
+  notify('Indica una observación para justificar el voto "No".');
+  return;
+ }
+ if(decision === 'Devolver a TS' && !observaciones.trim()){
+  notify('Indica qué información hace falta para devolver el expediente.');
+  return;
+ }
+
+ try {
+  const resultado = await API.votar({ expediente, decision, observaciones });
+  registrarBitacora(`Voto de comité: ${decision}`, expediente);
+
+  if(resultado.estado === 'Aprobada'){
+   simularNotificacion('Solicitud Aprobada', `Tu solicitud ha sido aprobada por el comité con una cobertura de ${pct}.`, expediente);
+   notify(`Voto registrado. El comité alcanzó mayoría: expediente APROBADO.`);
+  } else if(resultado.estado === 'Rechazada'){
+   simularNotificacion('Solicitud Rechazada', `Tu solicitud fue rechazada por el comité. ${observaciones || ''}`, expediente);
+   notify(`Voto registrado. El comité alcanzó mayoría: expediente RECHAZADO.`);
+  } else if(resultado.estado === 'En revisión TS'){
+   simularNotificacion('Expediente en revisión', `Tu solicitud fue devuelta al Trabajador Social para revisión adicional.`, expediente);
+   notify('Expediente devuelto al Trabajador Social.');
+  } else {
+   notify(`Voto "${decision}" registrado (${resultado.votosSi} Sí / ${resultado.votosNo} No, se necesitan ${resultado.necesarios}).`);
+  }
+
+  closeModal('modal-votacion');
+  const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+  if(session) {
+   renderRanking();
+   renderVotacionesActivas();
+   renderEstadisticas();
+  }
+ } catch(e){
+  notify('No se pudo registrar el voto: ' + e.message);
+ }
+}
+
+// ============================================================
+// DEVOLVER A TS
+// ============================================================
+function abrirModalDevolverTS(expediente){
+ document.getElementById('devolver-expediente').value = expediente;
+ document.getElementById('devolver-motivo').value = '';
+ openModal('modal-devolver-ts');
+}
+
+async function confirmarDevolverTS(){
+ const expediente = document.getElementById('devolver-expediente').value;
+ const motivo = document.getElementById('devolver-motivo').value.trim();
+ 
+ if(!motivo || motivo.length < 20){
+  notify('⚠️ El motivo de la devolución debe tener al menos 20 caracteres.');
+  return;
+ }
+ 
+ if(!(await customConfirm(`¿Estás seguro de devolver el expediente ${expediente} al Trabajador Social?\n\nMotivo: ${motivo}`))) return;
+ 
+ try {
+  await API.actualizarSolicitud(expediente, {
+   estado: 'En revisión TS',
+   observacionTS: `Devuelto por el Comité - Motivo: ${motivo}`,
+   observacionesComite: `Devuelto a TS - ${motivo}`
+  });
+  
+  registrarBitacora(`Expediente devuelto a TS por el Comité`, expediente);
+  simularNotificacion('Expediente devuelto a TS', `El comité ha devuelto tu expediente ${expediente} al Trabajador Social para revisión adicional. Motivo: ${motivo}`, expediente);
+  
+  closeModal('modal-devolver-ts');
+  notify(`✅ Expediente ${expediente} devuelto al Trabajador Social correctamente.`);
+  
+  const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+  if(session) {
+   renderRanking();
+   renderVotacionesActivas();
+   renderEstadisticas();
+  }
+ } catch(e){
+  notify('❌ No se pudo devolver el expediente: ' + e.message);
+ }
+}
+
+// ============================================================
+// GUARDAR OBSERVACIONES (placeholder)
+// ============================================================
+function guardarObservaciones(){
+ notify('Solo el Trabajador Social puede guardar observaciones.');
+}
+
+// ============================================================
+// ARRANQUE
+// ============================================================
+(async function iniciar(){
+ const session = requireSession(['comite']);
+ if(!session) return;
+ await inicializarBase();
+ renderHeaderRol(session);
+ 
+ // Cargar datos iniciales
+ try {
+  const data = await API.getSolicitudes();
+  todasLasSolicitudes = data.map(mapSolicitudAPI);
+ } catch(e) {
+  console.warn('No se pudo obtener solicitudes de la API, usando localStorage:', e.message);
+  todasLasSolicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+ }
+ 
+ renderRanking();
+ renderVotacionesActivas();
+ renderHistorial();
+ renderEstadisticas();
+
+ document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
+  document.getElementById('mainNav').classList.toggle('open');
+ });
+
+ function refrescarSiEsSeguro(){
+  const elementoActivo = document.activeElement;
+  const escribiendo = elementoActivo && ['INPUT','TEXTAREA','SELECT'].includes(elementoActivo.tagName);
+  const modalAbierto = document.querySelector('.modal-overlay:not(.hidden)');
+  if(escribiendo || modalAbierto) return;
+  renderRanking();
+ }
+ window.addEventListener('focus', refrescarSiEsSeguro);
+ setInterval(refrescarSiEsSeguro, 20000);
+})();
+</script>
 </body>
 </html>

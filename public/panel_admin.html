@@ -1,2598 +1,518 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador - Sistema de Becas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <script src="storageManager.js"></script>
-    <style>
-        :root {
-            --primary: #1a365d;
-            --primary-light: #2c4a7c;
-            --primary-dark: #102240;
-            --accent: #c5a028;
-            --accent-light: #e0c468;
-            --bg: #f6f7fb;
-            --paper: #ffffff;
-            --text: #1f2733;
-            --muted: #6b7585;
-            --border: #e6e9f0;
-            --radius: 12px;
-            --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
-            --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
-            --danger: #c0392b;
-            --success: #1e7e4f;
-            --warning: #b07d12;
-            --info: #2471a3;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
-
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; cursor: pointer; border: none; }
-        .hidden { display: none !important; }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-        .btn:active { transform: translateY(1px); }
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            border: 1.5px solid rgba(255,255,255,0.55);
-        }
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: #fff;
-        }
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-        .btn-ghost:hover { border-color: var(--primary); }
-        .btn-danger {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1.5px solid #f6c6c0;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-danger:hover { background: #f6c6c0; }
-        .btn-success {
-            background: #e7f5ee;
-            color: var(--success);
-            border: 1.5px solid #b9e3cb;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-success:hover { background: #b9e3cb; }
-        .btn-warning {
-            background: #fff3cd;
-            color: var(--warning);
-            border: 1.5px solid #ffeaa7;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-warning:hover { background: #ffeaa7; }
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-        }
-        .btn-small:hover { background: var(--primary-light); }
-        .btn-small.active-filter {
-            background: var(--accent);
-            color: var(--primary-dark);
-        }
-        .btn-block { width: 100%; }
-
-        /* HEADER */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-            cursor: pointer;
-        }
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .session-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 0.88rem;
-        }
-        .session-pill .role-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--accent-light);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
-
-        /* DASHBOARD */
-        .dash-shell {
-            display: flex;
-            min-height: calc(100vh - 75px);
-        }
-        .dash-sidebar {
-            width: 250px;
-            background: var(--primary-dark);
-            color: #fff;
-            flex-shrink: 0;
-            padding: 28px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: sticky;
-            top: 75px;
-            height: calc(100vh - 75px);
-            overflow-y: auto;
-        }
-        .dash-sidebar .dash-user {
-            padding: 0 8px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 14px;
-        }
-        .dash-sidebar .dash-user strong {
-            display: block;
-            font-size: 0.98rem;
-        }
-        .dash-sidebar .dash-user span {
-            font-size: 0.78rem;
-            color: var(--accent-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .dash-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.78);
-            font-size: 0.92rem;
-            font-weight: 500;
-            background: transparent;
-            text-align: left;
-            width: 100%;
-        }
-        .dash-nav-item:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        .dash-nav-item.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: 700;
-        }
-        .dash-nav-item.logout {
-            margin-top: auto;
-            color: #f6c6c0;
-        }
-        .dash-nav-item.logout:hover {
-            background: rgba(192,57,43,0.18);
-        }
-        .dash-main {
-            flex: 1;
-            padding: 32px;
-            max-width: 1100px;
-        }
-        .dash-main h2 {
-            margin-bottom: 4px;
-        }
-        .dash-main .dash-sub {
-            color: var(--muted);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-        .dash-tab { display: none; }
-        .dash-tab.active { display: block; }
-
-        .card-box {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-        }
-        .card-box h3 {
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-        }
-
-        .alert-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: #fff8e6;
-            border: 1px solid #f0dba3;
-            color: var(--warning);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
-        .alert-box.info {
-            background: #e6effa;
-            border-color: #b8d0e8;
-            color: var(--info);
-        }
-        .alert-box.success {
-            background: #e7f5ee;
-            border-color: #b9e3cb;
-            color: var(--success);
-        }
-        .alert-box.danger {
-            background: #fdecea;
-            border-color: #f6c6c0;
-            color: var(--danger);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .data-table th,
-        .data-table td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        .data-table th {
-            color: var(--muted);
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-weight: 700;
-        }
-        .data-table tbody tr:hover {
-            background: #f9fafc;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .badge-info { background: #e6effa; color: var(--info); }
-        .badge-warning { background: #fff3cd; color: var(--warning); }
-        .badge-success { background: #e7f5ee; color: var(--success); }
-        .badge-danger { background: #fdecea; color: var(--danger); }
-        .badge-neutral { background: #eceff3; color: var(--muted); }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .form-field.full { grid-column: 1/-1; }
-        .form-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .form-field label .required {
-            color: var(--danger);
-            margin-left: 2px;
-        }
-        .form-field input,
-        .form-field select,
-        .form-field textarea {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 0.93rem;
-            font-family: inherit;
-            color: var(--text);
-            background: #fff;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            width: 100%;
-        }
-        .form-field input:focus,
-        .form-field select:focus,
-        .form-field textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
-        }
-        .form-field .hint {
-            font-size: 0.75rem;
-            color: var(--muted);
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .padron-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.78rem;
-            padding: 4px 0;
-            min-height: 24px;
-            flex-wrap: wrap;
-        }
-        .padron-status .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(26,54,93,0.1);
-            border-radius: 50%;
-            border-top-color: var(--accent);
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .padron-status .success { color: var(--success); }
-        .padron-status .error { color: var(--danger); }
-        .padron-status .info { color: var(--info); }
-        .padron-status .warning { color: var(--warning); }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(16,34,64,0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-        .modal-box {
-            background: var(--paper);
-            border-radius: 16px;
-            max-width: 520px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .modal-box.wide { max-width: 680px; }
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: transparent;
-            font-size: 1.4rem;
-            color: var(--muted);
-            line-height: 1;
-            padding: 4px;
-        }
-        .modal-close:hover { color: var(--primary); }
-        .modal-box h3 { margin-bottom: 4px; }
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 0.88rem;
-            margin-bottom: 20px;
-        }
-
-        .login-error {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1px solid #f6c6c0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-        }
-        .login-error.visible { display: block; }
-
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #e7f5ee;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 16px;
-        }
-
-        .modal-credentials {
-            background: #eef2f8;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-top: 18px;
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-        .modal-credentials strong { color: var(--primary); }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-        }
-        .toast-box {
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: toastIn .25s ease;
-            white-space: pre-line;
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateX(24px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .toast-icon { font-weight: 700; flex-shrink: 0; }
-        .toast-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 0 0 0 6px;
-        }
-        .toast-close:hover { opacity: 1; }
-
-        #db-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 999;
-            background: #eef2f8;
-            color: #1a365d;
-            border: 1px solid #d0d7e0;
-        }
-        #db-status.online {
-            background: #e7f5ee;
-            color: #1e7e4f;
-            border-color: #b9e3cb;
-        }
-        #db-status.offline {
-            background: #fdecea;
-            color: #c0392b;
-            border-color: #f6c6c0;
-        }
-
-        .campos-empleado { display: none; }
-        .campos-empleado.visible { display: block; }
-        .campos-estudiante { display: none; }
-        .campos-estudiante.visible { display: block; }
-        .campos-aspirante { display: none; }
-        .campos-aspirante.visible { display: block; }
-
-        .empleado-notificacion {
-            background: rgba(176,125,18,0.12);
-            border: 1px solid rgba(176,125,18,0.25);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        .empleado-notificacion .icono { font-size: 1.5rem; flex-shrink: 0; }
-        .empleado-notificacion .contenido h4 {
-            color: var(--warning);
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-        }
-        .empleado-notificacion .contenido p {
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-        .filter-bar .btn-small { font-size: 0.78rem; }
-
-        .view-public {
-            padding: 60px 24px;
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .view-public h1 { font-size: 2.4rem; margin-bottom: 16px; }
-        .view-public .hero-sub {
-            color: var(--muted);
-            font-size: 1.15rem;
-            margin-bottom: 32px;
-            max-width: 600px;
-        }
-        .view-public .btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Estilos para la sección de miembros del comité */
-        .miembro-comite-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: #f8f9fc;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .miembro-comite-card .info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .miembro-comite-card .info .avatar {
-            font-size: 1.8rem;
-            width: 40px;
-            text-align: center;
-        }
-
-        .miembro-comite-card .info .nombre {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .miembro-comite-card .info .email {
-            color: var(--muted);
-            font-size: 0.82rem;
-        }
-
-        .miembro-comite-card .info .rol {
-            background: var(--primary);
-            color: #fff;
-            padding: 2px 12px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .miembro-comite-card .info .estado {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 2px 10px;
-            border-radius: 999px;
-        }
-
-        .miembro-comite-card .info .estado.activo {
-            background: #e7f5ee;
-            color: var(--success);
-        }
-
-        .miembro-comite-card .info .estado.inactivo {
-            background: #fdecea;
-            color: var(--danger);
-        }
-
-        .miembro-comite-card .acciones {
-            display: flex;
-            gap: 6px;
-        }
-
-        .miembro-comite-card .acciones .btn-small {
-            font-size: 0.7rem;
-            padding: 4px 12px;
-        }
-
-        @media (max-width: 680px) {
-            .hamburger { display: flex; }
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-            nav.main-nav.open { display: flex; }
-            nav.main-nav .btn,
-            nav.main-nav .session-pill { width: 100%; }
-            nav.main-nav .session-pill {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .dash-shell { flex-direction: column; }
-            .dash-sidebar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 16px;
-                position: relative;
-                top: 0;
-                height: auto;
-            }
-            .dash-sidebar .dash-user {
-                width: 100%;
-                border-bottom: none;
-                margin-bottom: 6px;
-            }
-            .dash-nav-item {
-                width: auto;
-                flex: 1;
-                justify-content: center;
-            }
-            .dash-nav-item.logout { margin-top: 0; }
-            .form-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-            .data-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .filter-bar { justify-content: center; }
-            .view-public h1 { font-size: 1.8rem; }
-            .view-public .hero-sub { font-size: 1rem; }
-            .miembro-comite-card {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-            }
-            .miembro-comite-card .info {
-                justify-content: center;
-            }
-            .miembro-comite-card .acciones {
-                justify-content: center;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Administración — Sistema de Becas Universitarias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link rel="stylesheet" href="css/base.css">
 </head>
 <body>
 
-    <div id="db-status" class="online">Conectado</div>
-
-    <!-- HEADER -->
-    <header class="site-header">
-        <div class="header-inner">
-            <div class="brand" onclick="irInicio(event)">
-                <div class="brand-mark">SB</div>
-                <div class="brand-text">
-                    <strong>Sistema de Becas</strong>
-                    <span>Universitarias</span>
-                </div>
-            </div>
-            <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú">
-                <span></span><span></span><span></span>
-            </button>
-            <nav class="main-nav" id="mainNav"></nav>
-        </div>
-    </header>
-
-    <!-- VISTA PÚBLICA -->
-    <div id="view-public" class="view view-public">
-        <h1>Sistema de Becas Universitarias</h1>
-        <p class="hero-sub">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="abrirLogin()">Iniciar sesión</button>
-            <a href="registro.html" class="btn btn-ghost">Registrarse</a>
-        </div>
-        <div style="margin-top:40px; padding:20px; background:var(--paper); border-radius:var(--radius); border:1px solid var(--border); max-width:600px; width:100%;">
-            <h3 style="font-size:1rem; margin-bottom:8px;">📢 Noticias recientes</h3>
-            <div id="public-noticias" style="text-align:left;">
-                <p style="color:var(--muted);">Cargando noticias...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANEL ADMINISTRADOR -->
-    <div id="view-dash-admin" class="view hidden">
-        <div class="dash-shell">
-            <aside class="dash-sidebar">
-                <div class="dash-user">
-                    <strong id="adm-nombre">—</strong>
-                    <span>Administrador</span>
-                </div>
-                <button class="dash-nav-item active" onclick="showDashTab('adm','adm-usuarios',this)">Usuarios</button>
-                <button class="dash-nav-item" onclick="showDashTab('adm','adm-tipos',this)">Tipos de beca</button>
-                <button class="dash-nav-item" onclick="showDashTab('adm','adm-miembros-comite',this)">Miembros Comité</button>
-                <button class="dash-nav-item" onclick="showDashTab('adm','adm-config',this)">Configuración</button>
-                <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
-            </aside>
-
-            <main class="dash-main">
-                <h2>Administrador del Sistema</h2>
-                <p class="dash-sub">Gestiona usuarios, tipos de beca, miembros del comité y configuración del sistema.</p>
-
-                <!-- TAB: Usuarios -->
-                <div class="dash-tab active" id="adm-usuarios">
-                    <div class="card-box">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-                            <h3 style="margin:0;">Usuarios del sistema</h3>
-                            <button class="btn btn-small" onclick="nuevoUsuario()">+ Nuevo usuario</button>
-                        </div>
-
-                        <div class="filter-bar">
-                            <button class="btn btn-small active-filter" onclick="filtrarUsuarios('todos',this)">Todos</button>
-                            <button class="btn btn-small" onclick="filtrarUsuarios('aprobados',this)">Aprobados</button>
-                            <button class="btn btn-small" onclick="filtrarUsuarios('pendientes',this)">Pendientes</button>
-                            <button class="btn btn-small" onclick="filtrarUsuarios('aspirante',this)">Aspirantes</button>
-                            <button class="btn btn-small" onclick="filtrarUsuarios('estudiante',this)">Estudiantes</button>
-                            <button class="btn btn-small" onclick="filtrarUsuarios('empleados',this)">Empleados</button>
-                        </div>
-
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adm-tabla-usuarios"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Tipos de beca -->
-                <div class="dash-tab" id="adm-tipos">
-                    <div class="card-box">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-                            <h3 style="margin:0;">Tipos de beca</h3>
-                            <button class="btn btn-small" onclick="abrirModalTipoBeca()">+ Nuevo tipo</button>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Icono</th>
-                                    <th>Nombre</th>
-                                    <th>% Mín</th>
-                                    <th>% Máx</th>
-                                    <th>Rubros</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adm-tabla-tipos"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Miembros del Comité -->
-                <div class="dash-tab" id="adm-miembros-comite">
-                    <div class="card-box">
-                        <h3>Gestionar Miembros del Comité</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Desde aquí puedes agregar, activar, desactivar o eliminar miembros del comité de becas.
-                            Solo los miembros activos pueden participar en las votaciones.
-                        </p>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-                            <div>
-                                <span class="badge badge-success" id="miembros-activos-count">0 activos</span>
-                                <span class="badge badge-neutral" id="miembros-inactivos-count">0 inactivos</span>
-                            </div>
-                            <button class="btn btn-small" onclick="abrirModalAgregarMiembroComite()">+ Agregar miembro</button>
-                        </div>
-
-                        <div id="lista-miembros-comite"></div>
-                    </div>
-                </div>
-
-                <!-- TAB: Configuración -->
-                <div class="dash-tab" id="adm-config">
-                    <div class="card-box">
-                        <h3>Ponderaciones de evaluación</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;">La suma de las 4 ponderaciones debe ser exactamente 100%.</p>
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <label>Pond. Socioeconómico (%)</label>
-                                <input type="number" id="cfg-socio" value="40" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Académico (%)</label>
-                                <input type="number" id="cfg-acad" value="35" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Vulnerabilidad (%)</label>
-                                <input type="number" id="cfg-vuln" value="15" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Pond. Méritos (%)</label>
-                                <input type="number" id="cfg-mer" value="10" oninput="validarPonderaciones()" min="0" max="100">
-                            </div>
-                        </div>
-                        <div id="pond-suma-msg" style="margin:10px 0;font-weight:700;color:var(--success);">✅ Suma total: 100%</div>
-                    </div>
-
-                    <div class="card-box">
-                        <h3>Umbrales de elegibilidad</h3>
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <label>Promedio mínimo requerido</label>
-                                <input type="number" id="cfg-promedio-min" value="80" min="0" max="100">
-                            </div>
-                            <div class="form-field">
-                                <label>Ingreso máximo familiar (₡)</label>
-                                <input type="number" id="cfg-ingreso-max" value="500000" min="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card-box">
-                        <h3>Plazos del proceso (en días)</h3>
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <label>Plazo de subsanación</label>
-                                <input type="number" id="cfg-plazo-subsanacion" value="5" min="1">
-                            </div>
-                            <div class="form-field">
-                                <label>Plazo de apelación</label>
-                                <input type="number" id="cfg-plazo-apelacion" value="10" min="1">
-                            </div>
-                            <div class="form-field">
-                                <label>Plazo de renovación</label>
-                                <input type="number" id="cfg-plazo-renovacion" value="15" min="1">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card-box">
-                        <h3>Mensajes de notificación por correo</h3>
-                        <div class="form-field full" style="margin-bottom:14px;">
-                            <label>Mensaje de aprobación</label>
-                            <textarea id="cfg-msg-aprobacion" class="form-control" rows="2">Felicidades, tu solicitud de beca ha sido APROBADA.</textarea>
-                        </div>
-                        <div class="form-field full" style="margin-bottom:14px;">
-                            <label>Mensaje de rechazo</label>
-                            <textarea id="cfg-msg-rechazo" class="form-control" rows="2">Lamentamos informarte que tu solicitud ha sido RECHAZADA.</textarea>
-                        </div>
-                        <div class="form-field full">
-                            <label>Mensaje de subsanación</label>
-                            <textarea id="cfg-msg-subsanacion" class="form-control" rows="2">Tu solicitud requiere correcciones. Revisa los documentos pendientes.</textarea>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="guardarConfig()">Guardar configuración</button>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- MODALES -->
-    <div id="modal-login" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-login')">×</button>
-            <h3>Iniciar sesión</h3>
-            <div id="login-error" class="login-error hidden"></div>
-            <div class="form-field">
-                <label>Correo</label>
-                <input type="email" id="login-email" class="form-control" value="admin@becas.com">
-            </div>
-            <div class="form-field">
-                <label>Contraseña</label>
-                <input type="password" id="login-password" class="form-control" value="123456">
-            </div>
-            <button class="btn btn-primary btn-block" onclick="handleLogin()">Ingresar</button>
-            <div class="modal-credentials">
-                <strong>Credenciales</strong><br>
-                Administrador: admin@becas.com / 123456
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL USUARIO -->
-    <div id="modal-usuario" class="modal-overlay hidden">
-        <div class="modal-box wide">
-            <button class="modal-close" onclick="closeModal('modal-usuario')">×</button>
-            <h3 id="usuario-modal-titulo">Nuevo usuario</h3>
-            <p class="modal-sub" id="usuario-modal-sub">Completa todos los datos del usuario.</p>
-            <input type="hidden" id="usuario-edit-id">
-
-            <div class="form-field">
-                <label>Tipo de usuario <span class="required">*</span></label>
-                <select id="usuario-tipo" class="form-control" onchange="toggleCamposUsuarioAdmin()">
-                    <option value="aspirante">Aspirante (Aún no ingreso a la universidad)</option>
-                    <option value="estudiante">Estudiante (Ya estoy matriculado)</option>
-                    <option value="empleado">Empleado (TS, Comité, Auditor)</option>
-                </select>
-            </div>
-
-            <div class="campos-aspirante visible" id="usuario-campos-aspirante">
-                <div class="alert-box info">ℹ️ Los aspirantes pueden enviar solicitudes de beca sin ser estudiantes.</div>
-            </div>
-
-            <div class="campos-estudiante" id="usuario-campos-estudiante">
-                <div class="alert-box success">✅ Los estudiantes pueden solicitar becas y acceder a todos los beneficios.</div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Carrera <span class="required">*</span></label>
-                        <select id="usuario-carrera" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
-                            <option value="Medicina">Medicina</option>
-                            <option value="Derecho">Derecho</option>
-                            <option value="Administración">Administración</option>
-                            <option value="Arquitectura">Arquitectura</option>
-                            <option value="Psicología">Psicología</option>
-                            <option value="Enfermería">Enfermería</option>
-                            <option value="Educación">Educación</option>
-                            <option value="Ingeniería Civil">Ingeniería Civil</option>
-                            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                            <option value="Comunicación">Comunicación</option>
-                            <option value="Diseño Gráfico">Diseño Gráfico</option>
-                            <option value="Otra">Otra</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Facultad <span class="required">*</span></label>
-                        <select id="usuario-facultad" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Ingeniería">Ingeniería</option>
-                            <option value="Ciencias de la Salud">Ciencias de la Salud</option>
-                            <option value="Ciencias Sociales">Ciencias Sociales</option>
-                            <option value="Arquitectura y Diseño">Arquitectura y Diseño</option>
-                            <option value="Artes">Artes</option>
-                            <option value="Educación">Educación</option>
-                            <option value="Ciencias Básicas">Ciencias Básicas</option>
-                            <option value="Agronomía">Agronomía</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Fecha de ingreso <span class="required">*</span></label>
-                        <input type="date" id="usuario-fecha-ingreso" class="form-control">
-                    </div>
-                    <div class="form-field">
-                        <label>Sede <span class="required">*</span></label>
-                        <select id="usuario-sede" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Central">Central</option>
-                            <option value="Occidente">Occidente</option>
-                            <option value="Atlántica">Atlántica</option>
-                            <option value="Brunca">Brunca</option>
-                            <option value="Chorotega">Chorotega</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label>Año de ingreso</label>
-                    <select id="usuario-anio-ingreso" class="form-control">
-                        <option value="">Seleccionar</option>
-                        <option value="2026">2026</option>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
-                        <option value="2020">2020</option>
-                        <option value="2019">2019</option>
-                        <option value="2018">2018</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="campos-empleado" id="usuario-campos-empleado">
-                <div class="empleado-notificacion">
-                    <div class="icono">⏳</div>
-                    <div class="contenido">
-                        <h4>Requiere aprobación del administrador</h4>
-                        <p>Los empleados necesitan aprobación para acceder a su panel de trabajo.</p>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Cargo <span class="required">*</span></label>
-                        <select id="usuario-cargo" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Trabajador Social">Trabajador Social</option>
-                            <option value="Miembro del Comité">Miembro del Comité</option>
-                            <option value="Auditor">Auditor</option>
-                            <option value="Administrador">Administrador</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Departamento <span class="required">*</span></label>
-                        <select id="usuario-departamento" class="form-control">
-                            <option value="">Seleccionar</option>
-                            <option value="Oficina de Becas">Oficina de Becas</option>
-                            <option value="Comité de Becas">Comité de Becas</option>
-                            <option value="Auditoría">Auditoría</option>
-                            <option value="Administración">Administración</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label>Cédula <span class="required">*</span></label>
-                <input type="text" id="usuario-cedula" class="form-control" placeholder="1-2345-6789" oninput="consultarPadronAdmin()">
-                <div class="padron-status" id="usuario-padron-status">
-                    <span class="info">🔍 Ingresa la cédula para verificar datos</span>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label>Nombre completo <span class="required">*</span></label>
-                <input type="text" id="usuario-nombre" class="form-control" placeholder="María José González Mora">
-                <span class="hint">Se cargará automáticamente desde el padrón.</span>
-            </div>
-
-            <div class="form-field">
-                <label>Dirección</label>
-                <input type="text" id="usuario-direccion" class="form-control" placeholder="Provincia, Cantón, Distrito">
-                <span class="hint">Se cargará automáticamente desde el padrón.</span>
-            </div>
-
-            <div class="form-field">
-                <label>Correo electrónico <span class="required">*</span></label>
-                <input type="email" id="usuario-email" class="form-control" placeholder="correo@ejemplo.com">
-            </div>
-
-            <div class="form-field">
-                <label>Teléfono</label>
-                <input type="text" id="usuario-telefono" class="form-control" placeholder="8888-9999">
-            </div>
-
-            <div class="form-row">
-                <div class="form-field">
-                    <label>Rol <span class="required">*</span></label>
-                    <select id="usuario-rol" class="form-control">
-                        <option value="aspirante">Aspirante</option>
-                        <option value="estudiante">Estudiante</option>
-                        <option value="trabajador_social">Trabajador Social</option>
-                        <option value="comite">Comité</option>
-                        <option value="auditor">Auditor</option>
-                        <option value="admin">Administrador</option>
-                    </select>
-                </div>
-                <div class="form-field" id="usuario-password-field">
-                    <label>Contraseña <span class="required">*</span></label>
-                    <input type="text" id="usuario-password" class="form-control" placeholder="Contraseña temporal" value="123456">
-                    <span class="hint">Mínimo 6 caracteres</span>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label>
-                    <input type="checkbox" id="usuario-aprobado" checked> Usuario aprobado
-                </label>
-                <span class="hint">Los empleados requieren aprobación para acceder a sus paneles.</span>
-            </div>
-
-            <button class="btn btn-primary btn-block" onclick="guardarUsuario()">Guardar usuario</button>
-            <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal('modal-usuario')">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- MODAL AGREGAR MIEMBRO COMITÉ -->
-    <div id="modal-agregar-miembro-comite" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-agregar-miembro-comite')">×</button>
-            <h3>Agregar miembro al Comité</h3>
-            <p class="modal-sub">Selecciona un usuario existente para agregarlo como miembro del comité.</p>
-
-            <div class="form-field">
-                <label>Usuario <span class="required">*</span></label>
-                <select id="admin-miembro-usuario" class="form-control">
-                    <option value="">Seleccionar usuario...</option>
-                </select>
-            </div>
-
-            <div class="form-field">
-                <label>Rol en el comité</label>
-                <input type="text" id="admin-miembro-rol" class="form-control" placeholder="Ej: Presidente, Vocal, Secretario" value="Miembro">
-            </div>
-
-            <button class="btn btn-primary btn-block" onclick="agregarMiembroComiteAdmin()">Agregar miembro</button>
-            <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeModal('modal-agregar-miembro-comite')">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- MODAL TIPO BECA -->
-    <div id="modal-tipo-beca" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-tipo-beca')">×</button>
-            <h3 id="tipo-beca-titulo">Nuevo tipo de beca</h3>
-            <input type="hidden" id="tb-id-edicion">
-            <div class="form-grid">
-                <div class="form-field">
-                    <label>Ícono (emoji)</label>
-                    <input type="text" id="tb-icon" class="form-control" placeholder="💰" maxlength="4">
-                </div>
-                <div class="form-field">
-                    <label>Nombre *</label>
-                    <input type="text" id="tb-nombre" class="form-control" placeholder="Ej: Socioeconómica">
-                </div>
-                <div class="form-field full">
-                    <label>Descripción</label>
-                    <input type="text" id="tb-desc" class="form-control" placeholder="Breve descripción de la beca">
-                </div>
-                <div class="form-field">
-                    <label>% Cobertura mínima</label>
-                    <input type="number" id="tb-min" class="form-control" min="0" max="100" value="25">
-                </div>
-                <div class="form-field">
-                    <label>% Cobertura máxima</label>
-                    <input type="number" id="tb-max" class="form-control" min="0" max="100" value="100">
-                </div>
-                <div class="form-field full">
-                    <label>Rubros cubiertos (separados por coma)</label>
-                    <input type="text" id="tb-rubros" class="form-control" placeholder="Matrícula, Aranceles, Materiales">
-                </div>
-                <div class="form-field full">
-                    <label>Requisitos (uno por línea)</label>
-                    <textarea id="tb-requisitos" class="form-control" rows="3" placeholder="Promedio mínimo 80&#10;Ingreso familiar máximo 2 salarios mínimos"></textarea>
-                </div>
-                <div class="form-field full">
-                    <label><input type="checkbox" id="tb-activo" checked> Tipo de beca activo</label>
-                </div>
-            </div>
-            <button class="btn btn-primary btn-block" onclick="guardarTipoBeca()">Guardar tipo de beca</button>
-        </div>
-    </div>
-
-    <!-- MODAL NOTIFICACIÓN -->
-    <div id="modal-notificacion" class="modal-overlay hidden">
-        <div class="modal-box">
-            <div class="success-icon">📧</div>
-            <h3 id="notif-titulo">Notificación</h3>
-            <p id="notif-mensaje"></p>
-            <button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIRMAR -->
-    <div id="modal-custom-confirm" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3 style="margin-bottom:14px;">Confirmar acción</h3>
-            <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-                <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
-                <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
-
-    <script>
-        // ============================================================
-        // CONSTANTES Y CONFIGURACIÓN
-        // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        const API_PADRON = 'https://www.soportereal.com/herramientas/contribuyentes/v1/contribuyente';
-        let timeoutConsultaPadronAdmin = null;
-        let ultimaCedulaConsultadaAdmin = '';
-        let consultaEnProcesoAdmin = false;
-        let filtroUsuariosActual = 'todos';
-
-        // ============================================================
-        // UTILIDADES
-        // ============================================================
-        function rolLabel(rol) {
-            const map = {
-                estudiante: 'Estudiante',
-                trabajador_social: 'Trab. Social',
-                comite: 'Comité',
-                admin: 'Administrador',
-                auditor: 'Auditor',
-                aspirante: 'Aspirante'
-            };
-            return map[rol] || rol;
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function showToast(message, type) {
-            type = type || 'info';
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-            const colors = {
-                success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
-                error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
-                warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
-                info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
-            };
-            const c = colors[type] || colors.info;
-            const toast = document.createElement('div');
-            toast.className = 'toast-box';
-            toast.style.background = c.bg;
-            toast.style.border = '1px solid ' + c.border;
-            toast.style.color = c.color;
-            toast.innerHTML = '<span class="toast-icon">' + c.icon +
-                '</span><span style="flex:1;">' + message +
-                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
-            container.appendChild(toast);
-
-            const remove = () => {
-                toast.style.transition = 'opacity .3s ease, transform .3s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(24px)';
-                setTimeout(() => toast.remove(), 300);
-            };
-            toast.querySelector('.toast-close').addEventListener('click', remove);
-            setTimeout(remove, 4500);
-        }
-
-        function notify(message) {
-            let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
-                type = 'warning';
-            showToast(message, type);
-        }
-
-        function customConfirm(message) {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('modal-custom-confirm');
-                document.getElementById('custom-confirm-message').textContent = message;
-                modal.classList.remove('hidden');
-                const okBtn = document.getElementById('custom-confirm-ok');
-                const cancelBtn = document.getElementById('custom-confirm-cancel');
-                const cleanup = (result) => {
-                    modal.classList.add('hidden');
-                    okBtn.removeEventListener('click', onOk);
-                    cancelBtn.removeEventListener('click', onCancel);
-                    resolve(result);
-                };
-                const onOk = () => cleanup(true);
-                const onCancel = () => cleanup(false);
-                okBtn.addEventListener('click', onOk);
-                cancelBtn.addEventListener('click', onCancel);
-            });
-        }
-
-        function cifrarPassword(pwd) {
-            return CryptoJS.AES.encrypt(pwd, SECRET_KEY).toString();
-        }
-
-        function descifrarPassword(encrypted) {
-            try {
-                return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(CryptoJS.enc.Utf8);
-            } catch (e) {
-                return encrypted;
-            }
-        }
-
-        // ============================================================
-        // NAVEGACIÓN
-        // ============================================================
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            const target = document.getElementById(viewId);
-            if (target) target.classList.remove('hidden');
-            if (viewId === 'view-public') renderPublicNoticias();
-            if (viewId.includes('dash')) renderDashboards();
-        }
-
-        function irInicio(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function goHome(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function abrirLogin() {
-            openModal('modal-login');
-        }
-
-        function cerrarSesion() {
-            const session = StorageManager.session.get();
-            if (session) {
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session.nombre,
-                    rol: session.rol,
-                    accion: 'Cierre de sesión',
-                    expediente: '—'
-                });
-            }
-            StorageManager.session.clear();
-            notify('✅ Sesión cerrada correctamente.');
-            window.location.href = 'index.html';
-        }
-
-        function renderHeaderNav() {
-            const nav = document.getElementById('mainNav');
-            const session = StorageManager.session.get();
-            if (session) {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<div class="session-pill"><span>' + session.nombre +
-                    '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
-                    '<button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button>' +
-                    '<button class="btn btn-primary" onclick="cerrarSesion()">Salir</button>';
-            } else {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<button class="btn btn-outline" onclick="abrirLogin()">Ingresar</button>' +
-                    '<a href="registro.html" class="btn btn-primary">Registrarse</a>';
-            }
-        }
-
-        function goToDashboard() {
-            const session = StorageManager.session.get();
-            if (session) {
-                const dashMap = {
-                    estudiante: 'view-dash-estudiante',
-                    aspirante: 'view-dash-estudiante',
-                    trabajador_social: 'view-dash-social',
-                    comite: 'view-dash-comite',
-                    admin: 'view-dash-admin',
-                    auditor: 'view-dash-auditor'
-                };
-                showView(dashMap[session.rol] || 'view-public');
-            } else {
-                showView('view-public');
-            }
-        }
-
-        // ============================================================
-        // NOTICIAS PÚBLICAS
-        // ============================================================
-        function renderPublicNoticias() {
-            const container = document.getElementById('public-noticias');
-            if (!container) return;
-
-            const noticias = StorageManager.noticias.getActivas();
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-
-            const activas = noticias
-                .filter(n => {
-                    const fechaPub = new Date(n.fechaPublicacion);
-                    fechaPub.setHours(0, 0, 0, 0);
-                    return fechaPub <= hoy;
-                })
-                .slice(0, 3);
-
-            if (activas.length === 0) {
-                container.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay noticias disponibles en este momento.</p>';
-                return;
-            }
-
-            container.innerHTML = activas.map(n =>
-                '<div style="padding:10px 0; border-bottom:1px solid var(--border);">' +
-                '<strong>' + n.titulo + '</strong>' +
-                '<span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion +
-                '</span>' +
-                '<p style="font-size:0.9rem;margin-top:4px;">' + n.contenido + '</p>' +
-                '</div>'
-            ).join('');
-        }
-
-        // ============================================================
-        // LOGIN
-        // ============================================================
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value.trim().toLowerCase();
-            const password = document.getElementById('login-password').value;
-            const errorBox = document.getElementById('login-error');
-            errorBox.className = 'login-error hidden';
-            errorBox.textContent = '';
-
-            if (!email || !password) {
-                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const usuario = StorageManager.usuarios.getByEmail(email);
-
-            if (!usuario) {
-                errorBox.textContent = '❌ Usuario no encontrado';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            if (usuario.bloqueado) {
-                errorBox.textContent = '🔒 Usuario bloqueado. Contacta al administrador.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const decryptedPass = descifrarPassword(usuario.password);
-            if (decryptedPass !== password) {
-                usuario.intentos = (usuario.intentos || 0) + 1;
-                if (usuario.intentos >= 3) {
-                    usuario.bloqueado = true;
-                    errorBox.textContent = '🔒 Usuario bloqueado por múltiples intentos fallidos.';
-                } else {
-                    errorBox.textContent = '❌ Contraseña incorrecta. Intentos: ' + usuario.intentos + '/3';
-                }
-                StorageManager.usuarios.save(usuario);
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            usuario.intentos = 0;
-            StorageManager.usuarios.save(usuario);
-
-            const nuevaSesion = {
-                email: usuario.email,
-                nombre: usuario.nombre,
-                rol: usuario.rol
-            };
-            StorageManager.session.set(nuevaSesion);
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: usuario.nombre,
-                rol: usuario.rol,
-                accion: 'Inicio de sesión',
-                expediente: '—'
-            });
-
-            closeModal('modal-login');
-            renderHeaderNav();
-            StorageManager.emit('session_actualizada', nuevaSesion);
-
-            const dashMap = {
-                estudiante: 'view-dash-estudiante',
-                aspirante: 'view-dash-estudiante',
-                trabajador_social: 'view-dash-social',
-                comite: 'view-dash-comite',
-                admin: 'view-dash-admin',
-                auditor: 'view-dash-auditor'
-            };
-            showView(dashMap[usuario.rol] || 'view-public');
-            notify('✅ Bienvenido/a ' + usuario.nombre);
-        }
-
-        // ============================================================
-        // CONSULTA AL PADRÓN (ADMIN)
-        // ============================================================
-        function consultarPadronAdmin() {
-            const cedulaEl = document.getElementById('usuario-cedula');
-            const statusEl = document.getElementById('usuario-padron-status');
-
-            const digitos = cedulaEl.value.replace(/\D/g, '');
-            clearTimeout(timeoutConsultaPadronAdmin);
-
-            if (digitos.length < 9) {
-                statusEl.innerHTML = `<span class="info">🔍 Ingresa la cédula para verificar datos</span>`;
-                consultaEnProcesoAdmin = false;
-                return;
-            }
-
-            if (digitos === ultimaCedulaConsultadaAdmin && !consultaEnProcesoAdmin) {
-                return;
-            }
-
-            statusEl.innerHTML = `
-                <span class="spinner"></span>
-                <span class="info">Consultando padrón electoral...</span>
-            `;
-            consultaEnProcesoAdmin = true;
-
-            timeoutConsultaPadronAdmin = setTimeout(async () => {
-                try {
-                    const url = `${API_PADRON}/${digitos}`;
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        signal: AbortSignal.timeout(15000)
-                    });
-
-                    if (!response.ok) {
-                        if (response.status === 404) {
-                            statusEl.innerHTML = `<span class="error">⚠️ Cédula no encontrada en el padrón electoral</span>`;
-                            consultaEnProcesoAdmin = false;
-                            return;
-                        }
-                        if (response.status === 400) {
-                            statusEl.innerHTML = `<span class="error">⚠️ Cédula inválida. Verifica el formato.</span>`;
-                            consultaEnProcesoAdmin = false;
-                            return;
-                        }
-                        if (response.status === 429) {
-                            statusEl.innerHTML = `<span class="warning">⏳ Has excedido el límite de consultas. Espera un momento.</span>`;
-                            consultaEnProcesoAdmin = false;
-                            return;
-                        }
-                        if (response.status === 503) {
-                            statusEl.innerHTML = `<span class="warning">⚠️ El servicio de padrón no está disponible. Intenta más tarde.</span>`;
-                            consultaEnProcesoAdmin = false;
-                            return;
-                        }
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    ultimaCedulaConsultadaAdmin = digitos;
-                    consultaEnProcesoAdmin = false;
-
-                    const esFisica = data.tipoIdentificacion === '01';
-                    let nombreCompleto = '';
-
-                    if (esFisica && data.persona) {
-                        const persona = data.persona;
-                        nombreCompleto = persona.nombre || '';
-                        nombreCompleto = nombreCompleto.replace(/\s+/g, ' ').trim();
-                        document.getElementById('usuario-nombre').value = nombreCompleto;
-
-                        if (persona.domicilio) {
-                            const domicilio = persona.domicilio;
-                            let direccionCompleta = '';
-                            if (domicilio.provincia) direccionCompleta += domicilio.provincia;
-                            if (domicilio.canton) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.canton;
-                            if (domicilio.distrito) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.distrito;
-                            if (direccionCompleta) {
-                                document.getElementById('usuario-direccion').value = direccionCompleta;
-                            }
-                        }
-
-                        statusEl.innerHTML = `<span class="success">✅ Datos cargados desde el padrón electoral</span>`;
-                        notify('✅ Datos del padrón cargados correctamente.');
-
-                    } else if (esFisica && data.nombre) {
-                        nombreCompleto = data.nombre || '';
-                        nombreCompleto = nombreCompleto.replace(/\s+/g, ' ').trim();
-                        document.getElementById('usuario-nombre').value = nombreCompleto;
-
-                        if (data.domicilio) {
-                            const domicilio = data.domicilio;
-                            let direccionCompleta = '';
-                            if (domicilio.provincia) direccionCompleta += domicilio.provincia;
-                            if (domicilio.canton) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.canton;
-                            if (domicilio.distrito) direccionCompleta += (direccionCompleta ? ', ' : '') + domicilio.distrito;
-                            if (direccionCompleta) {
-                                document.getElementById('usuario-direccion').value = direccionCompleta;
-                            }
-                        }
-
-                        statusEl.innerHTML = `<span class="success">✅ Datos cargados desde el padrón electoral</span>`;
-                        notify('✅ Datos del padrón cargados correctamente.');
-
-                    } else if (!esFisica && data.nombre) {
-                        document.getElementById('usuario-nombre').value = data.nombre;
-                        statusEl.innerHTML = `<span class="warning">ℹ️ Cédula jurídica. Solo se cargó el nombre.</span>`;
-                        notify('ℹ️ Cédula jurídica detectada. Solo se cargó el nombre.');
-                    } else {
-                        statusEl.innerHTML = `<span class="warning">⚠️ No se pudieron cargar todos los datos. Completa manualmente.</span>`;
-                    }
-
-                } catch (error) {
-                    console.error('Error consultando padrón:', error);
-                    consultaEnProcesoAdmin = false;
-
-                    if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⏱️ La consulta al padrón está tardando más de lo esperado. Intenta nuevamente.</span>`;
-                        return;
-                    }
-
-                    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⚠️ No se pudo conectar al servidor del padrón. Verifica tu conexión.</span>`;
-                        return;
-                    }
-
-                    if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-                        statusEl.innerHTML =
-                            `<span class="warning">⚠️ Problema de conexión con el servidor del padrón. Intenta más tarde.</span>`;
-                        return;
-                    }
-
-                    if (digitos === '101053316' || digitos === '123456789' || digitos === '305660220') {
-                        document.getElementById('usuario-nombre').value = 'María José González Mora';
-                        document.getElementById('usuario-direccion').value = 'San José, Montes de Oca, Sabanilla';
-                        ultimaCedulaConsultadaAdmin = digitos;
-                        statusEl.innerHTML = `<span class="success">✅ Datos de prueba cargados (modo demostración)</span>`;
-                        notify('✅ Datos de prueba cargados correctamente.');
-                    } else {
-                        statusEl.innerHTML = `<span class="error">❌ Error al consultar el padrón. Intenta nuevamente.</span>`;
-                    }
-                }
-            }, 500);
-        }
-
-        // ============================================================
-        // TOGGLE CAMPOS USUARIO ADMIN
-        // ============================================================
-        function toggleCamposUsuarioAdmin() {
-            const tipo = document.getElementById('usuario-tipo').value;
-            const camposEstudiante = document.getElementById('usuario-campos-estudiante');
-            const camposAspirante = document.getElementById('usuario-campos-aspirante');
-            const camposEmpleado = document.getElementById('usuario-campos-empleado');
-
-            camposEstudiante.classList.remove('visible');
-            camposAspirante.classList.remove('visible');
-            camposEmpleado.classList.remove('visible');
-
-            if (tipo === 'estudiante') {
-                camposEstudiante.classList.add('visible');
-            } else if (tipo === 'aspirante') {
-                camposAspirante.classList.add('visible');
-            } else if (tipo === 'empleado') {
-                camposEmpleado.classList.add('visible');
-            }
-        }
-
-        // ============================================================
-        // DASHBOARD ADMIN
-        // ============================================================
-        function renderDashboards() {
-            const session = StorageManager.session.get();
-            if (!session) return;
-            if (session.rol === 'admin') renderAdminDashboard(session);
-        }
-
-        function renderAdminDashboard(session) {
-            document.getElementById('adm-nombre').textContent = session.nombre;
-
-            renderTablaUsuarios();
-            renderTablaTiposBeca();
-            renderMiembrosComiteAdmin();
-            cargarUsuariosParaMiembroAdmin();
-            cargarConfigEnFormulario();
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session.nombre,
-                rol: session.rol,
-                accion: 'Consulta Admin',
-                expediente: '—'
-            });
-        }
-
-        // ============================================================
-        // FILTRO DE USUARIOS
-        // ============================================================
-        function filtrarUsuarios(filtro, btn) {
-            filtroUsuariosActual = filtro;
-
-            document.querySelectorAll('.filter-bar .btn-small').forEach(b => b.classList.remove('active-filter'));
-            if (btn) btn.classList.add('active-filter');
-
-            renderTablaUsuarios();
-        }
-
-        // ============================================================
-        // TABLA USUARIOS CON FILTROS
-        // ============================================================
-        function renderTablaUsuarios() {
-            const usuarios = StorageManager.usuarios.getAll();
-            const tbody = document.getElementById('adm-tabla-usuarios');
-            if (!tbody) return;
-
-            let usuariosFiltrados = usuarios;
-
-            switch (filtroUsuariosActual) {
-                case 'aprobados':
-                    usuariosFiltrados = usuarios.filter(u => u.aprobado !== false);
-                    break;
-                case 'pendientes':
-                    usuariosFiltrados = usuarios.filter(u => u.aprobado === false);
-                    break;
-                case 'aspirante':
-                    usuariosFiltrados = usuarios.filter(u => u.rol === 'aspirante');
-                    break;
-                case 'estudiante':
-                    usuariosFiltrados = usuarios.filter(u => u.rol === 'estudiante');
-                    break;
-                case 'empleados':
-                    usuariosFiltrados = usuarios.filter(u =>
-                        ['trabajador_social', 'comite', 'auditor', 'admin'].includes(u.rol)
-                    );
-                    break;
-                case 'todos':
-                default:
-                    break;
-            }
-
-            if (usuariosFiltrados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios que coincidan con el filtro.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = usuariosFiltrados.map((u, idx) => {
-                const aprobado = u.aprobado !== false;
-                const estadoColor = aprobado ? 'badge-success' : 'badge-warning';
-                const estadoTexto = aprobado ? 'Aprobado' : 'Pendiente';
-
-                return '<tr>' +
-                    '<td><strong>' + u.nombre + '</strong></td>' +
-                    '<td>' + u.email + '</td>' +
-                    '<td><span class="badge badge-info">' + rolLabel(u.rol) + '</span></td>' +
-                    '<td><span class="badge ' + estadoColor + '">' + estadoTexto + '</span></td>' +
-                    '<td style="display:flex;gap:5px;flex-wrap:wrap;">' +
-                    '<button class="btn btn-small" onclick="editarUsuario(\'' + u.email +
-                    '\')">✏️</button>' +
-                    (u.bloqueado ?
-                        '<button class="btn btn-small btn-success" onclick="desbloquearUsuario(\'' + u.email +
-                        '\')">🔓</button>' : '') +
-                    (u.aprobado === false ?
-                        '<button class="btn btn-small btn-success" onclick="aprobarUsuarioDirecto(\'' + u.email +
-                        '\')">✅ Aprobar</button>' : '') +
-                    '<button class="btn btn-danger" onclick="eliminarUsuario(\'' + u.email +
-                    '\')">🗑️</button>' +
-                    '</td>' +
-                    '</tr>';
-            }).join('');
-        }
-
-        // ============================================================
-        // APROBAR USUARIO DESDE LA TABLA
-        // ============================================================
-        function aprobarUsuarioDirecto(email) {
-            const usuario = StorageManager.usuarios.getByEmail(email);
-            if (usuario) {
-                usuario.aprobado = true;
-                StorageManager.usuarios.save(usuario);
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: 'Admin Sistema',
-                    rol: 'admin',
-                    accion: 'Usuario aprobado: ' + usuario.nombre,
-                    expediente: '—'
-                });
-                renderTablaUsuarios();
-                notify('✅ Usuario ' + usuario.nombre + ' aprobado correctamente.');
-            }
-        }
-
-        // ============================================================
-        // USUARIOS - CRUD
-        // ============================================================
-        function nuevoUsuario() {
-            document.getElementById('usuario-modal-titulo').textContent = 'Nuevo usuario';
-            document.getElementById('usuario-modal-sub').textContent = 'Completa todos los datos del usuario.';
-            document.getElementById('usuario-edit-id').value = '';
-            document.getElementById('usuario-tipo').value = 'aspirante';
-            document.getElementById('usuario-nombre').value = '';
-            document.getElementById('usuario-email').value = '';
-            document.getElementById('usuario-cedula').value = '';
-            document.getElementById('usuario-telefono').value = '';
-            document.getElementById('usuario-direccion').value = '';
-            document.getElementById('usuario-rol').value = 'aspirante';
-            document.getElementById('usuario-password').value = '123456';
-            document.getElementById('usuario-password-field').style.display = 'block';
-            document.getElementById('usuario-aprobado').checked = true;
-            document.getElementById('usuario-carrera').value = '';
-            document.getElementById('usuario-facultad').value = '';
-            document.getElementById('usuario-fecha-ingreso').value = '';
-            document.getElementById('usuario-sede').value = '';
-            document.getElementById('usuario-anio-ingreso').value = '';
-            document.getElementById('usuario-cargo').value = '';
-            document.getElementById('usuario-departamento').value = '';
-            document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Ingresa la cédula para verificar datos</span>`;
-            ultimaCedulaConsultadaAdmin = '';
-            toggleCamposUsuarioAdmin();
-            openModal('modal-usuario');
-        }
-
-        function editarUsuario(email) {
-            const usuario = StorageManager.usuarios.getByEmail(email);
-            if (!usuario) return;
-
-            document.getElementById('usuario-modal-titulo').textContent = 'Editar usuario';
-            document.getElementById('usuario-modal-sub').textContent = 'Modifica los datos del usuario.';
-            document.getElementById('usuario-edit-id').value = email;
-            document.getElementById('usuario-nombre').value = usuario.nombre || '';
-            document.getElementById('usuario-email').value = usuario.email || '';
-            document.getElementById('usuario-cedula').value = usuario.cedula || '';
-            document.getElementById('usuario-telefono').value = usuario.telefono || '';
-            document.getElementById('usuario-direccion').value = usuario.direccion || '';
-            document.getElementById('usuario-rol').value = usuario.rol || 'aspirante';
-            document.getElementById('usuario-password').value = '';
-            document.getElementById('usuario-password-field').style.display = 'none';
-            document.getElementById('usuario-aprobado').checked = usuario.aprobado !== false;
-
-            const esEmpleado = ['trabajador_social', 'comite', 'auditor', 'admin'].includes(usuario.rol);
-            const esEstudiante = usuario.rol === 'estudiante';
-            const esAspirante = usuario.rol === 'aspirante' || (!esEmpleado && !esEstudiante);
-
-            if (esEmpleado) {
-                document.getElementById('usuario-tipo').value = 'empleado';
-                document.getElementById('usuario-cargo').value = usuario.cargo || usuario.datosAcademicos?.cargo || '';
-                document.getElementById('usuario-departamento').value = usuario.departamento || usuario.datosAcademicos?.departamento || '';
-            } else if (esEstudiante) {
-                document.getElementById('usuario-tipo').value = 'estudiante';
-                const da = usuario.datosAcademicos || {};
-                document.getElementById('usuario-carrera').value = da.carrera || '';
-                document.getElementById('usuario-facultad').value = da.facultad || '';
-                document.getElementById('usuario-fecha-ingreso').value = da.fechaIngreso || '';
-                document.getElementById('usuario-sede').value = da.sede || '';
-                document.getElementById('usuario-anio-ingreso').value = da.anioIngreso || '';
-            } else {
-                document.getElementById('usuario-tipo').value = 'aspirante';
-            }
-
-            document.getElementById('usuario-padron-status').innerHTML = `<span class="info">🔍 Cédula: ${usuario.cedula || 'No registrada'}</span>`;
-            toggleCamposUsuarioAdmin();
-            openModal('modal-usuario');
-        }
-
-        function guardarUsuario() {
-            const editEmail = document.getElementById('usuario-edit-id').value;
-            const tipo = document.getElementById('usuario-tipo').value;
-            const nombre = document.getElementById('usuario-nombre').value.trim();
-            const email = document.getElementById('usuario-email').value.trim().toLowerCase();
-            const cedula = document.getElementById('usuario-cedula').value.trim();
-            const telefono = document.getElementById('usuario-telefono').value.trim();
-            const direccion = document.getElementById('usuario-direccion').value.trim();
-            const rol = document.getElementById('usuario-rol').value;
-            const password = document.getElementById('usuario-password').value.trim();
-            const aprobado = document.getElementById('usuario-aprobado').checked;
-
-            const carrera = document.getElementById('usuario-carrera')?.value || '';
-            const facultad = document.getElementById('usuario-facultad')?.value || '';
-            const fechaIngreso = document.getElementById('usuario-fecha-ingreso')?.value || '';
-            const sede = document.getElementById('usuario-sede')?.value || '';
-            const anioIngreso = document.getElementById('usuario-anio-ingreso')?.value || '';
-            const cargo = document.getElementById('usuario-cargo')?.value || '';
-            const departamento = document.getElementById('usuario-departamento')?.value || '';
-
-            const errorBox = document.getElementById('login-error');
-            errorBox.className = 'login-error hidden';
-            errorBox.textContent = '';
-
-            if (!nombre || !email || !cedula) {
-                errorBox.textContent = '⚠️ Nombre, correo y cédula son obligatorios.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            if (!editEmail && !password) {
-                errorBox.textContent = '⚠️ La contraseña es obligatoria para usuarios nuevos.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            if (password && password.length < 6) {
-                errorBox.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const cedulaLimpia = cedula.replace(/\D/g, '');
-            if (cedulaLimpia.length < 9) {
-                errorBox.textContent = '⚠️ La cédula debe tener al menos 9 dígitos.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            if (!email.includes('@') || !email.includes('.')) {
-                errorBox.textContent = '⚠️ Ingresa un correo electrónico válido.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            const usuarios = StorageManager.usuarios.getAll();
-
-            if (!editEmail && usuarios.some(u => u.email === email)) {
-                errorBox.textContent = '⚠️ Ya existe un usuario con ese correo.';
-                errorBox.className = 'login-error visible';
-                return;
-            }
-
-            let rolFinal = rol;
-            let datosAcademicos = {};
-
-            if (tipo === 'estudiante') {
-                if (!carrera || !facultad || !fechaIngreso || !sede) {
-                    errorBox.textContent = '⚠️ Completa todos los campos académicos para estudiante.';
-                    errorBox.className = 'login-error visible';
-                    return;
-                }
-                rolFinal = 'estudiante';
-                datosAcademicos = { carrera, facultad, fechaIngreso, sede, anioIngreso };
-            } else if (tipo === 'empleado') {
-                if (!cargo || !departamento) {
-                    errorBox.textContent = '⚠️ Completa el cargo y departamento para empleado.';
-                    errorBox.className = 'login-error visible';
-                    return;
-                }
-                const cargoLower = cargo.toLowerCase();
-                if (cargoLower.includes('trabajador social')) rolFinal = 'trabajador_social';
-                else if (cargoLower.includes('comité') || cargoLower.includes('miembro del comité')) rolFinal = 'comite';
-                else if (cargoLower.includes('auditor')) rolFinal = 'auditor';
-                else if (cargoLower.includes('administrador')) rolFinal = 'admin';
-                else rolFinal = rol;
-                datosAcademicos = { cargo, departamento };
-            } else {
-                rolFinal = 'aspirante';
-                datosAcademicos = { esAspirante: true };
-            }
-
-            if (editEmail) {
-                const usuario = StorageManager.usuarios.getByEmail(editEmail);
-                if (usuario) {
-                    usuario.nombre = nombre;
-                    usuario.email = email;
-                    usuario.cedula = cedula;
-                    usuario.telefono = telefono || '';
-                    usuario.direccion = direccion || '';
-                    usuario.rol = rolFinal;
-                    usuario.datosAcademicos = datosAcademicos;
-                    usuario.aprobado = aprobado;
-                    if (password) usuario.password = cifrarPassword(password);
-                    StorageManager.usuarios.save(usuario);
-                    StorageManager.bitacora.save({
-                        fecha: new Date().toLocaleString(),
-                        usuario: 'Admin Sistema',
-                        rol: 'admin',
-                        accion: 'Usuario editado: ' + nombre,
-                        expediente: '—'
-                    });
-                    notify('✅ Usuario actualizado correctamente.');
-                }
-            } else {
-                const nuevoUsuario = {
-                    email,
-                    password: cifrarPassword(password),
-                    rol: rolFinal,
-                    nombre,
-                    cedula,
-                    telefono: telefono || '',
-                    direccion: direccion || '',
-                    intentos: 0,
-                    bloqueado: false,
-                    twoFactorEnabled: false,
-                    fechaRegistro: new Date().toISOString(),
-                    datosAcademicos,
-                    aprobado: aprobado,
-                    puedeSolicitar: tipo === 'estudiante' || tipo === 'aspirante'
-                };
-
-                if (tipo === 'empleado') {
-                    nuevoUsuario.cargo = cargo;
-                    nuevoUsuario.departamento = departamento;
-                }
-
-                StorageManager.usuarios.save(nuevoUsuario);
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: 'Admin Sistema',
-                    rol: 'admin',
-                    accion: 'Usuario creado: ' + nombre + ' (Rol: ' + rolFinal + ')',
-                    expediente: '—'
-                });
-                notify('✅ Usuario ' + nombre + ' creado correctamente.');
-            }
-
-            closeModal('modal-usuario');
-            renderTablaUsuarios();
-        }
-
-        async function eliminarUsuario(email) {
-            const usuario = StorageManager.usuarios.getByEmail(email);
-            if (!usuario) return;
-
-            if (!(await customConfirm('¿Eliminar al usuario ' + usuario.nombre + '? Esta acción no se puede deshacer.'))) return;
-
-            StorageManager.usuarios.delete(usuario.id);
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Admin Sistema',
-                rol: 'admin',
-                accion: 'Usuario eliminado: ' + usuario.nombre,
-                expediente: '—'
-            });
-            renderTablaUsuarios();
-            notify('✅ Usuario eliminado.');
-        }
-
-        function desbloquearUsuario(email) {
-            const usuario = StorageManager.usuarios.getByEmail(email);
-            if (usuario) {
-                usuario.bloqueado = false;
-                usuario.intentos = 0;
-                StorageManager.usuarios.save(usuario);
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: 'Admin Sistema',
-                    rol: 'admin',
-                    accion: 'Usuario desbloqueado: ' + usuario.nombre,
-                    expediente: '—'
-                });
-                renderTablaUsuarios();
-                notify('✅ Usuario desbloqueado.');
-            }
-        }
-
-        // ============================================================
-        // MIEMBROS DEL COMITÉ - ADMIN
-        // ============================================================
-        function renderMiembrosComiteAdmin() {
-            const miembros = StorageManager.miembrosComite.getAll();
-            const container = document.getElementById('lista-miembros-comite');
-            if (!container) return;
-
-            const activos = miembros.filter(m => m.activo).length;
-            const inactivos = miembros.filter(m => !m.activo).length;
-
-            document.getElementById('miembros-activos-count').textContent = activos + ' activos';
-            document.getElementById('miembros-inactivos-count').textContent = inactivos + ' inactivos';
-
-            if (miembros.length === 0) {
-                container.innerHTML = `
-                    <div class="alert-box info" style="text-align:center;padding:30px;">
-                        <div style="font-size:2rem;margin-bottom:8px;">👤</div>
-                        <p>No hay miembros registrados en el comité.</p>
-                        <p style="font-size:0.85rem;color:var(--muted);">Agrega miembros usando el botón "+ Agregar miembro".</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = miembros.map(m =>
-                `<div class="miembro-comite-card">
-                    <div class="info">
-                        <span class="avatar">👤</span>
-                        <span class="nombre">${m.nombre}</span>
-                        <span class="email">${m.email}</span>
-                        <span class="rol">${m.rol || 'Miembro'}</span>
-                        <span class="estado ${m.activo ? 'activo' : 'inactivo'}">${m.activo ? '✅ Activo' : '❌ Inactivo'}</span>
-                    </div>
-                    <div class="acciones">
-                        <button class="btn btn-small ${m.activo ? 'btn-warning' : 'btn-success'}" onclick="toggleMiembroAdmin(${m.id})">
-                            ${m.activo ? 'Desactivar' : 'Activar'}
-                        </button>
-                        <button class="btn btn-small btn-danger" onclick="eliminarMiembroAdmin(${m.id})">Eliminar</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function cargarUsuariosParaMiembroAdmin() {
-            const select = document.getElementById('admin-miembro-usuario');
-            if (!select) return;
-
-            const usuarios = StorageManager.usuarios.getAll();
-            const miembros = StorageManager.miembrosComite.getAll();
-            const emailsMiembros = miembros.map(m => m.email);
-
-            const disponibles = usuarios.filter(u =>
-                !emailsMiembros.includes(u.email) &&
-                (u.rol === 'comite' || u.rol === 'admin' || u.rol === 'trabajador_social')
-            );
-
-            select.innerHTML = '<option value="">Seleccionar usuario...</option>' +
-                disponibles.map(u =>
-                    '<option value="' + u.email + '|' + u.nombre + '">' + u.nombre + ' (' + u.email + ')</option>'
-                ).join('');
-
-            if (disponibles.length === 0) {
-                select.innerHTML = '<option value="">No hay usuarios disponibles para agregar</option>';
-            }
-        }
-
-        function abrirModalAgregarMiembroComite() {
-            cargarUsuariosParaMiembroAdmin();
-            openModal('modal-agregar-miembro-comite');
-        }
-
-        function agregarMiembroComiteAdmin() {
-            const select = document.getElementById('admin-miembro-usuario');
-            const valor = select.value;
-            const rol = document.getElementById('admin-miembro-rol').value.trim() || 'Miembro';
-
-            if (!valor) { notify('⚠️ Selecciona un usuario.'); return; }
-
-            const [email, nombre] = valor.split('|');
-
-            const miembros = StorageManager.miembrosComite.getAll();
-            const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
-
-            const nuevoMiembro = {
-                id: nuevoId,
-                email: email,
-                nombre: nombre,
-                rol: rol,
-                activo: true,
-                fecha_agregado: new Date().toISOString()
-            };
-
-            StorageManager.miembrosComite.save(nuevoMiembro);
-
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Admin Sistema',
-                rol: session ? session.rol : 'admin',
-                accion: 'Miembro del comité agregado: ' + nombre,
-                expediente: '—'
-            });
-
-            closeModal('modal-agregar-miembro-comite');
-            renderMiembrosComiteAdmin();
-            cargarUsuariosParaMiembroAdmin();
-            notify('✅ Miembro ' + nombre + ' agregado al comité correctamente.');
-        }
-
-        function toggleMiembroAdmin(id) {
-            const miembro = StorageManager.miembrosComite.getById(id);
-            if (miembro) {
-                miembro.activo = !miembro.activo;
-                StorageManager.miembrosComite.save(miembro);
-                const session = StorageManager.session.get();
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session ? session.nombre : 'Admin Sistema',
-                    rol: session ? session.rol : 'admin',
-                    accion: 'Miembro del comité ' + (miembro.activo ? 'activado' : 'desactivado') + ': ' + miembro.nombre,
-                    expediente: '—'
-                });
-                renderMiembrosComiteAdmin();
-                notify('✅ Miembro ' + (miembro.activo ? 'activado' : 'desactivado') + '.');
-            }
-        }
-
-        async function eliminarMiembroAdmin(id) {
-            if (!(await customConfirm('¿Eliminar este miembro del comité? Esta acción no se puede deshacer.'))) return;
-
-            const miembro = StorageManager.miembrosComite.getById(id);
-            StorageManager.miembrosComite.delete(id);
-
-            const session = StorageManager.session.get();
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session ? session.nombre : 'Admin Sistema',
-                rol: session ? session.rol : 'admin',
-                accion: 'Miembro del comité eliminado: ' + (miembro ? miembro.nombre : id),
-                expediente: '—'
-            });
-
-            renderMiembrosComiteAdmin();
-            cargarUsuariosParaMiembroAdmin();
-            notify('✅ Miembro eliminado correctamente.');
-        }
-
-        // ============================================================
-        // TIPOS DE BECA
-        // ============================================================
-        function renderTablaTiposBeca() {
-            const tipos = StorageManager.tiposBeca.getAll();
-            const tbody = document.getElementById('adm-tabla-tipos');
-            if (!tbody) return;
-
-            tbody.innerHTML = tipos.map(t =>
-                '<tr>' +
-                '<td style="font-size:1.3rem;">' + (t.icon || '🎓') + '</td>' +
-                '<td><strong>' + t.nombre + '</strong></td>' +
-                '<td>' + t.min + '%</td>' +
-                '<td>' + t.max + '%</td>' +
-                '<td>' + (t.rubros || []).join(', ') + '</td>' +
-                '<td>' +
-                (t.activo ?
-                    '<span class="badge badge-success">Activo</span>' :
-                    '<span class="badge badge-warning">Inactivo</span>') +
-                '</td>' +
-                '<td style="display:flex;gap:5px;flex-wrap:wrap;">' +
-                '<button class="btn btn-small" onclick="abrirModalTipoBeca(' + t.id + ')">✏️</button>' +
-                '<button class="btn btn-small" onclick="toggleActivoTipoBeca(' + t.id + ')">' +
-                (t.activo ? '⏸️ Desactivar' : '▶️ Activar') +
-                '</button>' +
-                '<button class="btn btn-danger" onclick="eliminarTipoBeca(' + t.id + ')">🗑️</button>' +
-                '</td>' +
-                '</tr>'
-            ).join('');
-        }
-
-        function abrirModalTipoBeca(id) {
-            document.getElementById('tipo-beca-titulo').textContent = id ? 'Editar tipo de beca' : 'Nuevo tipo de beca';
-            document.getElementById('tb-id-edicion').value = id || '';
-
-            if (id) {
-                const tipo = StorageManager.tiposBeca.getById(id);
-                if (tipo) {
-                    document.getElementById('tb-icon').value = tipo.icon || '🎓';
-                    document.getElementById('tb-nombre').value = tipo.nombre;
-                    document.getElementById('tb-desc').value = tipo.desc || '';
-                    document.getElementById('tb-min').value = tipo.min || 25;
-                    document.getElementById('tb-max').value = tipo.max || 100;
-                    document.getElementById('tb-rubros').value = (tipo.rubros || []).join(', ');
-                    document.getElementById('tb-requisitos').value = (tipo.requisitos || []).join('\n');
-                    document.getElementById('tb-activo').checked = !!tipo.activo;
-                }
-            } else {
-                document.getElementById('tb-icon').value = '🎓';
-                document.getElementById('tb-nombre').value = '';
-                document.getElementById('tb-desc').value = '';
-                document.getElementById('tb-min').value = 25;
-                document.getElementById('tb-max').value = 100;
-                document.getElementById('tb-rubros').value = '';
-                document.getElementById('tb-requisitos').value = '';
-                document.getElementById('tb-activo').checked = true;
-            }
-            openModal('modal-tipo-beca');
-        }
-
-        function guardarTipoBeca() {
-            const id = document.getElementById('tb-id-edicion').value;
-            const nombre = document.getElementById('tb-nombre').value.trim();
-            const icon = document.getElementById('tb-icon').value.trim() || '🎓';
-            const desc = document.getElementById('tb-desc').value.trim();
-            const min = parseInt(document.getElementById('tb-min').value) || 0;
-            const max = parseInt(document.getElementById('tb-max').value) || 0;
-            const rubros = document.getElementById('tb-rubros').value.split(',').map(s => s.trim()).filter(Boolean);
-            const requisitos = document.getElementById('tb-requisitos').value.split('\n').map(s => s.trim()).filter(Boolean);
-            const activo = document.getElementById('tb-activo').checked;
-
-            if (!nombre) { notify('⚠️ El nombre es obligatorio.'); return; }
-            if (min > max) { notify('⚠️ El porcentaje mínimo no puede ser mayor que el máximo.'); return; }
-
-            let tipo = null;
-            if (id) {
-                tipo = StorageManager.tiposBeca.getById(parseInt(id));
-                if (tipo) {
-                    tipo.nombre = nombre;
-                    tipo.icon = icon;
-                    tipo.desc = desc;
-                    tipo.min = min;
-                    tipo.max = max;
-                    tipo.rubros = rubros;
-                    tipo.requisitos = requisitos;
-                    tipo.activo = activo;
-                    StorageManager.tiposBeca.save(tipo);
-                }
-            } else {
-                const nuevoId = StorageManager.tiposBeca.getAll().length + 1;
-                tipo = {
-                    id: nuevoId,
-                    nombre,
-                    icon,
-                    desc,
-                    min,
-                    max,
-                    rubros,
-                    requisitos,
-                    activo
-                };
-                StorageManager.tiposBeca.save(tipo);
-            }
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Admin Sistema',
-                rol: 'admin',
-                accion: id ? 'Tipo de beca actualizado: ' + nombre : 'Tipo de beca creado: ' + nombre,
-                expediente: '—'
-            });
-            closeModal('modal-tipo-beca');
-            renderTablaTiposBeca();
-            notify('✅ Tipo de beca guardado correctamente.');
-        }
-
-        function toggleActivoTipoBeca(id) {
-            const tipo = StorageManager.tiposBeca.getById(id);
-            if (tipo) {
-                tipo.activo = !tipo.activo;
-                StorageManager.tiposBeca.save(tipo);
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: 'Admin Sistema',
-                    rol: 'admin',
-                    accion: 'Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + ': ' + tipo.nombre,
-                    expediente: '—'
-                });
-                renderTablaTiposBeca();
-                notify('✅ Tipo de beca ' + (tipo.activo ? 'activado' : 'desactivado') + '.');
-            }
-        }
-
-        async function eliminarTipoBeca(id) {
-            if (!(await customConfirm('¿Eliminar este tipo de beca?'))) return;
-
-            StorageManager.tiposBeca.delete(id);
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Admin Sistema',
-                rol: 'admin',
-                accion: 'Tipo de beca eliminado',
-                expediente: '—'
-            });
-            renderTablaTiposBeca();
-            notify('✅ Tipo de beca eliminado.');
-        }
-
-        // ============================================================
-        // CONFIGURACIÓN
-        // ============================================================
-        function cargarConfigEnFormulario() {
-            const config = StorageManager.config.get();
-
-            document.getElementById('cfg-socio').value = config.socio || 40;
-            document.getElementById('cfg-acad').value = config.academico || 35;
-            document.getElementById('cfg-vuln').value = config.vulnerabilidad || 15;
-            document.getElementById('cfg-mer').value = config.meritos || 10;
-            document.getElementById('cfg-promedio-min').value = config.promedioMin || 80;
-            document.getElementById('cfg-ingreso-max').value = config.ingresoMax || 500000;
-            document.getElementById('cfg-plazo-subsanacion').value = config.plazoSubsanacion || 5;
-            document.getElementById('cfg-plazo-apelacion').value = config.plazoApelacion || 10;
-            document.getElementById('cfg-plazo-renovacion').value = config.plazoRenovacion || 15;
-            document.getElementById('cfg-msg-aprobacion').value = config.msgAprobacion ||
-                'Felicidades, tu solicitud de beca ha sido APROBADA.';
-            document.getElementById('cfg-msg-rechazo').value = config.msgRechazo ||
-                'Lamentamos informarte que tu solicitud ha sido RECHAZADA.';
-            document.getElementById('cfg-msg-subsanacion').value = config.msgSubsanacion ||
-                'Tu solicitud requiere correcciones. Revisa los documentos pendientes.';
-
-            validarPonderaciones();
-        }
-
-        function validarPonderaciones() {
-            const socio = parseInt(document.getElementById('cfg-socio').value) || 0;
-            const acad = parseInt(document.getElementById('cfg-acad').value) || 0;
-            const vuln = parseInt(document.getElementById('cfg-vuln').value) || 0;
-            const mer = parseInt(document.getElementById('cfg-mer').value) || 0;
-            const total = socio + acad + vuln + mer;
-            const msg = document.getElementById('pond-suma-msg');
-
-            if (msg) {
-                if (total === 100) {
-                    msg.textContent = '✅ Suma total: ' + total + '%';
-                    msg.style.color = 'var(--success)';
-                } else {
-                    msg.textContent = '⚠️ Suma total: ' + total + '% — debe ser exactamente 100%';
-                    msg.style.color = 'var(--danger)';
-                }
-            }
-            return total === 100;
-        }
-
-        function guardarConfig() {
-            if (!validarPonderaciones()) {
-                notify('⚠️ La suma de las ponderaciones debe ser exactamente 100%.');
-                return;
-            }
-
-            const config = {
-                socio: parseInt(document.getElementById('cfg-socio').value) || 40,
-                academico: parseInt(document.getElementById('cfg-acad').value) || 35,
-                vulnerabilidad: parseInt(document.getElementById('cfg-vuln').value) || 15,
-                meritos: parseInt(document.getElementById('cfg-mer').value) || 10,
-                promedioMin: parseInt(document.getElementById('cfg-promedio-min').value) || 80,
-                ingresoMax: parseInt(document.getElementById('cfg-ingreso-max').value) || 500000,
-                plazoSubsanacion: parseInt(document.getElementById('cfg-plazo-subsanacion').value) || 5,
-                plazoApelacion: parseInt(document.getElementById('cfg-plazo-apelacion').value) || 10,
-                plazoRenovacion: parseInt(document.getElementById('cfg-plazo-renovacion').value) || 15,
-                msgAprobacion: document.getElementById('cfg-msg-aprobacion').value || '',
-                msgRechazo: document.getElementById('cfg-msg-rechazo').value || '',
-                msgSubsanacion: document.getElementById('cfg-msg-subsanacion').value || ''
-            };
-
-            StorageManager.config.set(config);
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Admin Sistema',
-                rol: 'admin',
-                accion: 'Configuración guardada',
-                expediente: '—'
-            });
-            notify('✅ Configuración guardada exitosamente.');
-        }
-
-        // ============================================================
-        // SHOW DASH TAB
-        // ============================================================
-        function showDashTab(prefix, tabId, btn) {
-            const dashId = 'admin';
-            const tabs = document.querySelectorAll('#view-dash-' + dashId + ' .dash-tab');
-            if (tabs) tabs.forEach(t => t.classList.remove('active'));
-
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) activeTab.classList.add('active');
-
-            if (btn) {
-                const navItems = btn.closest('.dash-sidebar')?.querySelectorAll('.dash-nav-item');
-                if (navItems) navItems.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            if (tabId === 'adm-usuarios') renderTablaUsuarios();
-            if (tabId === 'adm-tipos') renderTablaTiposBeca();
-            if (tabId === 'adm-miembros-comite') {
-                renderMiembrosComiteAdmin();
-                cargarUsuariosParaMiembroAdmin();
-            }
-        }
-
-        // ============================================================
-        // INICIALIZACIÓN
-        // ============================================================
-        (function init() {
-            renderHeaderNav();
-
-            const storedSession = StorageManager.session.get();
-            if (storedSession && storedSession.rol === 'admin') {
-                showView('view-dash-admin');
-                renderDashboards();
-            } else if (storedSession) {
-                const dashMap = {
-                    estudiante: 'panel_estudiante.html',
-                    aspirante: 'panel_estudiante.html',
-                    trabajador_social: 'panel_trabajador_social.html',
-                    comite: 'panel_comite.html',
-                    admin: 'panel_admin.html',
-                    auditor: 'panel_auditor.html'
-                };
-                const target = dashMap[storedSession.rol];
-                if (target) {
-                    window.location.href = target;
-                }
-            } else {
-                showView('view-public');
-                renderPublicNoticias();
-            }
-
-            document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
-                document.getElementById('mainNav').classList.toggle('open');
-            });
-
-            document.getElementById('db-status').textContent = '🟢 Conectado';
-            document.getElementById('db-status').className = 'online';
-
-            StorageManager.on('session_actualizada', function() {
-                renderHeaderNav();
-            });
-        })();
-    </script>
-
+<div id="db-status">Conectando...</div>
+
+<header class="site-header">
+ <div class="header-inner">
+ <a href="index.html" class="brand">
+ <div class="brand-mark">SB</div>
+ <div class="brand-text"><strong>Sistema de Becas</strong><span>Universitarias</span></div>
+ </a>
+ <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+ <nav class="main-nav" id="mainNav">
+ <a href="index.html" class="btn btn-outline">Inicio</a>
+ 
+ <div class="session-pill"><span id="header-nombre">—</span><span class="role-badge" id="header-rol">Admin</span></div>
+ <button class="btn btn-primary" onclick="logout()">Salir</button>
+ </nav>
+ </div>
+</header>
+
+<!-- ===== PANEL ADMIN ===== -->
+<div id="view-dash-admin">
+ <div class="dash-shell">
+ <aside class="dash-sidebar">
+ <div class="dash-user"><strong id="adm-nombre">—</strong><span>Admin</span></div>
+ <button class="dash-nav-item active" onclick="showDashTab('adm','adm-usuarios',this)">Usuarios</button>
+ <button class="dash-nav-item" onclick="showDashTab('adm','adm-config',this)">Configuración</button>
+ <button class="dash-nav-item" onclick="showDashTab('adm','adm-empleados',this)">Empleados</button>
+ <button class="dash-nav-item" onclick="showDashTab('adm','adm-chatbot',this)">Chatbot</button>
+ <button class="dash-nav-item logout" onclick="logout()">Cerrar sesión</button>
+ </aside>
+ <main class="dash-main">
+ <h2>Administrador</h2>
+ <div class="dash-tab active" id="adm-usuarios"><div class="card-box"><button class="btn btn-small" onclick="nuevoUsuario()">+ Nuevo</button><table class="data-table"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>2FA</th><th>Acciones</th></tr></thead><tbody id="adm-tabla-usuarios"></tbody></table></div></div>
+ <div class="dash-tab" id="adm-config">
+ <div class="card-box">
+ <h3>Ponderaciones de evaluación</h3>
+ <p style="color:var(--muted);font-size:0.85rem;">La suma de las 4 ponderaciones debe ser exactamente 100%.</p>
+ <div class="form-grid">
+ <div class="form-field"><label>Pond. Socioeconómico (%)</label><input type="number" id="cfg-socio" value="40" oninput="validarPonderaciones()"></div>
+ <div class="form-field"><label>Pond. Académico (%)</label><input type="number" id="cfg-acad" value="35" oninput="validarPonderaciones()"></div>
+ <div class="form-field"><label>Pond. Vulnerabilidad (%)</label><input type="number" id="cfg-vuln" value="15" oninput="validarPonderaciones()"></div>
+ <div class="form-field"><label>Pond. Méritos (%)</label><input type="number" id="cfg-mer" value="10" oninput="validarPonderaciones()"></div>
+ </div>
+ <div id="pond-suma-msg" style="margin:10px 0;font-weight:700;"></div>
+ </div>
+ <div class="card-box" style="margin-top:20px;">
+ <h3>Umbrales de elegibilidad</h3>
+ <div class="form-grid">
+ <div class="form-field"><label>Promedio mínimo requerido</label><input type="number" id="cfg-promedio-min" value="80"></div>
+ <div class="form-field"><label>Ingreso máximo familiar (₡)</label><input type="number" id="cfg-ingreso-max" value="500000"></div>
+ </div>
+ </div>
+ <div class="card-box" style="margin-top:20px;">
+ <h3>Plazos del proceso (en días)</h3>
+ <div class="form-grid">
+ <div class="form-field"><label>Plazo de subsanación</label><input type="number" id="cfg-plazo-subsanacion" value="5"></div>
+ <div class="form-field"><label>Plazo de apelación</label><input type="number" id="cfg-plazo-apelacion" value="10"></div>
+ <div class="form-field"><label>Plazo de renovación</label><input type="number" id="cfg-plazo-renovacion" value="15"></div>
+ </div>
+ </div>
+ <div class="card-box" style="margin-top:20px;">
+ <h3>Mensajes de notificación por correo</h3>
+ <div class="form-field full" style="margin-bottom:14px;"><label>Mensaje de aprobación</label><textarea id="cfg-msg-aprobacion" class="form-control" rows="2">Felicidades, tu solicitud de beca ha sido APROBADA.</textarea></div>
+ <div class="form-field full" style="margin-bottom:14px;"><label>Mensaje de rechazo</label><textarea id="cfg-msg-rechazo" class="form-control" rows="2">Lamentamos informarte que tu solicitud ha sido RECHAZADA.</textarea></div>
+ <div class="form-field full"><label>Mensaje de subsanación</label><textarea id="cfg-msg-subsanacion" class="form-control" rows="2">Tu solicitud requiere correcciones. Revisa los documentos pendientes.</textarea></div>
+ </div>
+ <button class="btn btn-primary" style="margin-top:20px;" onclick="guardarConfig()">Guardar configuración</button>
+ </div>
+ <div class="dash-tab" id="adm-empleados">
+ <div class="card-box">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+ <h3 style="margin:0;">Personal Administrativo</h3>
+ <button class="btn btn-small" onclick="agregarEmpleado()">+ Agregar empleado</button>
+ </div>
+ <table class="data-table">
+ <thead>
+ <tr><th>Nombre</th><th>Departamento</th><th>Cargo</th><th>Correo</th><th>Teléfono</th><th>Acciones</th></tr>
+ </thead>
+ <tbody id="empleados-tabla"></tbody>
+ </table>
+ </div>
+ </div>
+ <div class="dash-tab" id="adm-chatbot">
+ <div class="card-box">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+ <h3 style="margin:0;">Preguntas del Chatbot</h3>
+ <button class="btn btn-small" onclick="agregarPreguntaChatbot()">+ Agregar pregunta</button>
+ </div>
+ <p style="color:var(--muted);font-size:0.85rem;margin-bottom:14px;">Estas son las preguntas y respuestas que usa el asistente del sitio público para responder a los visitantes.
+ Solo se activan/desactivan o editan acá — no están escritas en el código.
+ </p>
+ <table class="data-table">
+ <thead>
+ <tr><th>Categoría</th><th>Pregunta</th><th>Respuesta</th><th>Activa</th><th>Acciones</th></tr>
+ </thead>
+ <tbody id="chatbot-preguntas-tabla"></tbody>
+ </table>
+ </div>
+ </div>
+ </main>
+ </div>
+</div>
+
+
+<div id="modal-notificacion" class="modal-overlay hidden"><div class="modal-box"><div class="success-icon"></div><h3 id="notif-titulo">Notificación</h3><p id="notif-mensaje"></p><button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button></div></div>
+<!-- ===== MODAL DE CONFIRMACIÓN (reemplaza confirm()) ===== -->
+<div id="modal-custom-confirm" class="modal-overlay hidden">
+ <div class="modal-box">
+ <h3 style="margin-bottom:14px;">Confirmar acción</h3>
+ <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
+ <div style="display:flex;gap:10px;justify-content:flex-end;">
+ <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
+ </div>
+ </div>
+</div>
+
+<!-- ===== MODAL DE FORMULARIO (reemplaza prompt()) ===== -->
+<div id="modal-custom-prompt" class="modal-overlay hidden">
+ <div class="modal-box">
+ <button class="modal-close" id="cp-close">×</button>
+ <h3 id="cp-titulo" style="margin-bottom:18px;">Editar información</h3>
+ <div id="cp-fields" style="display:flex;flex-direction:column;gap:14px;"></div>
+ <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+ <button class="btn btn-ghost" id="cp-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="cp-ok">Guardar</button>
+ </div>
+ </div>
+</div>
+
+
+<div id="toast-container"></div>
+
+<script src="js/common.js?v=1786821979"></script>
+<script>
+async function renderAdminDashboard(session){
+ document.getElementById('adm-nombre').textContent = session.nombre;
+ let usuarios = [];
+ try { usuarios = await API.getUsuarios(); }
+ catch (e) { console.warn(' No se pudo obtener usuarios de la API, usando localStorage:', e.message); usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]'); }
+ const tbody = document.getElementById('adm-tabla-usuarios');
+ if(tbody){
+ tbody.innerHTML = usuarios.map((u) => `<tr>
+ <td><strong>${u.nombre}</strong>${u.cedula ? `<br><small style="color:var(--muted);">Céd: ${u.cedula}</small>` : ''}</td>
+ <td>${u.email}</td>
+ <td><span class="badge badge-info">${rolLabel(u.rol)}</span></td>
+ <td><button class="btn btn-small" onclick="toggle2FA(${u.id})" style="${u.two_factor_enabled || u.twoFactorEnabled ? 'background:#e7f5ee;color:#1e7e4f;' : 'background:#eceff3;color:#6b7585;'}">${u.two_factor_enabled || u.twoFactorEnabled ? ' Activado' : ' Desactivado'}</button></td>
+ <td style="display:flex;gap:6px;"><button class="btn btn-small" onclick="editarUsuario(${u.id})">Editar</button><button class="btn btn-danger" onclick="eliminarUsuario(${u.id})">Eliminar</button></td>
+ </tr>
+ `).join('');
+ }
+ renderEmpleados();
+ registrarBitacora('Consulta Admin', '—', session);
+}
+
+async function editarUsuario(id){
+ let usuarios = [];
+ try { usuarios = await API.getUsuarios(); } catch(e) { usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]'); }
+ const u = usuarios.find(x => x.id === id);
+ if(!u) return;
+ const resultado = await customPrompt('Editar usuario', [
+ { id: 'nombre', label: 'Nombre completo', type: 'text', value: u.nombre },
+ { id: 'cedula', label: 'Cédula', type: 'text', value: u.cedula || '' },
+ { id: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'date', value: u.fecha_nacimiento || '' },
+ { id: 'direccion', label: 'Dirección', type: 'text', value: u.direccion || '' },
+ { id: 'rol', label: 'Rol', type: 'select', value: u.rol, options: ['estudiante','aspirante','trabajador_social','comite','admin','auditor'] }
+ ]);
+ if(!resultado || !resultado.nombre) return;
+
+ try {
+ await API.editarUsuario(id, resultado);
+ } catch (e) {
+ notify(' No se pudo actualizar el usuario: ' + e.message);
+ return;
+ }
+ registrarBitacora('Usuario editado', '—');
+ notify(' Usuario actualizado');
+ renderAdminDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+}
+
+async function eliminarUsuario(id){
+ let usuarios = [];
+ try { usuarios = await API.getUsuarios(); } catch(e) { usuarios = JSON.parse(localStorage.getItem(STORAGE_KEYS.usuarios) || '[]'); }
+ const u = usuarios.find(x => x.id === id);
+ if(!u) return;
+ if(!(await customConfirm(`¿Eliminar al usuario ${u.nombre} (${u.email})? Esta acción no se puede deshacer.`))) return;
+
+ try {
+ await API.eliminarUsuario(id);
+ } catch (e) {
+ notify(' No se pudo eliminar el usuario: ' + e.message);
+ return;
+ }
+ registrarBitacora('Usuario eliminado', '—');
+ renderAdminDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+}
+
+async function toggle2FA(id){
+ try {
+ await API.toggle2FA(id);
+ } catch (e) {
+ notify(' No se pudo cambiar el 2FA: ' + e.message);
+ return;
+ }
+ renderAdminDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+}
+
+async function nuevoUsuario(){
+ const resultado = await customPrompt('Nuevo usuario', [
+ { id: 'nombre', label: 'Nombre completo', type: 'text', value: '' },
+ { id: 'cedula', label: 'Cédula', type: 'text', value: '' },
+ { id: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'date', value: '' },
+ { id: 'direccion', label: 'Dirección', type: 'text', value: '' },
+ { id: 'email', label: 'Correo electrónico', type: 'email', value: '' },
+ { id: 'rol', label: 'Rol', type: 'select', value: 'estudiante', options: ['estudiante','aspirante','trabajador_social','comite','admin','auditor'] },
+ { id: 'password', label: 'Contraseña temporal', type: 'text', value: '123456' }
+ ]);
+ if(!resultado || !resultado.nombre || !resultado.email) return;
+ const { nombre, email, rol, password, cedula, fechaNacimiento, direccion } = resultado;
+
+ try {
+ await API.crearUsuario({ nombre, email, rol, password, cedula, fechaNacimiento, direccion });
+ } catch (e) {
+ notify(' No se pudo crear el usuario: ' + e.message);
+ return;
+ }
+
+ registrarBitacora('Usuario creado', '—');
+ notify(` Usuario ${nombre} creado correctamente. La cédula se consultó contra el padrón automáticamente.`);
+ renderAdminDashboard(JSON.parse(localStorage.getItem(STORAGE_KEYS.session)));
+}
+
+async function cargarConfigEnFormulario(){
+ let config = {};
+ try {
+ config = await API.getConfig();
+ } catch (e) {
+ console.warn(' No se pudo obtener configuración de la API, usando localStorage:', e.message);
+ config = JSON.parse(localStorage.getItem(STORAGE_KEYS.config) || '{}');
+ }
+ const socioEl = document.getElementById('cfg-socio');
+ const acadEl = document.getElementById('cfg-acad');
+ const vulnEl = document.getElementById('cfg-vuln');
+ const merEl = document.getElementById('cfg-mer');
+ const promedioMinEl = document.getElementById('cfg-promedio-min');
+ const ingresoMaxEl = document.getElementById('cfg-ingreso-max');
+ const plazoSubsanacionEl = document.getElementById('cfg-plazo-subsanacion');
+ const plazoApelacionEl = document.getElementById('cfg-plazo-apelacion');
+ const plazoRenovacionEl = document.getElementById('cfg-plazo-renovacion');
+ const msgAprobacionEl = document.getElementById('cfg-msg-aprobacion');
+ const msgRechazoEl = document.getElementById('cfg-msg-rechazo');
+ const msgSubsanacionEl = document.getElementById('cfg-msg-subsanacion');
+ 
+ if(socioEl) socioEl.value = config.socio ?? 40;
+ if(acadEl) acadEl.value = config.academico ?? 35;
+ if(vulnEl) vulnEl.value = config.vulnerabilidad ?? 15;
+ if(merEl) merEl.value = config.meritos ?? 10;
+ if(promedioMinEl) promedioMinEl.value = config.promedioMin ?? 80;
+ if(ingresoMaxEl) ingresoMaxEl.value = config.ingresoMax ?? 500000;
+ if(plazoSubsanacionEl) plazoSubsanacionEl.value = config.plazoSubsanacion ?? 5;
+ if(plazoApelacionEl) plazoApelacionEl.value = config.plazoApelacion ?? 10;
+ if(plazoRenovacionEl) plazoRenovacionEl.value = config.plazoRenovacion ?? 15;
+ if(msgAprobacionEl) msgAprobacionEl.value = config.msgAprobacion ?? 'Felicidades, tu solicitud de beca ha sido APROBADA.';
+ if(msgRechazoEl) msgRechazoEl.value = config.msgRechazo ?? 'Lamentamos informarte que tu solicitud ha sido RECHAZADA.';
+ if(msgSubsanacionEl) msgSubsanacionEl.value = config.msgSubsanacion ?? 'Tu solicitud requiere correcciones. Revisa los documentos pendientes.';
+ validarPonderaciones();
+}
+
+function validarPonderaciones(){
+ const socio = parseInt(document.getElementById('cfg-socio').value) || 0;
+ const acad = parseInt(document.getElementById('cfg-acad').value) || 0;
+ const vuln = parseInt(document.getElementById('cfg-vuln').value) || 0;
+ const mer = parseInt(document.getElementById('cfg-mer').value) || 0;
+ const total = socio + acad + vuln + mer;
+ const msg = document.getElementById('pond-suma-msg');
+ if(msg){
+ if(total === 100){ msg.textContent = ` Suma total: ${total}%`; msg.style.color = 'var(--success)'; }
+ else { msg.textContent = ` Suma total: ${total}% — debe ser exactamente 100%`; msg.style.color = 'var(--danger)'; }
+ }
+ return total === 100;
+}
+
+async function guardarConfig(){
+ if(!validarPonderaciones()){
+ notify(' La suma de las ponderaciones debe ser exactamente 100%.');
+ return;
+ }
+ const config = {
+ socio: parseInt(document.getElementById('cfg-socio')?.value) || 40,
+ academico: parseInt(document.getElementById('cfg-acad')?.value) || 35,
+ vulnerabilidad: parseInt(document.getElementById('cfg-vuln')?.value) || 15,
+ meritos: parseInt(document.getElementById('cfg-mer')?.value) || 10,
+ promedioMin: parseInt(document.getElementById('cfg-promedio-min')?.value) || 80,
+ ingresoMax: parseInt(document.getElementById('cfg-ingreso-max')?.value) || 500000,
+ plazoSubsanacion: parseInt(document.getElementById('cfg-plazo-subsanacion')?.value) || 5,
+ plazoApelacion: parseInt(document.getElementById('cfg-plazo-apelacion')?.value) || 10,
+ plazoRenovacion: parseInt(document.getElementById('cfg-plazo-renovacion')?.value) || 15,
+ msgAprobacion: document.getElementById('cfg-msg-aprobacion')?.value || '',
+ msgRechazo: document.getElementById('cfg-msg-rechazo')?.value || '',
+ msgSubsanacion: document.getElementById('cfg-msg-subsanacion')?.value || ''
+ };
+
+ try {
+ await API.guardarConfig(config);
+ } catch (e) {
+ console.warn(' No se pudo guardar la configuración en la API, usando localStorage:', e.message);
+ }
+ localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(config));
+ registrarBitacora('Configuración guardada', '—');
+ notify(' Configuración guardada exitosamente.');
+}
+
+async function renderEmpleados(){
+ let empleados = [];
+ try { empleados = await API.getEmpleados(); }
+ catch (e) { console.warn(' No se pudo obtener empleados de la API, usando localStorage:', e.message); empleados = JSON.parse(localStorage.getItem(STORAGE_KEYS.empleados) || '[]'); }
+ const tbody = document.getElementById('empleados-tabla');
+ if(!tbody) return;
+ if(empleados.length === 0){
+ tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay empleados registrados</td></tr>';
+ return;
+ }
+ tbody.innerHTML = empleados.map(emp => `<tr>
+ <td><strong>${emp.nombre}</strong></td>
+ <td>${emp.departamento}</td>
+ <td>${emp.cargo}</td>
+ <td>${emp.correo}</td>
+ <td>${emp.telefono}</td>
+ <td style="display:flex;gap:5px;"><button class="btn btn-small" onclick="editarEmpleado(${emp.id})">Editar</button><button class="btn btn-danger" onclick="eliminarEmpleado(${emp.id})">Eliminar</button></td>
+ </tr>
+ `).join('');
+}
+
+async function agregarEmpleado(){
+ const resultado = await customPrompt('Nuevo empleado', [
+ { id: 'nombre', label: 'Nombre completo', type: 'text', value: '' },
+ { id: 'departamento', label: 'Departamento', type: 'text', value: '' },
+ { id: 'cargo', label: 'Cargo', type: 'text', value: '' },
+ { id: 'correo', label: 'Correo electrónico', type: 'email', value: '' },
+ { id: 'telefono', label: 'Teléfono', type: 'text', value: '' }
+ ]);
+ if(!resultado || !resultado.nombre || !resultado.departamento || !resultado.cargo || !resultado.correo) return;
+ const { nombre, departamento, cargo, correo, telefono } = resultado;
+
+ try {
+ await API.crearEmpleado({ nombre, departamento, cargo, correo, telefono: telefono || '' });
+ } catch (e) {
+ console.warn(' No se pudo crear en la API, usando localStorage:', e.message);
+ const empleados = JSON.parse(localStorage.getItem(STORAGE_KEYS.empleados) || '[]');
+ const nuevoId = empleados.length ? Math.max(...empleados.map(e=>e.id)) + 1 : 1;
+ empleados.push({ id:nuevoId, nombre, departamento, cargo, correo, telefono: telefono || '' });
+ localStorage.setItem(STORAGE_KEYS.empleados, JSON.stringify(empleados));
+ }
+ registrarBitacora(`Empleado agregado: ${nombre} - ${cargo}`, '—');
+ renderEmpleados();
+}
+
+async function editarEmpleado(id){
+ let empleados = [];
+ try { empleados = await API.getEmpleados(); } catch(e) { empleados = JSON.parse(localStorage.getItem(STORAGE_KEYS.empleados) || '[]'); }
+ const emp = empleados.find(e => e.id === id);
+ if(!emp) return;
+ const resultado = await customPrompt('Editar empleado', [
+ { id: 'nombre', label: 'Nombre completo', type: 'text', value: emp.nombre },
+ { id: 'departamento', label: 'Departamento', type: 'text', value: emp.departamento },
+ { id: 'cargo', label: 'Cargo', type: 'text', value: emp.cargo },
+ { id: 'correo', label: 'Correo electrónico', type: 'email', value: emp.correo },
+ { id: 'telefono', label: 'Teléfono', type: 'text', value: emp.telefono }
+ ]);
+ if(!resultado) return;
+ const datos = {
+ nombre: resultado.nombre || emp.nombre,
+ departamento: resultado.departamento || emp.departamento,
+ cargo: resultado.cargo || emp.cargo,
+ correo: resultado.correo || emp.correo,
+ telefono: resultado.telefono ?? emp.telefono
+ };
+
+ try {
+ await API.editarEmpleado(id, datos);
+ } catch (e) {
+ console.warn(' No se pudo actualizar en la API, usando localStorage:', e.message);
+ Object.assign(emp, datos);
+ localStorage.setItem(STORAGE_KEYS.empleados, JSON.stringify(empleados));
+ }
+ registrarBitacora(`Empleado editado: ${datos.nombre}`, '—');
+ renderEmpleados();
+}
+
+async function eliminarEmpleado(id){
+ if(!(await customConfirm('¿Eliminar este empleado del registro?'))) return;
+ let empleados = [];
+ try { empleados = await API.getEmpleados(); } catch(e) { empleados = JSON.parse(localStorage.getItem(STORAGE_KEYS.empleados) || '[]'); }
+ const emp = empleados.find(e => e.id === id);
+
+ try {
+ await API.eliminarEmpleado(id);
+ } catch (e) {
+ console.warn(' No se pudo eliminar en la API, usando localStorage:', e.message);
+ empleados = empleados.filter(e => e.id !== id);
+ localStorage.setItem(STORAGE_KEYS.empleados, JSON.stringify(empleados));
+ }
+ registrarBitacora(`Empleado eliminado: ${emp?.nombre || 'ID:'+id}`, '—');
+ renderEmpleados();
+}
+
+// ==================== CHATBOT: preguntas y respuestas ====================
+async function renderChatbotPreguntas(){
+ let preguntas = [];
+ try { preguntas = await API.getChatbotPreguntas(); }
+ catch (e) { console.error(' No se pudo obtener las preguntas del chatbot:', e.message); }
+ const tbody = document.getElementById('chatbot-preguntas-tabla');
+ if(!tbody) return;
+ if(preguntas.length === 0){
+ tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay preguntas registradas todavía</td></tr>';
+ return;
+ }
+ tbody.innerHTML = preguntas.map(p => `<tr>
+ <td>${p.categoria || '—'}</td>
+ <td>${p.pregunta}</td>
+ <td style="max-width:320px;">${p.respuesta}</td>
+ <td>${p.activa ? '' : ''}</td>
+ <td style="display:flex;gap:5px;"><button class="btn btn-small" onclick="editarPreguntaChatbot(${p.id_pregunta})">Editar</button><button class="btn btn-danger" onclick="eliminarPreguntaChatbot(${p.id_pregunta})">Eliminar</button></td>
+ </tr>
+ `).join('');
+}
+
+async function agregarPreguntaChatbot(){
+ const resultado = await customPrompt('Nueva pregunta del chatbot', [
+ { id: 'categoria', label: 'Categoría (ej. Requisitos, Plazos, Proceso)', type: 'text', value: '' },
+ { id: 'pregunta', label: 'Pregunta', type: 'text', value: '' },
+ { id: 'respuesta', label: 'Respuesta', type: 'textarea', value: '' }
+ ]);
+ if(!resultado || !resultado.pregunta || !resultado.respuesta) return;
+
+ try {
+ await API.crearPreguntaChatbot(resultado);
+ } catch (e) {
+ notify(' No se pudo agregar la pregunta: ' + e.message);
+ return;
+ }
+ registrarBitacora(`Pregunta de chatbot agregada: ${resultado.pregunta}`, '—');
+ renderChatbotPreguntas();
+}
+
+async function editarPreguntaChatbot(id){
+ let preguntas = [];
+ try { preguntas = await API.getChatbotPreguntas(); } catch(e) { preguntas = []; }
+ const actual = preguntas.find(p => p.id_pregunta === id);
+ if(!actual) return;
+
+ const resultado = await customPrompt('Editar pregunta', [
+ { id: 'categoria', label: 'Categoría', type: 'text', value: actual.categoria || '' },
+ { id: 'pregunta', label: 'Pregunta', type: 'text', value: actual.pregunta },
+ { id: 'respuesta', label: 'Respuesta', type: 'textarea', value: actual.respuesta }
+ ]);
+ if(!resultado || !resultado.pregunta || !resultado.respuesta) return;
+
+ try {
+ await API.editarPreguntaChatbot(id, { ...resultado, activa: actual.activa });
+ } catch (e) {
+ notify(' No se pudo editar la pregunta: ' + e.message);
+ return;
+ }
+ registrarBitacora(`Pregunta de chatbot editada: ${resultado.pregunta}`, '—');
+ renderChatbotPreguntas();
+}
+
+async function eliminarPreguntaChatbot(id){
+ if(!(await customConfirm('¿Eliminar esta pregunta del chatbot?'))) return;
+ try {
+ await API.eliminarPreguntaChatbot(id);
+ } catch (e) {
+ notify(' No se pudo eliminar la pregunta: ' + e.message);
+ return;
+ }
+ registrarBitacora(`Pregunta de chatbot eliminada (ID ${id})`, '—');
+ renderChatbotPreguntas();
+}
+
+// ==================== ARRANQUE (admin.html) ====================
+(async function iniciar(){
+ const session = requireSession(['admin']);
+ if(!session) return;
+ await inicializarBase();
+ renderHeaderRol(session);
+ renderAdminDashboard(session);
+
+ document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
+ document.getElementById('mainNav').classList.toggle('open');
+ });
+
+ function refrescarSiEsSeguro(){
+ const elementoActivo = document.activeElement;
+ const escribiendo = elementoActivo && ['INPUT','TEXTAREA','SELECT'].includes(elementoActivo.tagName);
+ const modalAbierto = document.querySelector('.modal-overlay:not(.hidden)');
+ if(escribiendo || modalAbierto) return;
+ renderAdminDashboard(session);
+ }
+ window.addEventListener('focus', refrescarSiEsSeguro);
+ setInterval(refrescarSiEsSeguro, 20000);
+})();
+</script>
 </body>
 </html>

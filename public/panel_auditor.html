@@ -1,1850 +1,483 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Auditor - Sistema de Becas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <script src="storageManager.js"></script>
-    <style>
-        :root {
-            --primary: #1a365d;
-            --primary-light: #2c4a7c;
-            --primary-dark: #102240;
-            --accent: #c5a028;
-            --accent-light: #e0c468;
-            --bg: #f6f7fb;
-            --paper: #ffffff;
-            --text: #1f2733;
-            --muted: #6b7585;
-            --border: #e6e9f0;
-            --radius: 12px;
-            --shadow: 0 10px 30px -12px rgba(26,54,93,0.18);
-            --shadow-sm: 0 4px 14px -6px rgba(26,54,93,0.12);
-            --danger: #c0392b;
-            --success: #1e7e4f;
-            --warning: #b07d12;
-            --info: #1a365d;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Sora', system-ui, sans-serif;
-            color: var(--primary-dark);
-            letter-spacing: -0.01em;
-        }
-
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; cursor: pointer; border: none; }
-        .hidden { display: none !important; }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-            white-space: nowrap;
-        }
-        .btn:active { transform: translateY(1px); }
-        .btn-primary {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 6px 18px -6px rgba(197,160,40,0.55);
-        }
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 8px 22px -6px rgba(197,160,40,0.65);
-        }
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            border: 1.5px solid rgba(255,255,255,0.55);
-        }
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: #fff;
-        }
-        .btn-ghost {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--border);
-            padding: 11px 22px;
-        }
-        .btn-ghost:hover { border-color: var(--primary); }
-        .btn-danger {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1.5px solid #f6c6c0;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-danger:hover { background: #f6c6c0; }
-        .btn-success {
-            background: #e7f5ee;
-            color: var(--success);
-            border: 1.5px solid #b9e3cb;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-success:hover { background: #b9e3cb; }
-        .btn-warning {
-            background: #fff3cd;
-            color: var(--warning);
-            border: 1.5px solid #ffeaa7;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-        }
-        .btn-warning:hover { background: #ffeaa7; }
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-        }
-        .btn-small:hover { background: var(--primary-light); }
-        .btn-block { width: 100%; }
-
-        /* HEADER */
-        header.site-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-dark);
-            box-shadow: 0 2px 18px -8px rgba(0,0,0,0.45);
-        }
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #fff;
-            cursor: pointer;
-        }
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-        .brand-text strong {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-        .brand-text span {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-        nav.main-nav {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .session-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 0.88rem;
-        }
-        .session-pill .role-badge {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--accent-light);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: transparent;
-            padding: 6px;
-        }
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: .25s;
-        }
-
-        /* DASHBOARD */
-        .dash-shell {
-            display: flex;
-            min-height: calc(100vh - 75px);
-        }
-        .dash-sidebar {
-            width: 250px;
-            background: var(--primary-dark);
-            color: #fff;
-            flex-shrink: 0;
-            padding: 28px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: sticky;
-            top: 75px;
-            height: calc(100vh - 75px);
-            overflow-y: auto;
-        }
-        .dash-sidebar .dash-user {
-            padding: 0 8px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 14px;
-        }
-        .dash-sidebar .dash-user strong {
-            display: block;
-            font-size: 0.98rem;
-        }
-        .dash-sidebar .dash-user span {
-            font-size: 0.78rem;
-            color: var(--accent-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .dash-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.78);
-            font-size: 0.92rem;
-            font-weight: 500;
-            background: transparent;
-            text-align: left;
-            width: 100%;
-        }
-        .dash-nav-item:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        .dash-nav-item.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: 700;
-        }
-        .dash-nav-item.logout {
-            margin-top: auto;
-            color: #f6c6c0;
-        }
-        .dash-nav-item.logout:hover {
-            background: rgba(192,57,43,0.18);
-        }
-        .dash-main {
-            flex: 1;
-            padding: 32px;
-            max-width: 1100px;
-        }
-        .dash-main h2 {
-            margin-bottom: 4px;
-        }
-        .dash-main .dash-sub {
-            color: var(--muted);
-            font-size: 0.95rem;
-            margin-bottom: 24px;
-        }
-        .dash-tab { display: none; }
-        .dash-tab.active { display: block; }
-
-        .card-box {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-        }
-        .card-box h3 {
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-        }
-
-        .alert-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background: #fff8e6;
-            border: 1px solid #f0dba3;
-            color: var(--warning);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            margin-bottom: 10px;
-        }
-        .alert-box.info {
-            background: #e6effa;
-            border-color: #b8d0e8;
-            color: var(--info);
-        }
-        .alert-box.success {
-            background: #e7f5ee;
-            border-color: #b9e3cb;
-            color: var(--success);
-        }
-        .alert-box.danger {
-            background: #fdecea;
-            border-color: #f6c6c0;
-            color: var(--danger);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .data-table th,
-        .data-table td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        .data-table th {
-            color: var(--muted);
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-weight: 700;
-        }
-        .data-table tbody tr:hover {
-            background: #f9fafc;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .badge-info { background: #e6effa; color: var(--info); }
-        .badge-warning { background: #fff3cd; color: var(--warning); }
-        .badge-success { background: #e7f5ee; color: var(--success); }
-        .badge-danger { background: #fdecea; color: var(--danger); }
-        .badge-neutral { background: #eceff3; color: var(--muted); }
-
-        .counters-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .counter-card {
-            background: var(--paper);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-            text-align: center;
-        }
-        .counter-card .num {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-        .counter-card .label {
-            color: var(--muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .form-field.full { grid-column: 1/-1; }
-        .form-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .form-field input,
-        .form-field select,
-        .form-field textarea {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 11px 14px;
-            font-size: 0.93rem;
-            font-family: inherit;
-            color: var(--text);
-            background: #fff;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            width: 100%;
-        }
-        .form-field input:focus,
-        .form-field select:focus,
-        .form-field textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(16,34,64,0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-        .modal-box {
-            background: var(--paper);
-            border-radius: 16px;
-            max-width: 460px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .modal-box.wide { max-width: 680px; }
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: transparent;
-            font-size: 1.4rem;
-            color: var(--muted);
-            line-height: 1;
-            padding: 4px;
-        }
-        .modal-close:hover { color: var(--primary); }
-        .modal-box h3 { margin-bottom: 4px; }
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 0.88rem;
-            margin-bottom: 20px;
-        }
-
-        .login-error {
-            background: #fdecea;
-            color: var(--danger);
-            border: 1px solid #f6c6c0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-        }
-
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #e7f5ee;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 16px;
-        }
-
-        .modal-credentials {
-            background: #eef2f8;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-top: 18px;
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-        .modal-credentials strong { color: var(--primary); }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-        }
-        .toast-box {
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px -12px rgba(26,54,93,0.28);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: toastIn .25s ease;
-            white-space: pre-line;
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateX(24px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .toast-icon { font-weight: 700; flex-shrink: 0; }
-        .toast-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 0 0 0 6px;
-        }
-        .toast-close:hover { opacity: 1; }
-
-        #db-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 999;
-            background: #eef2f8;
-            color: #1a365d;
-            border: 1px solid #d0d7e0;
-        }
-        #db-status.online {
-            background: #e7f5ee;
-            color: #1e7e4f;
-            border-color: #b9e3cb;
-        }
-        #db-status.offline {
-            background: #fdecea;
-            color: #c0392b;
-            border-color: #f6c6c0;
-        }
-
-        .view-public {
-            padding: 60px 24px;
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .view-public h1 { font-size: 2.4rem; margin-bottom: 16px; }
-        .view-public .hero-sub {
-            color: var(--muted);
-            font-size: 1.15rem;
-            margin-bottom: 32px;
-            max-width: 600px;
-        }
-        .view-public .btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .view-public .noticias-section {
-            margin-top: 40px;
-            padding: 20px;
-            background: var(--paper);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            max-width: 600px;
-            width: 100%;
-            text-align: left;
-        }
-        .view-public .noticias-section h3 {
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 680px) {
-            .hamburger { display: flex; }
-            nav.main-nav {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px 24px 24px;
-                gap: 10px;
-                display: none;
-                border-top: 1px solid rgba(255,255,255,0.08);
-            }
-            nav.main-nav.open { display: flex; }
-            nav.main-nav .btn,
-            nav.main-nav .session-pill { width: 100%; }
-            nav.main-nav .session-pill {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .dash-shell { flex-direction: column; }
-            .dash-sidebar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 16px;
-                position: relative;
-                top: 0;
-                height: auto;
-            }
-            .dash-sidebar .dash-user {
-                width: 100%;
-                border-bottom: none;
-                margin-bottom: 6px;
-            }
-            .dash-nav-item {
-                width: auto;
-                flex: 1;
-                justify-content: center;
-            }
-            .dash-nav-item.logout { margin-top: 0; }
-            .data-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .form-grid { grid-template-columns: 1fr; }
-            .view-public h1 { font-size: 1.8rem; }
-            .view-public .hero-sub { font-size: 1rem; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Auditoría — Sistema de Becas Universitarias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<link rel="stylesheet" href="css/base.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
 
-    <div id="db-status" class="online">Conectado</div>
-
-    <!-- HEADER -->
-    <header class="site-header">
-        <div class="header-inner">
-            <div class="brand" onclick="irInicio(event)">
-                <div class="brand-mark">SB</div>
-                <div class="brand-text">
-                    <strong>Sistema de Becas</strong>
-                    <span>Universitarias</span>
-                </div>
-            </div>
-            <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú">
-                <span></span><span></span><span></span>
-            </button>
-            <nav class="main-nav" id="mainNav"></nav>
-        </div>
-    </header>
-
-    <!-- VISTA PÚBLICA -->
-    <div id="view-public" class="view view-public">
-        <h1>Sistema de Becas Universitarias</h1>
-        <p class="hero-sub">Gestiona tu solicitud de beca, revisa convocatorias y mantente al día con las noticias.</p>
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="abrirLogin()">Iniciar sesión</button>
-            <a href="registro.html" class="btn btn-ghost">Registrarse</a>
-        </div>
-        <div class="noticias-section">
-            <h3>📢 Noticias recientes</h3>
-            <div id="public-noticias">
-                <p style="color:var(--muted);">Cargando noticias...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANEL AUDITOR -->
-    <div id="view-dash-auditor" class="view hidden">
-        <div class="dash-shell">
-            <aside class="dash-sidebar">
-                <div class="dash-user">
-                    <strong id="aud-nombre">—</strong>
-                    <span>Auditor</span>
-                </div>
-                <button class="dash-nav-item active" onclick="showDashTab('aud','aud-expedientes',this)">Expedientes</button>
-                <button class="dash-nav-item" onclick="showDashTab('aud','aud-bitacora',this)">Bitácora</button>
-                <button class="dash-nav-item" onclick="showDashTab('aud','aud-alertas',this)">Alertas Seguridad</button>
-                <button class="dash-nav-item" onclick="showDashTab('aud','aud-estadisticas',this)">Estadísticas</button>
-                <button class="dash-nav-item" onclick="showDashTab('aud','aud-solicitudes',this)">Todas las Solicitudes</button>
-                <button class="dash-nav-item logout" onclick="cerrarSesion()">Salir</button>
-            </aside>
-
-            <main class="dash-main">
-                <h2>Auditoría del Sistema</h2>
-                <p class="dash-sub">Monitorea y revisa todas las actividades del sistema de becas.</p>
-
-                <!-- TAB: Expedientes -->
-                <div class="dash-tab active" id="aud-expedientes">
-                    <div class="card-box">
-                        <h3>Buscar expedientes</h3>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                            <input type="text" id="aud-buscar" placeholder="Nombre o cédula" class="form-control" style="flex:1; min-width:200px;">
-                            <button class="btn btn-primary" onclick="buscarExpedientes()">Buscar</button>
-                            <button class="btn btn-ghost" onclick="limpiarBusqueda()">Limpiar</button>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Expediente</th>
-                                    <th>Estudiante</th>
-                                    <th>Tipo Beca</th>
-                                    <th>Estado</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="aud-tabla-expedientes"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB: Bitácora -->
-                <div class="dash-tab" id="aud-bitacora">
-                    <div class="card-box">
-                        <h3>Bitácora del sistema</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Registro completo de todas las acciones realizadas en el sistema.
-                        </p>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                            <button class="btn btn-small" onclick="filtrarBitacora('todas')">Todas</button>
-                            <button class="btn btn-small" onclick="filtrarBitacora('estudiante')">Estudiantes</button>
-                            <button class="btn btn-small" onclick="filtrarBitacora('trabajador_social')">TS</button>
-                            <button class="btn btn-small" onclick="filtrarBitacora('comite')">Comité</button>
-                            <button class="btn btn-small" onclick="filtrarBitacora('admin')">Admin</button>
-                            <button class="btn btn-small" onclick="filtrarBitacora('auditor')">Auditor</button>
-                            <button class="btn btn-small btn-danger" onclick="filtrarBitacora('seguridad')">Seguridad</button>
-                        </div>
-                        <div style="overflow-x:auto;">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha/Hora</th>
-                                        <th>Usuario</th>
-                                        <th>Rol</th>
-                                        <th>Acción</th>
-                                        <th>Expediente</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="aud-tabla-bitacora"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: Alertas de Seguridad -->
-                <div class="dash-tab" id="aud-alertas">
-                    <div class="card-box">
-                        <h3>Monitoreo de Actividades Sospechosas</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Detección automática de comportamientos inusuales en el sistema.
-                        </p>
-                        <div id="alertas-seguridad-container"></div>
-                    </div>
-                    <div class="card-box">
-                        <h3>Resumen de Alertas</h3>
-                        <div class="counters-row">
-                            <div class="counter-card">
-                                <div class="num" style="color:var(--danger);" id="alert-criticas">0</div>
-                                <div class="label">Críticas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" style="color:var(--warning);" id="alert-altas">0</div>
-                                <div class="label">Altas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" style="color:var(--info);" id="alert-medias">0</div>
-                                <div class="label">Medias</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" style="color:var(--muted);" id="alert-bajas">0</div>
-                                <div class="label">Bajas</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: Estadísticas -->
-                <div class="dash-tab" id="aud-estadisticas">
-                    <div class="card-box">
-                        <h3>Estadísticas del Sistema</h3>
-                        <div class="counters-row">
-                            <div class="counter-card">
-                                <div class="num" id="aud-stat-total">0</div>
-                                <div class="label">Total Solicitudes</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="aud-stat-aprobadas">0</div>
-                                <div class="label">Aprobadas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="aud-stat-rechazadas">0</div>
-                                <div class="label">Rechazadas</div>
-                            </div>
-                            <div class="counter-card">
-                                <div class="num" id="aud-stat-pendientes">0</div>
-                                <div class="label">Pendientes</div>
-                            </div>
-                        </div>
-                        <div style="position:relative;height:260px;margin-bottom:24px;">
-                            <canvas id="audStatsChart"></canvas>
-                        </div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
-                            <button class="btn btn-small" onclick="exportarReporteAuditor()">Exportar CSV</button>
-                            <button class="btn btn-small" onclick="exportarBitacora()">Exportar Bitácora</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: Todas las Solicitudes -->
-                <div class="dash-tab" id="aud-solicitudes">
-                    <div class="card-box">
-                        <h3>Todas las Solicitudes</h3>
-                        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">
-                            Listado completo de todas las solicitudes del sistema.
-                        </p>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Expediente</th>
-                                    <th>Estudiante</th>
-                                    <th>Tipo Beca</th>
-                                    <th>Estado</th>
-                                    <th>Puntaje</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="aud-tabla-solicitudes"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- MODALES -->
-    <div id="modal-expediente" class="modal-overlay hidden">
-        <div class="modal-box wide">
-            <button class="modal-close" onclick="closeModal('modal-expediente')">×</button>
-            <h3 id="modal-expediente-titulo">Expediente</h3>
-            <div id="expediente-contenido" style="max-height:60vh; overflow-y:auto;"></div>
-            <div class="form-actions" style="margin-top:20px;">
-                <button class="btn btn-ghost" onclick="closeModal('modal-expediente')">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-login" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-login')">×</button>
-            <h3>Iniciar sesión</h3>
-            <div id="login-error" class="login-error hidden"></div>
-            <div class="form-field">
-                <label>Correo</label>
-                <input type="email" id="login-email" class="form-control" value="auditor@becas.com">
-            </div>
-            <div class="form-field">
-                <label>Contraseña</label>
-                <input type="password" id="login-password" class="form-control" value="123456">
-            </div>
-            <button class="btn btn-primary btn-block" onclick="handleLogin()">Ingresar</button>
-            <div class="modal-credentials">
-                <strong>Credenciales</strong><br>
-                Auditor: auditor@becas.com / 123456
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-notificacion" class="modal-overlay hidden">
-        <div class="modal-box">
-            <div class="success-icon">📧</div>
-            <h3 id="notif-titulo">Notificación</h3>
-            <p id="notif-mensaje"></p>
-            <button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button>
-        </div>
-    </div>
-
-    <div id="modal-custom-confirm" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3 style="margin-bottom:14px;">Confirmar acción</h3>
-            <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-                <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
-                <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
-
-    <script>
-        // ============================================================
-        // CONSTANTES Y CONFIGURACIÓN
-        // ============================================================
-        const SECRET_KEY = 'Becas2026Key';
-        let audStatsChartInstance = null;
-        let filtroBitacoraActual = 'todas';
-
-        // ============================================================
-        // UTILIDADES
-        // ============================================================
-        function rolLabel(rol) {
-            const map = {
-                estudiante: 'Estudiante',
-                trabajador_social: 'Trab. Social',
-                comite: 'Comité',
-                admin: 'Administrador',
-                auditor: 'Auditor',
-                aspirante: 'Aspirante'
-            };
-            return map[rol] || rol;
-        }
-
-        function badgeClassEstado(estado) {
-            if (estado === 'Aprobada' || estado === 'Beneficio Activo' || estado === 'Elegible' || estado === 'Restaurada')
-                return 'badge-success';
-            if (estado === 'Rechazada' || estado === 'No elegible' || estado === 'Rechazado Definitivo' || estado === 'Cancelada' || estado === 'Suspendida')
-                return 'badge-danger';
-            if (estado === 'Pendiente subsanación' || estado === 'En revisión TS')
-                return 'badge-warning';
-            if (estado === 'En comité' || estado === 'Enviada' || estado === 'En Apelación')
-                return 'badge-info';
-            return 'badge-neutral';
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function showToast(message, type) {
-            type = type || 'info';
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-            const colors = {
-                success: { bg: '#e7f5ee', border: '#b9e3cb', color: '#1e7e4f', icon: '✓' },
-                error: { bg: '#fdecea', border: '#f6c6c0', color: '#c0392b', icon: '✕' },
-                warning: { bg: '#fff3cd', border: '#ffeaa7', color: '#b07d12', icon: '⚠' },
-                info: { bg: '#e6effa', border: '#b8d0e8', color: '#1a365d', icon: 'ℹ' }
-            };
-            const c = colors[type] || colors.info;
-            const toast = document.createElement('div');
-            toast.className = 'toast-box';
-            toast.style.background = c.bg;
-            toast.style.border = '1px solid ' + c.border;
-            toast.style.color = c.color;
-            toast.innerHTML = '<span class="toast-icon">' + c.icon +
-                '</span><span style="flex:1;">' + message +
-                '</span><button class="toast-close" aria-label="Cerrar">×</button>';
-            container.appendChild(toast);
-
-            const remove = () => {
-                toast.style.transition = 'opacity .3s ease, transform .3s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(24px)';
-                setTimeout(() => toast.remove(), 300);
-            };
-            toast.querySelector('.toast-close').addEventListener('click', remove);
-            setTimeout(remove, 4500);
-        }
-
-        function notify(message) {
-            let type = 'info';
-            if (/^✅|correctamente|guardad[oa]|creado|actualizad|aprobad|activad[oa]|restaurad|public|enviad/i.test(message))
-                type = 'success';
-            else if (/^⚠️|obligatori|debe tener|no existe|no se encontr|no hay|error|incompleto|complete|seleccion/i.test(message))
-                type = 'warning';
-            showToast(message, type);
-        }
-
-        function customConfirm(message) {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('modal-custom-confirm');
-                document.getElementById('custom-confirm-message').textContent = message;
-                modal.classList.remove('hidden');
-                const okBtn = document.getElementById('custom-confirm-ok');
-                const cancelBtn = document.getElementById('custom-confirm-cancel');
-                const cleanup = (result) => {
-                    modal.classList.add('hidden');
-                    okBtn.removeEventListener('click', onOk);
-                    cancelBtn.removeEventListener('click', onCancel);
-                    resolve(result);
-                };
-                const onOk = () => cleanup(true);
-                const onCancel = () => cleanup(false);
-                okBtn.addEventListener('click', onOk);
-                cancelBtn.addEventListener('click', onCancel);
-            });
-        }
-
-        function formatBytes(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        // ============================================================
-        // NAVEGACIÓN
-        // ============================================================
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            const target = document.getElementById(viewId);
-            if (target) target.classList.remove('hidden');
-            if (viewId === 'view-public') renderPublicNoticias();
-            if (viewId.includes('dash')) renderDashboards();
-        }
-
-        function irInicio(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function goHome(e) {
-            if (e) e.preventDefault();
-            window.location.href = 'index.html';
-        }
-
-        function abrirLogin() {
-            openModal('modal-login');
-        }
-
-        function goToDashboard() {
-            const session = StorageManager.session.get();
-            if (session) {
-                const dashMap = {
-                    estudiante: 'view-dash-estudiante',
-                    aspirante: 'view-dash-estudiante',
-                    trabajador_social: 'view-dash-social',
-                    comite: 'view-dash-comite',
-                    admin: 'view-dash-admin',
-                    auditor: 'view-dash-auditor'
-                };
-                showView(dashMap[session.rol] || 'view-public');
-            } else {
-                showView('view-public');
-            }
-        }
-
-        function cerrarSesion() {
-            const session = StorageManager.session.get();
-            if (session) {
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: session.nombre,
-                    rol: session.rol,
-                    accion: 'Cierre de sesión',
-                    expediente: '—'
-                });
-            }
-            StorageManager.session.clear();
-            notify('✅ Sesión cerrada correctamente.');
-            window.location.href = 'index.html';
-        }
-
-        function renderHeaderNav() {
-            const nav = document.getElementById('mainNav');
-            const session = StorageManager.session.get();
-            if (session) {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<div class="session-pill"><span>' + session.nombre +
-                    '</span><span class="role-badge">' + rolLabel(session.rol) + '</span></div>' +
-                    '<button class="btn btn-outline" onclick="goToDashboard()">Mi panel</button>' +
-                    '<button class="btn btn-primary" onclick="cerrarSesion()">Salir</button>';
-            } else {
-                nav.innerHTML =
-                    '<a href="index.html" class="btn btn-outline" onclick="goHome(event)">Inicio</a>' +
-                    '<button class="btn btn-outline" onclick="abrirLogin()">Ingresar</button>' +
-                    '<a href="registro.html" class="btn btn-primary">Registrarse</a>';
-            }
-        }
-
-        // ============================================================
-        // NOTICIAS PÚBLICAS
-        // ============================================================
-        function renderPublicNoticias() {
-            const container = document.getElementById('public-noticias');
-            if (!container) return;
-
-            const noticias = StorageManager.noticias.getActivas();
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-
-            const activas = noticias
-                .filter(n => {
-                    const fechaPub = new Date(n.fechaPublicacion);
-                    fechaPub.setHours(0, 0, 0, 0);
-                    return fechaPub <= hoy;
-                })
-                .slice(0, 3);
-
-            if (activas.length === 0) {
-                container.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay noticias disponibles en este momento.</p>';
-                return;
-            }
-
-            container.innerHTML = activas.map(n =>
-                '<div style="padding:10px 0; border-bottom:1px solid var(--border);">' +
-                '<strong>' + n.titulo + '</strong>' +
-                '<span style="font-size:0.75rem;color:var(--muted);margin-left:12px;">' + n.fechaPublicacion +
-                '</span>' +
-                '<p style="font-size:0.9rem;margin-top:4px;">' + n.contenido + '</p>' +
-                '</div>'
-            ).join('');
-        }
-
-        // ============================================================
-        // LOGIN
-        // ============================================================
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value.trim().toLowerCase();
-            const password = document.getElementById('login-password').value;
-            const errorBox = document.getElementById('login-error');
-            errorBox.classList.add('hidden');
-
-            if (!email || !password) {
-                errorBox.textContent = '❌ Por favor ingresa tu correo y contraseña.';
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            const usuario = StorageManager.usuarios.getByEmail(email);
-
-            if (!usuario) {
-                errorBox.textContent = '❌ Usuario no encontrado';
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            if (usuario.bloqueado) {
-                errorBox.textContent = '🔒 Usuario bloqueado. Contacta al administrador.';
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            if (password !== '123456') {
-                errorBox.textContent = '❌ Contraseña incorrecta.';
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            const nuevaSesion = {
-                email: usuario.email,
-                nombre: usuario.nombre,
-                rol: usuario.rol
-            };
-            StorageManager.session.set(nuevaSesion);
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: usuario.nombre,
-                rol: usuario.rol,
-                accion: 'Inicio de sesión',
-                expediente: '—'
-            });
-
-            closeModal('modal-login');
-            renderHeaderNav();
-            StorageManager.emit('session_actualizada', nuevaSesion);
-
-            const dashMap = {
-                estudiante: 'view-dash-estudiante',
-                aspirante: 'view-dash-estudiante',
-                trabajador_social: 'view-dash-social',
-                comite: 'view-dash-comite',
-                admin: 'view-dash-admin',
-                auditor: 'view-dash-auditor'
-            };
-            showView(dashMap[usuario.rol] || 'view-public');
-            notify('✅ Bienvenido/a ' + usuario.nombre);
-        }
-
-        // ============================================================
-        // DASHBOARD AUDITOR
-        // ============================================================
-        function renderDashboards() {
-            const session = StorageManager.session.get();
-            if (!session) return;
-            if (session.rol === 'auditor') renderAuditorDashboard(session);
-        }
-
-        function renderAuditorDashboard(session) {
-            document.getElementById('aud-nombre').textContent = session.nombre;
-
-            buscarExpedientes();
-            renderBitacoraAuditor();
-            renderAlertasSeguridad();
-            renderTodasSolicitudes();
-            actualizarEstadisticasAuditor();
-            actualizarGraficoAuditor();
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: session.nombre,
-                rol: session.rol,
-                accion: 'Consulta Auditor',
-                expediente: '—'
-            });
-        }
-
-        // ============================================================
-        // EXPEDIENTES
-        // ============================================================
-        function buscarExpedientes() {
-            const filtro = document.getElementById('aud-buscar')?.value.toLowerCase() || '';
-            const solicitudes = StorageManager.solicitudes.getAll();
-
-            let filtradas = solicitudes;
-            if (filtro) {
-                filtradas = solicitudes.filter(s =>
-                    (s.nombres && s.nombres.toLowerCase().includes(filtro)) ||
-                    (s.apellidos && s.apellidos.toLowerCase().includes(filtro)) ||
-                    (s.cedula && s.cedula.includes(filtro)) ||
-                    (s.expediente && s.expediente.toLowerCase().includes(filtro))
-                );
-            }
-
-            const tbody = document.getElementById('aud-tabla-expedientes');
-            if (!tbody) return;
-
-            if (filtradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron expedientes</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtradas.map(s =>
-                '<tr>' +
-                '<td><strong>' + s.expediente + '</strong></td>' +
-                '<td>' + (s.nombres || '') + ' ' + (s.apellidos || '') + '</td>' +
-                '<td>' + (s.tipoBeca || '—') + '</td>' +
-                '<td><span class="badge ' + badgeClassEstado(s.estado) + '">' + s.estado + '</span></td>' +
-                '<td>' + s.fecha + '</td>' +
-                '<td><button class="btn btn-small" onclick="verExpedienteAuditor(\'' + s.expediente +
-                '\')">Ver</button></td>' +
-                '</tr>'
-            ).join('');
-        }
-
-        function limpiarBusqueda() {
-            document.getElementById('aud-buscar').value = '';
-            buscarExpedientes();
-        }
-
-        function verExpedienteAuditor(expediente) {
-            const solicitud = StorageManager.solicitudes.getByExpediente(expediente);
-            if (solicitud) {
-                document.getElementById('modal-expediente-titulo').textContent = 'Expediente: ' + expediente;
-                document.getElementById('expediente-contenido').innerHTML = renderExpedienteCompleto(solicitud);
-                openModal('modal-expediente');
-            }
-        }
-
-        function renderExpedienteCompleto(solicitud) {
-            const d = solicitud.datosCompletos || {};
-            const docs = solicitud.documentos || {};
-
-            const campo = (label, valor) =>
-                '<p><strong>' + label + ':</strong> ' +
-                ((valor === undefined || valor === null || valor === '') ?
-                    '<span style="color:var(--muted);">No registrado</span>' : valor) +
-                '</p>';
-
-            let html = '';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Estado del expediente</h4>' +
-                '<div class="expediente-grid">' +
-                campo('N° Expediente', solicitud.expediente) +
-                campo('Estado actual', '<span class="badge ' + badgeClassEstado(solicitud.estado) + '">' + solicitud.estado + '</span>') +
-                campo('Fecha de solicitud', solicitud.fecha) +
-                campo('Tipo de beca', solicitud.tipoBeca) +
-                campo('Progreso', (solicitud.progreso || 0) + '%') +
-                campo('Puntaje total', solicitud.puntaje !== undefined ? solicitud.puntaje + ' pts' : '') +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Personal</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Nombres', solicitud.nombres) +
-                campo('Apellidos', solicitud.apellidos) +
-                campo('Cédula', solicitud.cedula) +
-                campo('Correo', solicitud.correo || solicitud.estudianteEmail) +
-                campo('Teléfono', d['f-telefono'] || solicitud.telefono) +
-                campo('Fecha de nacimiento', d['f-nacimiento']) +
-                '</div>' +
-                (d['f-direccion'] ? '<p style="margin-top:6px;"><strong>Dirección:</strong> ' + d['f-direccion'] + '</p>' : '') +
-                '</div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Académica</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Carrera', d['f-carrera']) +
-                campo('Sede', d['f-sede']) +
-                campo('Facultad', d['f-facultad']) +
-                campo('Año de ingreso', d['f-anio']) +
-                campo('Promedio ponderado', solicitud.promedio) +
-                campo('Avance curricular', d['f-avance'] ? d['f-avance'] + '%' : '') +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Socioeconómica</h4>' +
-                '<div class="expediente-grid">' +
-                campo('Ingreso familiar mensual', '₡' + (solicitud.ingresoFamiliar || 0).toLocaleString()) +
-                campo('Dependientes económicos', d['f-dependientes']) +
-                campo('Miembros que trabajan', d['f-trabajadores']) +
-                campo('Tipo de vivienda', d['f-vivienda']) +
-                campo('Gastos mensuales aprox.', d['f-gastos'] ? '₡' + parseFloat(d['f-gastos']).toLocaleString() : '') +
-                campo('Situación laboral', d['f-laboral']) +
-                campo('¿Posee discapacidad?', d['f-discapacidad']) +
-                '</div></div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Información Complementaria</h4>' +
-                (d['f-extracurricular'] ? '<p><strong>Actividades extracurriculares:</strong> ' + d['f-extracurricular'] + '</p>' : '') +
-                (d['f-premios'] ? '<p><strong>Premios o reconocimientos:</strong> ' + d['f-premios'] + '</p>' : '') +
-                campo('¿Beca anterior?', d['f-beca-anterior']) +
-                '<p style="margin-top:6px;"><strong>Justificación de mérito:</strong><br>' +
-                (d['f-merito'] || 'No disponible') + '</p>' +
-                (d['f-motivacion'] ? '<p style="margin-top:6px;"><strong>Carta de motivación:</strong><br>' + d['f-motivacion'] + '</p>' : '') +
-                '</div>';
-
-            const docKeys = Object.keys(docs);
-            html += '<div class="expediente-section">' +
-                '<h4>Documentos adjuntos</h4>' +
-                (docKeys.length === 0 ?
-                    '<p style="color:var(--muted);font-size:0.9rem;">El estudiante no ha adjuntado documentos.</p>' :
-                    '<div class="doc-list">' +
-                    docKeys.map(key => {
-                        const doc = docs[key];
-                        const estadoDoc = doc.estado || 'Pendiente';
-                        const badgeDoc = estadoDoc === 'Aprobado' ? 'badge-success' :
-                            (estadoDoc === 'Rechazado' ? 'badge-danger' :
-                                (estadoDoc === 'Corrección solicitada' ? 'badge-warning' : 'badge-neutral'));
-                        return '<div class="doc-item">' +
-                            '<div class="doc-item-info">' +
-                            '<span class="doc-item-icon">📄</span>' +
-                            '<div>' +
-                            '<div><strong>' + (doc.label || key) + '</strong></div>' +
-                            '<div class="doc-item-meta">' + (doc.nombre || '') +
-                            (doc.tamano ? ' · ' + formatBytes(doc.tamano) : '') +
-                            '</div>' +
-                            (doc.observacion ? '<div class="doc-item-meta">📝 ' + doc.observacion + '</div>' : '') +
-                            '</div>' +
-                            '</div>' +
-                            '<div class="doc-item-actions">' +
-                            '<span class="badge ' + badgeDoc + '">' + estadoDoc + '</span>' +
-                            '</div>' +
-                            '</div>';
-                    }).join('') +
-                    '</div>'
-                ) +
-                '</div>';
-
-            html += '<div class="expediente-section">' +
-                '<h4>Observaciones del Trabajador Social</h4>' +
-                '<p>' + (solicitud.observacionTS || 'Sin observaciones registradas.') + '</p>' +
-                '</div>';
-
-            if (solicitud.observacionesComite || solicitud.porcentajeCobertura) {
-                html += '<div class="expediente-section">' +
-                    '<h4>Resolución del Comité</h4>' +
-                    '<div class="expediente-grid">' +
-                    campo('Porcentaje otorgado', solicitud.porcentajeCobertura) +
-                    campo('Beneficio aceptado', solicitud.aceptado ? 'Sí' : 'No') +
-                    '</div>' +
-                    (solicitud.observacionesComite ?
-                        '<p style="margin-top:6px;"><strong>Observaciones del comité:</strong><br>' +
-                        solicitud.observacionesComite + '</p>' : '') +
-                    '</div>';
-            }
-
-            if (solicitud.motivoRechazo) {
-                html += '<div class="expediente-section">' +
-                    '<h4>Motivo del Rechazo</h4>' +
-                    '<p style="color:var(--danger);">' + solicitud.motivoRechazo + '</p>' +
-                    '</div>';
-            }
-
-            return html;
-        }
-
-        // ============================================================
-        // BITÁCORA
-        // ============================================================
-        function renderBitacoraAuditor() {
-            const bitacora = StorageManager.bitacora.getAll();
-            const tbody = document.getElementById('aud-tabla-bitacora');
-            if (!tbody) return;
-
-            let filtradas = bitacora;
-
-            if (filtroBitacoraActual !== 'todas') {
-                if (filtroBitacoraActual === 'seguridad') {
-                    filtradas = bitacora.filter(b =>
-                        b.accion.includes('Intento') ||
-                        b.accion.includes('bloqueado') ||
-                        b.accion.includes('fallido') ||
-                        b.accion.includes('Bloqueo') ||
-                        b.accion.includes('seguridad')
-                    );
-                } else {
-                    filtradas = bitacora.filter(b => b.rol === filtroBitacoraActual);
-                }
-            }
-
-            if (filtradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros para este filtro</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtradas.slice(0, 100).map(b =>
-                '<tr>' +
-                '<td>' + b.fecha + '</td>' +
-                '<td>' + b.usuario + '</td>' +
-                '<td><span class="badge badge-neutral">' + (b.rol || 'visitante') + '</span></td>' +
-                '<td>' + b.accion + '</td>' +
-                '<td>' + b.expediente + '</td>' +
-                '</tr>'
-            ).join('');
-        }
-
-        function filtrarBitacora(filtro) {
-            filtroBitacoraActual = filtro;
-            renderBitacoraAuditor();
-
-            const buttons = document.querySelectorAll('#aud-bitacora .btn-small');
-            buttons.forEach(btn => {
-                btn.classList.remove('active');
-                const text = btn.textContent;
-                if (text.includes('Todas') && filtro === 'todas') btn.style.background = 'var(--accent)';
-                else if (text.includes('Estudiantes') && filtro === 'estudiante') btn.style.background = 'var(--accent)';
-                else if (text.includes('TS') && filtro === 'trabajador_social') btn.style.background = 'var(--accent)';
-                else if (text.includes('Comité') && filtro === 'comite') btn.style.background = 'var(--accent)';
-                else if (text.includes('Admin') && filtro === 'admin') btn.style.background = 'var(--accent)';
-                else if (text.includes('Auditor') && filtro === 'auditor') btn.style.background = 'var(--accent)';
-                else if (text.includes('Seguridad') && filtro === 'seguridad') btn.style.background = 'var(--accent)';
-                else btn.style.background = '';
-            });
-        }
-
-        // ============================================================
-        // ALERTAS DE SEGURIDAD
-        // ============================================================
-        function renderAlertasSeguridad() {
-            const container = document.getElementById('alertas-seguridad-container');
-            if (!container) return;
-
-            let alertas = StorageManager.alertasSeguridad.getAll();
-
-            if (alertas.length === 0) {
-                alertas = generarAlertasAutomaticas();
-                alertas.forEach(a => StorageManager.alertasSeguridad.save(a));
-            }
-
-            const criticas = alertas.filter(a => a.tipo === 'Crítica' && a.estado === 'Pendiente').length;
-            const altas = alertas.filter(a => a.tipo === 'Alta' && a.estado === 'Pendiente').length;
-            const medias = alertas.filter(a => a.tipo === 'Media' && a.estado === 'Pendiente').length;
-            const bajas = alertas.filter(a => a.tipo === 'Baja' && a.estado === 'Pendiente').length;
-
-            document.getElementById('alert-criticas').textContent = criticas;
-            document.getElementById('alert-altas').textContent = altas;
-            document.getElementById('alert-medias').textContent = medias;
-            document.getElementById('alert-bajas').textContent = bajas;
-
-            if (alertas.length === 0) {
-                container.innerHTML = '<div class="alert-box success">✅ No hay alertas de seguridad pendientes en este momento.</div>';
-                return;
-            }
-
-            alertas.sort((a, b) => {
-                const prioridad = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
-                return (prioridad[a.tipo] || 4) - (prioridad[b.tipo] || 4);
-            });
-
-            container.innerHTML = alertas.map(alerta =>
-                '<div class="alert-box ' + (alerta.tipo === 'Crítica' ? 'danger' :
-                    (alerta.tipo === 'Alta' ? 'danger' :
-                        (alerta.tipo === 'Media' ? 'warning' : 'info'))) +
-                '" style="margin-bottom:12px;">' +
-                '<div style="flex:1;">' +
-                '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
-                '<strong>🚨 ' + alerta.tipo + '</strong>' +
-                '<span style="font-size:0.75rem; color:var(--muted);">' + alerta.fecha + '</span>' +
-                '</div>' +
-                '<p style="margin-top:6px;">' + alerta.descripcion + '</p>' +
-                '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
-                '<span class="badge ' + (alerta.estado === 'Pendiente' ? 'badge-warning' :
-                    (alerta.estado === 'En investigación' ? 'badge-info' : 'badge-success')) +
-                '">' + alerta.estado + '</span>' +
-                (alerta.estado === 'Pendiente' ?
-                    '<button class="btn btn-small" onclick="marcarAlertaRevisada(' + alerta.id +
-                    ')">Marcar como revisada</button>' : '') +
-                '</div>' +
-                '</div>' +
-                '</div>'
-            ).join('');
-        }
-
-        function generarAlertasAutomaticas() {
-            const alertas = [];
-
-            const bitacora = StorageManager.bitacora.getAll();
-            const fallidos = bitacora.filter(b => b.accion.includes('fallido') || b.accion.includes('Intento'));
-            if (fallidos.length > 0) {
-                const ultimo = fallidos[0];
-                alertas.push({
-                    id: Date.now() + 1,
-                    fecha: ultimo.fecha || new Date().toLocaleString(),
-                    tipo: 'Alta',
-                    descripcion: 'Múltiples intentos fallidos de inicio de sesión detectados para usuario ' +
-                        (ultimo.usuario || 'desconocido'),
-                    estado: 'Pendiente'
-                });
-            }
-
-            const usuarios = StorageManager.usuarios.getAll();
-            const bloqueados = usuarios.filter(u => u.bloqueado);
-            if (bloqueados.length > 0) {
-                alertas.push({
-                    id: Date.now() + 2,
-                    fecha: new Date().toLocaleString(),
-                    tipo: 'Crítica',
-                    descripcion: 'Usuario ' + bloqueados[0].nombre + ' (' + bloqueados[0].email +
-                        ') ha sido bloqueado por múltiples intentos fallidos',
-                    estado: 'Pendiente'
-                });
-            }
-
-            alertas.push({
-                id: Date.now() + 3,
-                fecha: new Date().toLocaleString(),
-                tipo: 'Media',
-                descripcion: 'Se detectó actividad inusual fuera del horario laboral (2:00 AM) desde IP 192.168.1.45',
-                estado: 'Pendiente'
-            });
-
-            const solicitudes = StorageManager.solicitudes.getAll();
-            const cerrados = solicitudes.filter(s => s.estado === 'Cerrada');
-            if (cerrados.length > 3) {
-                alertas.push({
-                    id: Date.now() + 4,
-                    fecha: new Date().toLocaleString(),
-                    tipo: 'Baja',
-                    descripcion: 'Se ha accedido a ' + cerrados.length +
-                        ' expedientes cerrados en las últimas 24 horas',
-                    estado: 'Pendiente'
-                });
-            }
-
-            return alertas;
-        }
-
-        function marcarAlertaRevisada(id) {
-            let alerta = StorageManager.alertasSeguridad.getById(id);
-            if (alerta) {
-                alerta.estado = 'Revisada';
-                StorageManager.alertasSeguridad.save(alerta);
-                StorageManager.bitacora.save({
-                    fecha: new Date().toLocaleString(),
-                    usuario: 'Auditor',
-                    rol: 'auditor',
-                    accion: 'Alerta de seguridad ' + id + ' marcada como revisada',
-                    expediente: '—'
-                });
-                renderAlertasSeguridad();
-                notify('✅ Alerta marcada como revisada');
-            }
-        }
-
-        // ============================================================
-        // TODAS LAS SOLICITUDES
-        // ============================================================
-        function renderTodasSolicitudes() {
-            const solicitudes = StorageManager.solicitudes.getAll();
-            const tbody = document.getElementById('aud-tabla-solicitudes');
-            if (!tbody) return;
-
-            if (solicitudes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay solicitudes registradas</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = solicitudes.map(s =>
-                '<tr>' +
-                '<td><strong>' + s.expediente + '</strong></td>' +
-                '<td>' + (s.nombres || '') + ' ' + (s.apellidos || '') + '</td>' +
-                '<td>' + (s.tipoBeca || '—') + '</td>' +
-                '<td><span class="badge ' + badgeClassEstado(s.estado) + '">' + s.estado + '</span></td>' +
-                '<td>' + (s.puntaje || 0) + '</td>' +
-                '<td>' + s.fecha + '</td>' +
-                '<td><button class="btn btn-small" onclick="verExpedienteAuditor(\'' + s.expediente +
-                '\')">Ver</button></td>' +
-                '</tr>'
-            ).join('');
-        }
-
-        // ============================================================
-        // ESTADÍSTICAS AUDITOR
-        // ============================================================
-        function actualizarEstadisticasAuditor() {
-            const solicitudes = StorageManager.solicitudes.getAll();
-
-            const total = solicitudes.length;
-            const aprobadas = solicitudes.filter(s =>
-                s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada'
-            ).length;
-            const rechazadas = solicitudes.filter(s =>
-                s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' ||
-                s.estado === 'No elegible' || s.estado === 'Cancelada'
-            ).length;
-            const pendientes = solicitudes.filter(s =>
-                s.estado === 'En comité' || s.estado === 'Elegible' ||
-                s.estado === 'En revisión TS' || s.estado === 'Enviada' ||
-                s.estado === 'Pendiente subsanación' || s.estado === 'En Apelación'
-            ).length;
-
-            document.getElementById('aud-stat-total').textContent = total;
-            document.getElementById('aud-stat-aprobadas').textContent = aprobadas;
-            document.getElementById('aud-stat-rechazadas').textContent = rechazadas;
-            document.getElementById('aud-stat-pendientes').textContent = pendientes;
-        }
-
-        function actualizarGraficoAuditor() {
-            const ctx = document.getElementById('audStatsChart');
-            if (!ctx) return;
-
-            const total = parseInt(document.getElementById('aud-stat-total')?.textContent || '0');
-            const aprobadas = parseInt(document.getElementById('aud-stat-aprobadas')?.textContent || '0');
-            const rechazadas = parseInt(document.getElementById('aud-stat-rechazadas')?.textContent || '0');
-            const pendientes = parseInt(document.getElementById('aud-stat-pendientes')?.textContent || '0');
-
-            if (audStatsChartInstance) {
-                audStatsChartInstance.destroy();
-                audStatsChartInstance = null;
-            }
-
-            audStatsChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Aprobadas', 'Rechazadas', 'Pendientes', 'Total'],
-                    datasets: [{
-                        label: 'Solicitudes',
-                        data: [aprobadas, rechazadas, pendientes, total],
-                        backgroundColor: [
-                            'rgba(30,126,79,0.75)',
-                            'rgba(192,57,43,0.75)',
-                            'rgba(176,125,18,0.75)',
-                            'rgba(26,54,93,0.75)'
-                        ],
-                        borderColor: ['#1e7e4f', '#c0392b', '#b07d12', '#1a365d'],
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1, precision: 0 },
-                            title: { display: true, text: 'Número de solicitudes' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            title: { display: true, text: 'Estado de la solicitud' }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============================================================
-        // EXPORTAR REPORTES
-        // ============================================================
-        function exportarReporteAuditor() {
-            const solicitudes = StorageManager.solicitudes.getAll();
-            let csv = "Expediente,Estudiante,Tipo Beca,Estado,Puntaje,Fecha\n";
-            csv += solicitudes.map(s =>
-                s.expediente + ',"' + (s.nombres || '') + ' ' + (s.apellidos || '') + '",' +
-                (s.tipoBeca || '') + ',' + s.estado + ',' + (s.puntaje || 0) + ',' + s.fecha
-            ).join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.setAttribute('download', 'reporte_completo_becas_' + new Date().toISOString().slice(0, 10) + '.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Auditor',
-                rol: 'auditor',
-                accion: 'Exportación CSV de reporte completo',
-                expediente: '—'
-            });
-            notify('✅ Reporte exportado correctamente');
-        }
-
-        function exportarBitacora() {
-            const bitacora = StorageManager.bitacora.getAll();
-            let csv = "Fecha,Hora,Usuario,Rol,Acción,Expediente\n";
-            csv += bitacora.map(b =>
-                b.fecha + ',"' + b.usuario + '","' + (b.rol || 'visitante') + '","' +
-                b.accion.replace(/"/g, '""') + '","' + b.expediente + '"'
-            ).join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.setAttribute('download', 'bitacora_completa_' + new Date().toISOString().slice(0, 10) + '.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            StorageManager.bitacora.save({
-                fecha: new Date().toLocaleString(),
-                usuario: 'Auditor',
-                rol: 'auditor',
-                accion: 'Exportación CSV de bitácora',
-                expediente: '—'
-            });
-            notify('✅ Bitácora exportada correctamente');
-        }
-
-        // ============================================================
-        // SHOW DASH TAB
-        // ============================================================
-        function showDashTab(prefix, tabId, btn) {
-            const dashId = 'auditor';
-            const tabs = document.querySelectorAll('#view-dash-' + dashId + ' .dash-tab');
-            if (tabs) tabs.forEach(t => t.classList.remove('active'));
-
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) activeTab.classList.add('active');
-
-            if (btn) {
-                const navItems = btn.closest('.dash-sidebar')?.querySelectorAll('.dash-nav-item');
-                if (navItems) navItems.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            if (tabId === 'aud-expedientes') buscarExpedientes();
-            if (tabId === 'aud-bitacora') renderBitacoraAuditor();
-            if (tabId === 'aud-alertas') renderAlertasSeguridad();
-            if (tabId === 'aud-solicitudes') renderTodasSolicitudes();
-            if (tabId === 'aud-estadisticas') {
-                actualizarEstadisticasAuditor();
-                actualizarGraficoAuditor();
-            }
-        }
-
-        // ============================================================
-        // INICIALIZACIÓN
-        // ============================================================
-        (function init() {
-            renderHeaderNav();
-
-            const storedSession = StorageManager.session.get();
-            if (storedSession && storedSession.rol === 'auditor') {
-                showView('view-dash-auditor');
-                renderDashboards();
-            } else if (storedSession) {
-                const dashMap = {
-                    estudiante: 'panel_estudiante.html',
-                    aspirante: 'panel_estudiante.html',
-                    trabajador_social: 'panel_trabajador_social.html',
-                    comite: 'panel_comite.html',
-                    admin: 'panel_admin.html',
-                    auditor: 'panel_auditor.html'
-                };
-                const target = dashMap[storedSession.rol];
-                if (target) {
-                    window.location.href = target;
-                }
-            } else {
-                showView('view-public');
-                renderPublicNoticias();
-            }
-
-            document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
-                document.getElementById('mainNav').classList.toggle('open');
-            });
-
-            document.getElementById('db-status').textContent = '🟢 Conectado';
-            document.getElementById('db-status').className = 'online';
-
-            StorageManager.on('session_actualizada', function() {
-                renderHeaderNav();
-            });
-        })();
-    </script>
-
+<div id="db-status">Conectando...</div>
+
+<header class="site-header">
+ <div class="header-inner">
+ <a href="index.html" class="brand">
+ <div class="brand-mark">SB</div>
+ <div class="brand-text"><strong>Sistema de Becas</strong><span>Universitarias</span></div>
+ </a>
+ <button class="hamburger" id="hamburgerBtn" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+ <nav class="main-nav" id="mainNav">
+ <a href="index.html" class="btn btn-outline">Inicio</a>
+ 
+ <div class="session-pill"><span id="header-nombre">—</span><span class="role-badge" id="header-rol">Auditor</span></div>
+ <button class="btn btn-primary" onclick="logout()">Salir</button>
+ </nav>
+ </div>
+</header>
+
+<!-- ===== PANEL AUDITOR ===== -->
+<div id="view-dash-auditor">
+ <div class="dash-shell">
+ <aside class="dash-sidebar">
+ <div class="dash-user"><strong id="aud-nombre">—</strong><span>Auditor</span></div>
+ <button class="dash-nav-item active">Expedientes</button>
+ <button class="dash-nav-item" onclick="showDashTabAuditor('aud-solicitudes',this)">Todas las Solicitudes</button>
+ <button class="dash-nav-item" onclick="showDashTabAuditor('aud-estadisticas',this)">Estadísticas</button>
+ <button class="dash-nav-item" onclick="showDashTabAuditor('aud-alertas',this)">Alertas Seguridad</button>
+ <button class="dash-nav-item logout" onclick="logout()">Cerrar sesión</button>
+ </aside>
+ <main class="dash-main">
+ <h2>Auditor</h2>
+ <div class="dash-tab active" id="aud-expedientes">
+ <div class="card-box"><h3>Buscar expedientes cerrados</h3><input type="text" id="aud-buscar" placeholder="Nombre o cédula" class="form-control"><button class="btn btn-primary" onclick="buscarExpedientes()">Buscar</button><table class="data-table"><thead><tr><th>Expediente</th><th>Estudiante</th><th>Cierre</th><th>Acciones</th></tr></thead><tbody id="aud-tabla"></tbody></table></div>
+ <div class="card-box" style="margin-top:20px;">
+ <h3>Bitácora del sistema</h3>
+ <div class="form-grid" style="margin-bottom:12px;">
+ <div class="form-field"><label>Usuario</label><input type="text" id="bit-filtro-usuario" class="form-control" placeholder="correo o nombre"></div>
+ <div class="form-field"><label>Rol</label><select id="bit-filtro-rol" class="form-control"><option value="">Todos</option><option value="estudiante">Estudiante</option><option value="aspirante">Aspirante</option><option value="trabajador_social">Trab. Social</option><option value="comite">Comité</option><option value="admin">Administrador</option><option value="auditor">Auditor</option><option value="sistema">Sistema</option></select></div>
+ <div class="form-field"><label>Acción contiene</label><input type="text" id="bit-filtro-accion" class="form-control" placeholder="ej: aprobada, voto, login"></div>
+ <div class="form-field"><label>Desde</label><input type="date" id="bit-filtro-desde" class="form-control"></div>
+ <div class="form-field"><label>Hasta</label><input type="date" id="bit-filtro-hasta" class="form-control"></div>
+ </div>
+ <button class="btn btn-primary btn-small" onclick="renderBitacoraAuditor()">Filtrar</button>
+ <button class="btn btn-ghost btn-small" onclick="limpiarFiltrosBitacora()">Limpiar</button>
+ <table class="data-table" style="margin-top:12px;"><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Expediente</th></tr></thead><tbody id="aud-tabla-bitacora"></tbody></table>
+ </div>
+ </div>
+ <div class="dash-tab" id="aud-solicitudes">
+ <div class="card-box">
+ <h3>Todas las Solicitudes</h3>
+ <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">Listado completo de todas las solicitudes del sistema, en cualquier estado.</p>
+ <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+ <input type="text" id="aud-sol-buscar" placeholder="Nombre, cédula o expediente" class="form-control" style="flex:1; min-width:200px;" onkeyup="if(event.key==='Enter') renderTodasSolicitudes()">
+ <button class="btn btn-primary" onclick="renderTodasSolicitudes()">Buscar</button>
+ <button class="btn btn-ghost" onclick="document.getElementById('aud-sol-buscar').value='';renderTodasSolicitudes()">Limpiar</button>
+ <button class="btn btn-small" onclick="exportarReporteAuditor()">Exportar CSV</button>
+ </div>
+ <table class="data-table"><thead><tr><th>Expediente</th><th>Estudiante</th><th>Tipo Beca</th><th>Estado</th><th>Puntaje</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="aud-tabla-solicitudes"></tbody></table>
+ </div>
+ </div>
+ <div class="dash-tab" id="aud-estadisticas">
+ <div class="card-box">
+ <h3>Estadísticas del Sistema</h3>
+ <div class="counters-row">
+ <div class="counter-card"><div class="num" id="aud-stat-total">0</div><div class="label">Total Solicitudes</div></div>
+ <div class="counter-card"><div class="num" id="aud-stat-aprobadas">0</div><div class="label">Aprobadas</div></div>
+ <div class="counter-card"><div class="num" id="aud-stat-rechazadas">0</div><div class="label">Rechazadas</div></div>
+ <div class="counter-card"><div class="num" id="aud-stat-pendientes">0</div><div class="label">En proceso</div></div>
+ </div>
+ <div style="position:relative;height:260px;margin-bottom:24px;"><canvas id="audStatsChart"></canvas></div>
+ <button class="btn btn-small" onclick="exportarReporteAuditor()">Exportar CSV de solicitudes</button>
+ <button class="btn btn-small" onclick="exportarBitacoraCSV()">Exportar CSV de bitácora</button>
+ </div>
+ </div>
+ <div class="dash-tab" id="aud-alertas">
+ <div class="card-box">
+ <h3>Monitoreo de Actividades Sospechosas</h3>
+ <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">Detección de comportamientos inusuales en el sistema</p>
+ <div class="counters-row">
+ <div class="counter-card"><div class="num" style="color:var(--danger);" id="alert-criticas">0</div><div class="label">Críticas</div></div>
+ <div class="counter-card"><div class="num" style="color:var(--warning);" id="alert-altas">0</div><div class="label">Altas</div></div>
+ <div class="counter-card"><div class="num" style="color:var(--info);" id="alert-medias">0</div><div class="label">Medias</div></div>
+ <div class="counter-card"><div class="num" style="color:var(--muted);" id="alert-bajas">0</div><div class="label">Bajas</div></div>
+ </div>
+ <div id="alertas-seguridad-container"></div>
+ </div>
+ </div>
+ </main>
+ </div>
+</div>
+
+
+<!-- Solo lectura: el auditor puede consultar el expediente completo, pero no
+     editar observaciones ni documentos (a diferencia del mismo modal en
+     trabajador-social.html / comite.html). -->
+<div id="modal-expediente" class="modal-overlay hidden">
+ <div class="modal-box wide">
+ <button class="modal-close" onclick="closeModal('modal-expediente')">×</button>
+ <h3 id="modal-expediente-titulo">Expediente</h3>
+ <div id="expediente-contenido" style="max-height:60vh; overflow-y:auto;"></div>
+ <div class="form-actions" style="margin-top:20px;">
+ <button class="btn btn-ghost" onclick="closeModal('modal-expediente')">Cerrar</button>
+ </div>
+ </div>
+</div>
+
+<div id="modal-notificacion" class="modal-overlay hidden"><div class="modal-box"><div class="success-icon"></div><h3 id="notif-titulo">Notificación</h3><p id="notif-mensaje"></p><button class="btn btn-primary btn-block" onclick="closeModal('modal-notificacion')">Cerrar</button></div></div>
+<!-- ===== MODAL DE CONFIRMACIÓN (reemplaza confirm()) ===== -->
+<div id="modal-custom-confirm" class="modal-overlay hidden">
+ <div class="modal-box">
+ <h3 style="margin-bottom:14px;">Confirmar acción</h3>
+ <p id="custom-confirm-message" style="color:var(--muted);margin-bottom:24px;"></p>
+ <div style="display:flex;gap:10px;justify-content:flex-end;">
+ <button class="btn btn-ghost" id="custom-confirm-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="custom-confirm-ok">Confirmar</button>
+ </div>
+ </div>
+</div>
+
+<!-- ===== MODAL DE FORMULARIO (reemplaza prompt()) ===== -->
+<div id="modal-custom-prompt" class="modal-overlay hidden">
+ <div class="modal-box">
+ <button class="modal-close" id="cp-close">×</button>
+ <h3 id="cp-titulo" style="margin-bottom:18px;">Editar información</h3>
+ <div id="cp-fields" style="display:flex;flex-direction:column;gap:14px;"></div>
+ <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+ <button class="btn btn-ghost" id="cp-cancel">Cancelar</button>
+ <button class="btn btn-primary" id="cp-ok">Guardar</button>
+ </div>
+ </div>
+</div>
+
+
+<div id="toast-container"></div>
+
+<script src="js/common.js?v=1786821979"></script>
+<script>
+let _solicitudesAuditorCache = [];
+let audStatsChartInstance = null;
+
+function renderAuditorDashboard(session){
+ document.getElementById('aud-nombre').textContent = session.nombre;
+ buscarExpedientes();
+ renderBitacoraAuditor();
+ renderAlertasSeguridad();
+ registrarBitacora('Consulta Auditor', '—', session);
+}
+
+async function renderBitacoraAuditor(){
+ const tbody = document.getElementById('aud-tabla-bitacora');
+ if(!tbody) return;
+
+ const filtros = {
+ usuario: document.getElementById('bit-filtro-usuario')?.value.trim(),
+ rol: document.getElementById('bit-filtro-rol')?.value,
+ accion: document.getElementById('bit-filtro-accion')?.value.trim(),
+ fechaDesde: document.getElementById('bit-filtro-desde')?.value,
+ fechaHasta: document.getElementById('bit-filtro-hasta')?.value
+ };
+
+ let bitacora = [];
+ try {
+ bitacora = await API.getBitacora(filtros);
+ } catch (e) {
+ console.warn(' No se pudo obtener bitácora de la API, usando localStorage:', e.message);
+ bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]')
+ .filter(b => (!filtros.usuario || (b.usuario||'').toLowerCase().includes(filtros.usuario.toLowerCase()))
+ && (!filtros.rol || b.rol === filtros.rol)
+ && (!filtros.accion || (b.accion||'').toLowerCase().includes(filtros.accion.toLowerCase())));
+ }
+
+ if(bitacora.length === 0){
+ tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros que coincidan con los filtros.</td></tr>';
+ return;
+ }
+
+ tbody.innerHTML = bitacora.slice(0, 100).map(b => `<tr>
+ <td>${b.fecha || b.created_at}</td>
+ <td>${b.usuario}</td>
+ <td>${rolLabel(b.rol)}</td>
+ <td>${b.accion}</td>
+ <td>${b.expediente || '—'}</td>
+ </tr>`).join('');
+}
+
+function limpiarFiltrosBitacora(){
+ ['bit-filtro-usuario','bit-filtro-rol','bit-filtro-accion','bit-filtro-desde','bit-filtro-hasta'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+ renderBitacoraAuditor();
+}
+
+async function buscarExpedientes(){
+ const filtro = document.getElementById('aud-buscar')?.value.toLowerCase() || '';
+ let solicitudes = [];
+ try {
+ solicitudes = (await API.getSolicitudes()).map(mapSolicitudAPI);
+ } catch (e) {
+ console.warn(' No se pudo obtener solicitudes de la API, usando localStorage:', e.message);
+ solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+ }
+ const cerrados = solicitudes.filter(s => s.estado === 'Cerrada' && (s.nombres?.toLowerCase().includes(filtro) || !filtro));
+ const tbody = document.getElementById('aud-tabla');
+ if(tbody) tbody.innerHTML = cerrados.map(s => `<tr>
+ <td>${s.expediente}</td>
+ <td>${s.nombres} ${s.apellidos}</td>
+ <td>${s.fechaCierre || '—'}</td>
+ <td><button class="btn btn-small" onclick="verExpedienteAuditor('${s.expediente}')">Ver</button></td>
+ </tr>`).join('');
+}
+
+// ============================================================
+// VER EXPEDIENTE (solo lectura)
+// ============================================================
+async function verExpedienteAuditor(expediente){
+ try {
+  const data = await API.getSolicitud(expediente);
+  const solicitud = mapSolicitudAPI(data);
+  document.getElementById('modal-expediente-titulo').textContent = `Expediente completo: ${expediente}`;
+  document.getElementById('expediente-contenido').innerHTML = renderExpedienteCompleto(solicitud, { permitirRevision: false });
+  if(window.lucide) lucide.createIcons();
+  openModal('modal-expediente');
+  registrarBitacora('Consulta de expediente por auditoría', expediente);
+ } catch(e) {
+  notify('No se pudo cargar el expediente: ' + e.message);
+ }
+}
+
+// ============================================================
+// TODAS LAS SOLICITUDES
+// ============================================================
+async function renderTodasSolicitudes(){
+ const filtro = document.getElementById('aud-sol-buscar')?.value.trim().toLowerCase() || '';
+ let solicitudes = [];
+ try {
+  solicitudes = (await API.getSolicitudes()).map(mapSolicitudAPI);
+ } catch (e) {
+  console.warn(' No se pudo obtener solicitudes de la API, usando localStorage:', e.message);
+  solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+ }
+ _solicitudesAuditorCache = solicitudes;
+
+ if(filtro){
+  solicitudes = solicitudes.filter(s =>
+   (s.nombres || '').toLowerCase().includes(filtro) ||
+   (s.apellidos || '').toLowerCase().includes(filtro) ||
+   (s.cedula || '').toLowerCase().includes(filtro) ||
+   (s.expediente || '').toLowerCase().includes(filtro)
+  );
+ }
+
+ const tbody = document.getElementById('aud-tabla-solicitudes');
+ if(!tbody) return;
+ if(solicitudes.length === 0){
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No se encontraron solicitudes</td></tr>';
+  return;
+ }
+ tbody.innerHTML = solicitudes.map(s => `<tr>
+ <td><strong>${s.expediente}</strong></td>
+ <td>${s.nombres} ${s.apellidos}</td>
+ <td>${s.tipoBeca || '—'}</td>
+ <td><span class="badge ${badgeClassEstado(s.estado)}">${s.estado}</span></td>
+ <td>${s.puntaje ?? 0}</td>
+ <td>${s.fecha}</td>
+ <td><button class="btn btn-small" onclick="verExpedienteAuditor('${s.expediente}')">Ver</button></td>
+ </tr>`).join('');
+}
+
+function showDashTabAuditor(tabId, btn){
+ const tabs = document.querySelectorAll('#view-dash-auditor .dash-tab');
+ tabs.forEach(t => t.classList.remove('active'));
+ document.getElementById(tabId).classList.add('active');
+ if(btn){
+ const navItems = document.querySelectorAll('#view-dash-auditor .dash-nav-item');
+ navItems.forEach(b => b.classList.remove('active'));
+ btn.classList.add('active');
+ }
+ if(tabId === 'aud-alertas'){
+ renderAlertasSeguridad();
+ }
+ if(tabId === 'aud-solicitudes'){
+ renderTodasSolicitudes();
+ }
+ if(tabId === 'aud-estadisticas'){
+ actualizarEstadisticasAuditor();
+ }
+}
+
+// ============================================================
+// ESTADÍSTICAS
+// ============================================================
+async function actualizarEstadisticasAuditor(){
+ let solicitudes = [];
+ try {
+  solicitudes = (await API.getSolicitudes()).map(mapSolicitudAPI);
+ } catch (e) {
+  console.warn(' No se pudo obtener solicitudes de la API, usando localStorage:', e.message);
+  solicitudes = JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+ }
+ _solicitudesAuditorCache = solicitudes;
+
+ const aprobadas = solicitudes.filter(s => s.estado === 'Aprobada' || s.estado === 'Beneficio Activo' || s.estado === 'Restaurada').length;
+ const rechazadas = solicitudes.filter(s => s.estado === 'Rechazada' || s.estado === 'Rechazado Definitivo' || s.estado === 'No elegible' || s.estado === 'Cancelada').length;
+ const estadosFinales = ['Aprobada', 'Beneficio Activo', 'Restaurada', 'Rechazada', 'Rechazado Definitivo', 'No elegible', 'Cerrada', 'Cancelada', 'Suspendida'];
+ const enProceso = solicitudes.filter(s => !estadosFinales.includes(s.estado)).length;
+ const total = solicitudes.length;
+
+ const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+ setTxt('aud-stat-total', total);
+ setTxt('aud-stat-aprobadas', aprobadas);
+ setTxt('aud-stat-rechazadas', rechazadas);
+ setTxt('aud-stat-pendientes', enProceso);
+
+ actualizarGraficoAuditor();
+}
+
+function actualizarGraficoAuditor(){
+ const ctx = document.getElementById('audStatsChart');
+ if(!ctx) return;
+
+ const aprobadas = parseInt(document.getElementById('aud-stat-aprobadas')?.textContent || '0');
+ const rechazadas = parseInt(document.getElementById('aud-stat-rechazadas')?.textContent || '0');
+ const pendientes = parseInt(document.getElementById('aud-stat-pendientes')?.textContent || '0');
+
+ if(audStatsChartInstance){
+ audStatsChartInstance.destroy();
+ audStatsChartInstance = null;
+ }
+
+ audStatsChartInstance = new Chart(ctx, {
+ type: 'bar',
+ data: {
+ labels: ['Aprobadas', 'En proceso', 'Rechazadas'],
+ datasets: [{
+ label: 'Solicitudes',
+ data: [aprobadas, pendientes, rechazadas],
+ backgroundColor: ['rgba(30,126,79,0.75)', 'rgba(26,54,93,0.65)', 'rgba(192,57,43,0.75)'],
+ borderColor: ['#1e7e4f', '#1a365d', '#c0392b'],
+ borderWidth: 1.5,
+ borderRadius: 6
+ }]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: true,
+ plugins: { legend: { display: false } },
+ scales: {
+ y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, title: { display: true, text: 'Número de solicitudes' } },
+ x: { grid: { display: false }, title: { display: true, text: 'Estado de la solicitud' } }
+ }
+ }
+ });
+}
+
+// ============================================================
+// EXPORTAR CSV
+// ============================================================
+function exportarReporteAuditor(){
+ const solicitudes = _solicitudesAuditorCache.length ? _solicitudesAuditorCache : JSON.parse(localStorage.getItem(STORAGE_KEYS.solicitudes) || '[]');
+ let csv = "Expediente,Estudiante,Tipo,Estado,Puntaje,Fecha\n";
+ csv += solicitudes.map(s => `${s.expediente},"${s.nombres} ${s.apellidos}",${s.tipoBeca},${s.estado},${s.puntaje||0},${s.fecha}`).join('\n');
+ descargarCSV(csv, `reporte_auditoria_becas_${new Date().toISOString().slice(0,10)}.csv`);
+ registrarBitacora('Exportación CSV de reporte (auditoría)', '—');
+}
+
+async function exportarBitacoraCSV(){
+ let bitacora = [];
+ try {
+  bitacora = await API.getBitacora(1000);
+ } catch (e) {
+  console.warn(' No se pudo obtener bitácora de la API, usando localStorage:', e.message);
+  bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || '[]');
+ }
+ let csv = "Fecha,Usuario,Rol,Acción,Expediente\n";
+ csv += bitacora.map(b => `${b.fecha || b.created_at},"${b.usuario}","${rolLabel(b.rol)}","${(b.accion||'').replace(/"/g,'""')}","${b.expediente||'—'}"`).join('\n');
+ descargarCSV(csv, `bitacora_${new Date().toISOString().slice(0,10)}.csv`);
+ registrarBitacora('Exportación CSV de bitácora', '—');
+}
+
+function descargarCSV(csv, nombreArchivo){
+ const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+ const link = document.createElement('a');
+ const url = URL.createObjectURL(blob);
+ link.href = url;
+ link.setAttribute('download', nombreArchivo);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ URL.revokeObjectURL(url);
+}
+
+async function renderAlertasSeguridad(){
+ const container = document.getElementById('alertas-seguridad-container');
+ if(!container) return;
+ let alertas = [];
+ try {
+ alertas = await API.getAlertas();
+ } catch (e) {
+ console.warn(' No se pudo obtener alertas de la API, usando localStorage:', e.message);
+ alertas = JSON.parse(localStorage.getItem(STORAGE_KEYS.alertasSeguridad) || '[]');
+ }
+
+ const contar = (tipo) => alertas.filter(a => a.tipo === tipo && a.estado === 'Pendiente').length;
+ const setCounter = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+ setCounter('alert-criticas', contar('Crítica'));
+ setCounter('alert-altas', contar('Alta'));
+ setCounter('alert-medias', contar('Media'));
+ setCounter('alert-bajas', contar('Baja'));
+
+ if(alertas.length === 0){
+ container.innerHTML = '<div class="alert-box success">No hay alertas de seguridad pendientes en este momento.</div>';
+ return;
+ }
+ container.innerHTML = alertas.map(alerta => `<div class="alert-box ${alerta.tipo === 'Crítica' ? 'danger' : (alerta.tipo === 'Alta' ? 'danger' : (alerta.tipo === 'Media' ? 'warning' : 'info'))}" style="margin-bottom:12px;">
+ <div style="flex:1;">
+ <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+ <strong> ${alerta.tipo}</strong>
+ <span style="font-size:0.75rem; color:var(--muted);">${alerta.fecha}</span>
+ </div>
+ <p style="margin-top:6px;">${alerta.descripcion}</p>
+ <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+ <span class="badge ${alerta.estado === 'Pendiente' ? 'badge-warning' : (alerta.estado === 'En investigación' ? 'badge-info' : 'badge-success')}">${alerta.estado}</span>
+ ${alerta.estado === 'Pendiente' ? `<button class="btn btn-small" onclick="marcarAlertaRevisada(${alerta.id})">Marcar como revisada</button>` : ''}
+ </div>
+ </div>
+ </div>
+ `).join('');
+}
+
+async function marcarAlertaRevisada(id){
+ try {
+ await API.revisarAlerta(id);
+ } catch (e) {
+ console.warn(' No se pudo actualizar en la API, usando localStorage:', e.message);
+ let alertas = JSON.parse(localStorage.getItem(STORAGE_KEYS.alertasSeguridad) || '[]');
+ const index = alertas.findIndex(a => a.id === id);
+ if(index !== -1){
+ alertas[index].estado = 'Revisada';
+ localStorage.setItem(STORAGE_KEYS.alertasSeguridad, JSON.stringify(alertas));
+ }
+ }
+ registrarBitacora(`Alerta de seguridad ${id} marcada como revisada`, '—');
+ renderAlertasSeguridad();
+}
+
+// ==================== ARRANQUE (auditor.html) ====================
+(async function iniciar(){
+ const session = requireSession(['auditor']);
+ if(!session) return;
+ await inicializarBase();
+ renderHeaderRol(session);
+ renderAuditorDashboard(session);
+
+ document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
+ document.getElementById('mainNav').classList.toggle('open');
+ });
+
+ function refrescarSiEsSeguro(){
+ const elementoActivo = document.activeElement;
+ const escribiendo = elementoActivo && ['INPUT','TEXTAREA','SELECT'].includes(elementoActivo.tagName);
+ const modalAbierto = document.querySelector('.modal-overlay:not(.hidden)');
+ if(escribiendo || modalAbierto) return;
+ renderBitacoraAuditor();
+ }
+ window.addEventListener('focus', refrescarSiEsSeguro);
+ setInterval(refrescarSiEsSeguro, 20000);
+})();
+</script>
 </body>
 </html>

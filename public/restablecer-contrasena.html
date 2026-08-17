@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restablecer contraseña — Sistema de Becas Universitarias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  body{background:#f5f6fa;}
+  .reset-wrap{max-width:420px;margin:80px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 30px 60px -20px rgba(0,0,0,0.15);}
+  .reset-wrap h2{margin-bottom:6px;}
+  .reset-wrap p.sub{color:var(--muted);font-size:0.9rem;margin-bottom:24px;}
+</style>
+</head>
+<body>
+
+<div class="reset-wrap">
+  <div id="vista-formulario">
+    <h2>Restablecer contraseña</h2>
+    <p class="sub">Escribe tu nueva contraseña.</p>
+    <div id="reset-error" class="login-error hidden"></div>
+    <div class="form-field"><label>Nueva contraseña</label><input type="password" id="reset-password" class="form-control" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-field"><label>Confirmar contraseña</label><input type="password" id="reset-password-confirm" class="form-control"></div>
+    <button class="btn btn-primary btn-block" onclick="handleReset()">Guardar nueva contraseña</button>
+  </div>
+
+  <div id="vista-exito" class="hidden">
+    <h2>¡Listo!</h2>
+    <p class="sub">Tu contraseña fue actualizada correctamente.</p>
+    <a class="btn btn-primary btn-block" href="index.html">Iniciar sesión</a>
+  </div>
+
+  <div id="vista-sin-token" class="hidden">
+    <h2>Enlace inválido</h2>
+    <p class="sub">Este enlace no incluye la información necesaria. Solicita uno nuevo desde la pantalla de inicio de sesión.</p>
+    <a class="btn btn-primary btn-block" href="index.html">Volver al inicio</a>
+  </div>
+</div>
+
+<script src="api.js?v=1786821979"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+
+if (!token) {
+  document.getElementById('vista-formulario').classList.add('hidden');
+  document.getElementById('vista-sin-token').classList.remove('hidden');
+}
+
+async function handleReset(){
+  const password = document.getElementById('reset-password').value;
+  const confirmar = document.getElementById('reset-password-confirm').value;
+  const errorBox = document.getElementById('reset-error');
+  errorBox.classList.add('hidden');
+
+  if (!password || password.length < 6) {
+    errorBox.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+  if (password !== confirmar) {
+    errorBox.textContent = 'Las contraseñas no coinciden.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    await API.resetPassword(token, password);
+    document.getElementById('vista-formulario').classList.add('hidden');
+    document.getElementById('vista-exito').classList.remove('hidden');
+  } catch(e) {
+    errorBox.textContent = e.message || 'No se pudo restablecer la contraseña.';
+    errorBox.classList.remove('hidden');
+  }
+}
+</script>
+</body>
+</html>
